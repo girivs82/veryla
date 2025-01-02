@@ -1,17 +1,17 @@
 use crate::Emitter;
 use std::path::PathBuf;
-use veryl_analyzer::Analyzer;
-use veryl_metadata::{PowerType, Metadata, ResetType};
-use veryl_parser::Parser;
+use veryla_analyzer::Analyzer;
+use veryla_metadata::{PowerType, Metadata, ResetType};
+use veryla_parser::Parser;
 
 #[track_caller]
 fn emit(metadata: &Metadata, code: &str) -> String {
     let parser = Parser::parse(&code, &"").unwrap();
     let analyzer = Analyzer::new(metadata);
 
-    analyzer.analyze_pass1(&"prj", &code, &"", &parser.veryl);
+    analyzer.analyze_pass1(&"prj", &code, &"", &parser.veryla);
     Analyzer::analyze_post_pass1();
-    analyzer.analyze_pass2(&"prj", &code, &"", &parser.veryl);
+    analyzer.analyze_pass2(&"prj", &code, &"", &parser.veryla);
 
     let mut emitter = Emitter::new(
         metadata,
@@ -19,7 +19,7 @@ fn emit(metadata: &Metadata, code: &str) -> String {
         &PathBuf::from("test.sv"),
         &PathBuf::from("test.sv.map"),
     );
-    emitter.emit(&"prj", &parser.veryl);
+    emitter.emit(&"prj", &parser.veryla);
     emitter.as_str().to_string()
 }
 
