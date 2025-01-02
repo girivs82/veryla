@@ -100,7 +100,7 @@ fn create_project(root: &Path, name: &str, toml: &str, publish: bool) -> Metadat
 
     let path = root.join(name);
     fs::create_dir(&path).unwrap();
-    let toml_path = path.join("Veryl.toml");
+    let toml_path = path.join("../../../Veryla.toml");
     fs::write(
         &toml_path,
         &toml.replace("{}", &root.to_string_lossy().replace("\\", "/")),

@@ -425,7 +425,7 @@ impl Lockfile {
         }
 
         let path = Self::dependency_path(url, revision)?;
-        let toml = path.join("Veryl.toml");
+        let toml = path.join("../../../Veryla.toml");
 
         if !path.exists() {
             let lock = veryla_path::lock_dir("dependencies")?;

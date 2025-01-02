@@ -1,10 +1,10 @@
 [project]
-name        = "veryl_testcase"
+name        = "veryla_testcase"
 version     = "0.1.6"
 authors     = ["dalance@gmail.com"]
 description = "Testcases for test"
 license     = "MIT"
-repository  = "https://github.com/veryl-lang/veryl"
+repository  = "https://github.com/girivs82/veryla"
 
 [build]
 power_type       = "posedge"
@@ -18,7 +18,7 @@ sourcemap_target = {type = "directory", path = "testcases/map"}
 indent_width = 4
 
 [doc]
-path = "target/veryl_doc"
+path = "target/veryla_doc"
 
 [test]
 simulator = "vcs"
