@@ -1,9 +1,9 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
 use std::fs;
-use veryl_analyzer::Analyzer;
-use veryl_formatter::Formatter;
-use veryl_metadata::Metadata;
-use veryl_parser::Parser;
+use veryla_analyzer::Analyzer;
+use veryla_formatter::Formatter;
+use veryla_metadata::Metadata;
+use veryla_parser::Parser;
 
 #[cfg(target_os = "linux")]
 mod perf;
@@ -33,10 +33,10 @@ fn criterion_benchmark(c: &mut Criterion) {
     let prj = &metadata.project.name;
     let analyzer = Analyzer::new(&metadata);
     let mut errors = Vec::new();
-    errors.append(&mut analyzer.analyze_pass1(prj, &text, &"", &parser.veryl));
+    errors.append(&mut analyzer.analyze_pass1(prj, &text, &"", &parser.veryla));
     Analyzer::analyze_post_pass1();
-    errors.append(&mut analyzer.analyze_pass2(prj, &text, &"", &parser.veryl));
-    errors.append(&mut analyzer.analyze_pass3(prj, &text, &"", &parser.veryl));
+    errors.append(&mut analyzer.analyze_pass2(prj, &text, &"", &parser.veryla));
+    errors.append(&mut analyzer.analyze_pass3(prj, &text, &"", &parser.veryla));
     if !errors.is_empty() {
         dbg!(errors);
         assert!(false);
@@ -52,10 +52,10 @@ fn criterion_benchmark(c: &mut Criterion) {
             let parser = Parser::parse(black_box(&text), &"").unwrap();
             let prj = &metadata.project.name;
             let analyzer = Analyzer::new(black_box(&metadata));
-            analyzer.analyze_pass1(prj, black_box(&text), &"", &parser.veryl);
+            analyzer.analyze_pass1(prj, black_box(&text), &"", &parser.veryla);
             Analyzer::analyze_post_pass1();
-            analyzer.analyze_pass2(prj, black_box(&text), &"", &parser.veryl);
-            analyzer.analyze_pass3(prj, black_box(&text), &"", &parser.veryl);
+            analyzer.analyze_pass2(prj, black_box(&text), &"", &parser.veryla);
+            analyzer.analyze_pass3(prj, black_box(&text), &"", &parser.veryla);
             analyzer.clear();
         })
     });
@@ -63,7 +63,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         b.iter_with_large_drop(|| {
             let parser = Parser::parse(black_box(&text), &"").unwrap();
             let mut formatter = Formatter::new(&metadata);
-            formatter.format(&parser.veryl);
+            formatter.format(&parser.veryla);
         })
     });
     group.finish();

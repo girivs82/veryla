@@ -1,6 +1,6 @@
 use crate::{symbol_table, Analyzer, AnalyzerError};
-use veryl_metadata::Metadata;
-use veryl_parser::Parser;
+use veryla_metadata::Metadata;
+use veryla_parser::Parser;
 
 #[track_caller]
 fn analyze(code: &str) -> Vec<AnalyzerError> {
@@ -12,10 +12,10 @@ fn analyze(code: &str) -> Vec<AnalyzerError> {
     let analyzer = Analyzer::new(&metadata);
 
     let mut errors = vec![];
-    errors.append(&mut analyzer.analyze_pass1(&"prj", &code, &"", &parser.veryl));
+    errors.append(&mut analyzer.analyze_pass1(&"prj", &code, &"", &parser.veryla));
     Analyzer::analyze_post_pass1();
-    errors.append(&mut analyzer.analyze_pass2(&"prj", &code, &"", &parser.veryl));
-    errors.append(&mut analyzer.analyze_pass3(&"prj", &code, &"", &parser.veryl));
+    errors.append(&mut analyzer.analyze_pass2(&"prj", &code, &"", &parser.veryla));
+    errors.append(&mut analyzer.analyze_pass3(&"prj", &code, &"", &parser.veryla));
     dbg!(&errors);
     errors
 }

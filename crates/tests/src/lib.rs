@@ -4,7 +4,7 @@ const DEPENDENCY_TESTS: [&str; 2] = ["25_dependency", "68_std"];
 #[cfg(test)]
 mod parser {
     use std::fs;
-    use veryl_parser::Parser;
+    use veryla_parser::Parser;
 
     fn test(name: &str) {
         let file = format!("../../testcases/veryla/{}.veryla", name);
@@ -22,9 +22,9 @@ mod parser {
 #[cfg(test)]
 mod analyzer {
     use std::fs;
-    use veryl_analyzer::Analyzer;
-    use veryl_metadata::Metadata;
-    use veryl_parser::Parser;
+    use veryla_analyzer::Analyzer;
+    use veryla_metadata::Metadata;
+    use veryla_parser::Parser;
 
     fn test(name: &str) {
         let metadata_path = Metadata::search_from_current().unwrap();
@@ -32,13 +32,13 @@ mod analyzer {
 
         if crate::DEPENDENCY_TESTS.contains(&name) {
             let paths = metadata.paths::<&str>(&[], false).unwrap();
-            let cache_path = veryl_path::cache_path().canonicalize().unwrap();
+            let cache_path = veryla_path::cache_path().canonicalize().unwrap();
             for path in paths {
                 if path.src.starts_with(&cache_path) {
                     let input = fs::read_to_string(&path.src).unwrap();
                     let ret = Parser::parse(&input, &path.src).unwrap();
                     let analyzer = Analyzer::new(&metadata);
-                    let _ = analyzer.analyze_pass1(&path.prj, &input, &path.src, &ret.veryl);
+                    let _ = analyzer.analyze_pass1(&path.prj, &input, &path.src, &ret.veryla);
                 }
             }
         }
@@ -49,17 +49,17 @@ mod analyzer {
         let ret = Parser::parse(&input, &file).unwrap();
         let prj = &metadata.project.name;
         let analyzer = Analyzer::new(&metadata);
-        let errors = analyzer.analyze_pass1(&prj, &input, &file, &ret.veryl);
+        let errors = analyzer.analyze_pass1(&prj, &input, &file, &ret.veryla);
         dbg!(&errors);
         assert!(errors.is_empty());
 
         Analyzer::analyze_post_pass1();
 
-        let errors = analyzer.analyze_pass2(&prj, &input, &file, &ret.veryl);
+        let errors = analyzer.analyze_pass2(&prj, &input, &file, &ret.veryla);
         dbg!(&errors);
         assert!(errors.is_empty());
 
-        let errors = analyzer.analyze_pass3(&prj, &input, &file, &ret.veryl);
+        let errors = analyzer.analyze_pass3(&prj, &input, &file, &ret.veryla);
         dbg!(&errors);
         assert!(errors.is_empty());
     }
@@ -70,9 +70,9 @@ mod analyzer {
 #[cfg(test)]
 mod formatter {
     use std::fs;
-    use veryl_formatter::Formatter;
-    use veryl_metadata::Metadata;
-    use veryl_parser::Parser;
+    use veryla_formatter::Formatter;
+    use veryla_metadata::Metadata;
+    use veryla_parser::Parser;
 
     fn test(name: &str) {
         let metadata_path = Metadata::search_from_current().unwrap();
@@ -94,7 +94,7 @@ mod formatter {
 
         let ret = Parser::parse(&input, &file).unwrap();
         let mut formatter = Formatter::new(&metadata);
-        formatter.format(&ret.veryl);
+        formatter.format(&ret.veryla);
 
         assert_eq!(original, formatter.as_str());
     }
@@ -106,10 +106,10 @@ mod formatter {
 mod emitter {
     use std::fs;
     use std::path::PathBuf;
-    use veryl_analyzer::Analyzer;
-    use veryl_emitter::Emitter;
-    use veryl_metadata::Metadata;
-    use veryl_parser::Parser;
+    use veryla_analyzer::Analyzer;
+    use veryla_emitter::Emitter;
+    use veryla_metadata::Metadata;
+    use veryla_parser::Parser;
 
     fn test(name: &str) {
         let metadata_path = Metadata::search_from_current().unwrap();
@@ -117,13 +117,13 @@ mod emitter {
 
         if crate::DEPENDENCY_TESTS.contains(&name) {
             let paths = metadata.paths::<&str>(&[], false).unwrap();
-            let cache_path = veryl_path::cache_path().canonicalize().unwrap();
+            let cache_path = veryla_path::cache_path().canonicalize().unwrap();
             for path in paths {
                 if path.src.starts_with(&cache_path) {
                     let input = fs::read_to_string(&path.src).unwrap();
                     let ret = Parser::parse(&input, &path.src).unwrap();
                     let analyzer = Analyzer::new(&metadata);
-                    let _ = analyzer.analyze_pass1(&path.prj, &input, &path.src, &ret.veryl);
+                    let _ = analyzer.analyze_pass1(&path.prj, &input, &path.src, &ret.veryla);
                 }
             }
         }
@@ -136,11 +136,11 @@ mod emitter {
         let ret = Parser::parse(&input, &src_path).unwrap();
         let prj = &metadata.project.name;
         let analyzer = Analyzer::new(&metadata);
-        let _ = analyzer.analyze_pass1(&prj, &input, &src_path, &ret.veryl);
+        let _ = analyzer.analyze_pass1(&prj, &input, &src_path, &ret.veryla);
         Analyzer::analyze_post_pass1();
-        let _ = analyzer.analyze_pass2(&prj, &input, &src_path, &ret.veryl);
+        let _ = analyzer.analyze_pass2(&prj, &input, &src_path, &ret.veryla);
         let mut emitter = Emitter::new(&metadata, &src_path, &dst_path, &map_path);
-        emitter.emit(&prj, &ret.veryl);
+        emitter.emit(&prj, &ret.veryla);
 
         let out_code = emitter.as_str();
         let ref_code = fs::read_to_string(&dst_path).unwrap();
@@ -165,7 +165,7 @@ mod emitter {
 #[cfg(test)]
 mod path {
     use std::path::PathBuf;
-    use veryl_metadata::{Metadata, SourceMapTarget, Target};
+    use veryla_metadata::{Metadata, SourceMapTarget, Target};
 
     fn path_test(mut metadata: Metadata, src_exp: &str, dst_exp: &str, map_exp: &str) {
         let base = metadata.project_path();
@@ -257,9 +257,9 @@ mod path {
 mod filelist {
     use std::fs;
     use std::path::PathBuf;
-    use veryl_analyzer::Analyzer;
-    use veryl_metadata::Metadata;
-    use veryl_parser::Parser;
+    use veryla_analyzer::Analyzer;
+    use veryla_metadata::Metadata;
+    use veryla_parser::Parser;
 
     fn check_list(paths: &[String], expected: &[&str]) {
         let paths: Vec<_> = paths.iter().map(|x| x.as_str()).collect();
@@ -298,21 +298,21 @@ mod filelist {
             let parser = Parser::parse(&input, &path.src).unwrap();
 
             let analyzer = Analyzer::new(&metadata);
-            let _ = analyzer.analyze_pass1(&path.prj, &input, &path.src, &parser.veryl);
+            let _ = analyzer.analyze_pass1(&path.prj, &input, &path.src, &parser.veryla);
             contexts.push((path, input, parser, analyzer));
         }
 
         Analyzer::analyze_post_pass1();
 
         for (path, input, parser, analyzer) in &contexts {
-            let _ = analyzer.analyze_pass2(&path.prj, input, &path.src, &parser.veryl);
+            let _ = analyzer.analyze_pass2(&path.prj, input, &path.src, &parser.veryla);
         }
 
         for (path, input, parser, analyzer) in &contexts {
-            let _ = analyzer.analyze_pass3(&path.prj, input, &path.src, &parser.veryl);
+            let _ = analyzer.analyze_pass3(&path.prj, input, &path.src, &parser.veryla);
         }
 
-        let paths = veryl::cmd_build::CmdBuild::sort_filelist(&metadata, &paths, false);
+        let paths = veryla::cmd_build::CmdBuild::sort_filelist(&metadata, &paths, false);
         let paths: Vec<_> = paths
             .into_iter()
             .map(|x| x.src.file_name().unwrap().to_string_lossy().into_owned())
