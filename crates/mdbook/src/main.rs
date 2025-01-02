@@ -9,12 +9,12 @@ use semver::{Version, VersionReq};
 use similar::{ChangeTag, TextDiff};
 use std::io;
 use std::process;
-use veryl_analyzer::Analyzer;
-use veryl_formatter::Formatter;
-use veryl_metadata::Metadata;
+use veryla_analyzer::Analyzer;
+use veryla_formatter::Formatter;
+use veryla_metadata::Metadata;
 
 pub fn make_app() -> Command {
-    Command::new("veryl")
+    Command::new("veryla")
         .about("A mdbook preprocessor which does precisely nothing")
         .subcommand(
             Command::new("supports")
@@ -72,13 +72,13 @@ fn handle_supports(pre: &dyn Preprocessor, sub_args: &ArgMatches) -> ! {
     }
 }
 
-/// A veryl preprocessor.
+/// A veryla preprocessor.
 #[derive(Default)]
 pub struct Veryl;
 
 impl Preprocessor for Veryl {
     fn name(&self) -> &str {
-        "veryl"
+        "veryla"
     }
 
     fn run(&self, _ctx: &PreprocessorContext, mut book: Book) -> Result<Book, Error> {
@@ -101,10 +101,10 @@ impl Preprocessor for Veryl {
                 for (event, range) in Parser::new(&chapter.content).into_offset_iter() {
                     match event {
                         Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(x))) => {
-                            if x.as_ref().starts_with("veryl") {
+                            if x.as_ref().starts_with("veryla") {
                                 in_code = true;
                             }
-                            if x.as_ref().starts_with("veryl,playground") {
+                            if x.as_ref().starts_with("veryla,playground") {
                                 in_playground = true;
                             }
                         }
@@ -120,12 +120,12 @@ impl Preprocessor for Veryl {
                                 chapter_skip = false;
                                 let x = re_hiding_code_indicator.replace_all(x.as_ref(), "");
 
-                                let ret = veryl_parser::Parser::parse(&x, &"");
+                                let ret = veryla_parser::Parser::parse(&x, &"");
 
                                 let (line, col) = lookup.get(range.start);
                                 match ret {
                                     Err(err) => {
-                                        eprintln!("veryl parse failed : {path}:{line}:{col}");
+                                        eprintln!("veryla parse failed : {path}:{line}:{col}");
                                         eprintln!("{err}");
                                         total_success = false;
                                         chapter_success = false;
@@ -138,10 +138,10 @@ impl Preprocessor for Veryl {
                                         let prj = &metadata.project.name;
 
                                         let mut formatter = Formatter::new(&metadata);
-                                        formatter.format(&ret.veryl);
+                                        formatter.format(&ret.veryla);
 
                                         if x != formatter.as_str() {
-                                            eprintln!("veryl format failed : {path}:{line}:{col}");
+                                            eprintln!("veryla format failed : {path}:{line}:{col}");
                                             let diff = TextDiff::from_lines(
                                                 x.as_ref(),
                                                 formatter.as_str(),
@@ -162,18 +162,18 @@ impl Preprocessor for Veryl {
 
                                         let mut errors = vec![];
                                         errors.append(
-                                            &mut analyzer.analyze_pass1(prj, &x, "", &ret.veryl),
+                                            &mut analyzer.analyze_pass1(prj, &x, "", &ret.veryla),
                                         );
                                         Analyzer::analyze_post_pass1();
                                         errors.append(
-                                            &mut analyzer.analyze_pass2(prj, &x, "", &ret.veryl),
+                                            &mut analyzer.analyze_pass2(prj, &x, "", &ret.veryla),
                                         );
                                         errors.append(
-                                            &mut analyzer.analyze_pass3(prj, &x, "", &ret.veryl),
+                                            &mut analyzer.analyze_pass3(prj, &x, "", &ret.veryla),
                                         );
 
                                         if !errors.is_empty() {
-                                            eprintln!("veryl analyze failed : {path}:{line}:{col}");
+                                            eprintln!("veryla analyze failed : {path}:{line}:{col}");
                                             for err in errors {
                                                 eprintln!("{err}");
                                             }
@@ -189,9 +189,9 @@ impl Preprocessor for Veryl {
                     }
                 }
                 if chapter_skip {
-                    eprintln!("veryl check skipped: {path}");
+                    eprintln!("veryla check skipped: {path}");
                 } else if chapter_success {
-                    eprintln!("veryl check success: {path}");
+                    eprintln!("veryla check success: {path}");
                 }
                 for (code_block, replaced_code) in code_blocks {
                     chapter.content = chapter.content.replace(&code_block, &replaced_code);
@@ -202,7 +202,7 @@ impl Preprocessor for Veryl {
         if total_success {
             Ok(book)
         } else {
-            Err(Error::msg("veryl check failed!!!"))
+            Err(Error::msg("veryla check failed!!!"))
         }
     }
 

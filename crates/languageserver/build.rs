@@ -10,9 +10,9 @@ fn main() {
         }
     }
 
-    println!("cargo::rerun-if-changed=../parser/veryl.par");
+    println!("cargo::rerun-if-changed=../parser/veryla.par");
 
-    let par_file = PathBuf::from("../parser/veryl.par");
+    let par_file = PathBuf::from("../parser/veryla.par");
     let exp_file = PathBuf::from("src/keyword.rs");
 
     let text = fs::read_to_string(par_file).unwrap();

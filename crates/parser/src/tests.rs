@@ -72,6 +72,14 @@ fn number() {
 }
 
 #[test]
+fn delay() {
+    success("let a: u32 = #10 0.1e10;");
+    success("assign a = #10 1;");
+    success("always_comb { a = #20000 1; }");
+    failure("let a: u32 = #10.5 0.1e10;");
+}
+
+#[test]
 fn identifier() {
     success("var a: u32;");
     success("var _abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_: u32;");

@@ -1,10 +1,10 @@
 use crate::analyzer_error::AnalyzerError;
 use crate::symbol::{SymbolId, SymbolKind};
 use crate::symbol_table;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_token::Token;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_token::Token;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 #[derive(Default)]
 pub struct CheckSeparator<'a> {
@@ -71,7 +71,7 @@ impl Handler for CheckSeparator<'_> {
     }
 }
 
-impl VerylGrammarTrait for CheckSeparator<'_> {
+impl VerylaGrammarTrait for CheckSeparator<'_> {
     fn expression_identifier(&mut self, arg: &ExpressionIdentifier) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             if let Ok(symbol) = symbol_table::resolve(arg) {

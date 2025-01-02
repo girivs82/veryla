@@ -2,9 +2,9 @@ use crate::analyzer_error::AnalyzerError;
 use crate::evaluator::Evaluator;
 use crate::symbol::SymbolKind;
 use crate::symbol_table;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 pub struct CheckEnum<'a> {
     pub errors: Vec<AnalyzerError>,
@@ -32,7 +32,7 @@ fn calc_width(value: usize) -> usize {
     (usize::BITS - value.leading_zeros()) as usize
 }
 
-impl VerylGrammarTrait for CheckEnum<'_> {
+impl VerylaGrammarTrait for CheckEnum<'_> {
     fn enum_declaration(&mut self, arg: &EnumDeclaration) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             let enum_symbol = symbol_table::resolve(arg.identifier.as_ref()).unwrap();

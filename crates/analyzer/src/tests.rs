@@ -21,13 +21,13 @@ fn analyze(code: &str) -> Vec<AnalyzerError> {
 }
 
 #[test]
-fn clock_check() {
+fn power_check() {
     let code = r#"
     module ModuleA (
-        clk: input clock
+        pwr: input power
     ) {
         var a: logic;
-        always_ff (clk) {
+        always_ff (pwr) {
             a = 0;
         }
     }
@@ -38,16 +38,16 @@ fn clock_check() {
 
     let code = r#"
     module ModuleB (
-        clk_a: input `_a clock<2>,
-        clk_b: input `_b clock[2]
+        pwr_a: input `_a power<2>,
+        pwr_b: input `_b power[2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (clk_a[POS]) {
+        always_ff (pwr_a[POS]) {
             a = 0;
         }
-        always_ff (clk_b[POS]) {
+        always_ff (pwr_b[POS]) {
             b = 0;
         }
     }
@@ -58,16 +58,16 @@ fn clock_check() {
 
     let code = r#"
     module ModuleC (
-        clk_a: input `_a clock<2, 2>,
-        clk_b: input `_b clock[2, 2]
+        pwr_a: input `_a power<2, 2>,
+        pwr_b: input `_b power[2, 2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (clk_a[POS][POS]) {
+        always_ff (pwr_a[POS][POS]) {
             a = 0;
         }
-        always_ff (clk_b[POS][POS]) {
+        always_ff (pwr_b[POS][POS]) {
             b = 0;
         }
     }
@@ -78,108 +78,108 @@ fn clock_check() {
 
     let code = r#"
     module ModuleD (
-        clk: input logic
+        pwr: input logic
     ) {
         var a: logic;
-        always_ff (clk) {
+        always_ff (pwr) {
             a = 0;
         }
     }
     "#;
 
     let errors = analyze(code);
-    assert!(matches!(errors[0], AnalyzerError::InvalidClock { .. }));
+    assert!(matches!(errors[0], AnalyzerError::InvalidPower { .. }));
 
     let code = r#"
     module ModuleE (
-        clk_a: input `_a clock<2>,
-        clk_b: input `_b clock[2]
+        pwr_a: input `_a power<2>,
+        pwr_b: input `_b power[2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (clk_a) {
+        always_ff (pwr_a) {
             a = 0;
         }
-        always_ff (clk_b[POS]) {
+        always_ff (pwr_b[POS]) {
             b = 0;
         }
     }
     "#;
 
     let errors = analyze(code);
-    assert!(matches!(errors[0], AnalyzerError::InvalidClock { .. }));
+    assert!(matches!(errors[0], AnalyzerError::InvalidPower { .. }));
 
     let code = r#"
     module ModuleF (
-        clk_a: input `_a clock<2>,
-        clk_b: input `_b clock[2]
+        pwr_a: input `_a power<2>,
+        pwr_b: input `_b power[2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (clk_a[POS]) {
+        always_ff (pwr_a[POS]) {
             a = 0;
         }
-        always_ff (clk_b) {
+        always_ff (pwr_b) {
             b = 0;
         }
     }
     "#;
 
     let errors = analyze(code);
-    assert!(matches!(errors[0], AnalyzerError::InvalidClock { .. }));
+    assert!(matches!(errors[0], AnalyzerError::InvalidPower { .. }));
 
     let code = r#"
     module ModuleG (
-        clk_a: input `_a clock<2, 2>,
-        clk_b: input `_b clock[2, 2]
+        pwr_a: input `_a power<2, 2>,
+        pwr_b: input `_b power[2, 2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (clk_a[POS]) {
+        always_ff (pwr_a[POS]) {
             a = 0;
         }
-        always_ff (clk_b[POS][POS]) {
+        always_ff (pwr_b[POS][POS]) {
             b = 0;
         }
     }
     "#;
 
     let errors = analyze(code);
-    assert!(matches!(errors[0], AnalyzerError::InvalidClock { .. }));
+    assert!(matches!(errors[0], AnalyzerError::InvalidPower { .. }));
 
     let code = r#"
     module ModuleH (
-        clk_a: input `_a clock<2, 2>,
-        clk_b: input `_b clock[2, 2]
+        pwr_a: input `_a power<2, 2>,
+        pwr_b: input `_b power[2, 2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (clk_a[POS][POS]) {
+        always_ff (pwr_a[POS][POS]) {
             a = 0;
         }
-        always_ff (clk_b[POS]) {
+        always_ff (pwr_b[POS]) {
             b = 0;
         }
     }
     "#;
 
     let errors = analyze(code);
-    assert!(matches!(errors[0], AnalyzerError::InvalidClock { .. }));
+    assert!(matches!(errors[0], AnalyzerError::InvalidPower { .. }));
 }
 
 #[test]
 fn reset_check() {
     let code = r#"
     module ModuleA (
-        clk: input clock,
+        pwr: input power,
         rst: input reset
     ) {
         var a: logic;
-        always_ff (clk, rst) {
+        always_ff (pwr, rst) {
             if_reset {
                 a = 0;
             }
@@ -192,20 +192,20 @@ fn reset_check() {
 
     let code = r#"
     module ModuleB (
-        clk_a: input `_a clock,
+        pwr_a: input `_a power,
         rst_a: input `_a reset<2>,
-        clk_b: input `_b clock,
+        pwr_b: input `_b power,
         rst_b: input `_b reset[2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (clk_a, rst_a[POS]) {
+        always_ff (pwr_a, rst_a[POS]) {
             if_reset {
                 a = 0;
             }
         }
-        always_ff (clk_b, rst_b[POS]) {
+        always_ff (pwr_b, rst_b[POS]) {
             if_reset {
                 b = 0;
             }
@@ -218,20 +218,20 @@ fn reset_check() {
 
     let code = r#"
     module ModuleC (
-        clk_a: input `_a clock,
+        pwr_a: input `_a power,
         rst_a: input `_a reset<2, 2>,
-        clk_b: input `_b clock,
+        pwr_b: input `_b power,
         rst_b: input `_b reset[2, 2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (clk_a, rst_a[POS][POS]) {
+        always_ff (pwr_a, rst_a[POS][POS]) {
             if_reset {
                 a = 0;
             }
         }
-        always_ff (clk_b, rst_b[POS][POS]) {
+        always_ff (pwr_b, rst_b[POS][POS]) {
             if_reset {
                 b = 0;
             }
@@ -244,11 +244,11 @@ fn reset_check() {
 
     let code = r#"
     module ModuleD (
-        clk: input clock,
+        pwr: input power,
         rst: input logic
     ) {
         var a: logic;
-        always_ff (clk, rst) {
+        always_ff (pwr, rst) {
             if_reset {
                 a = 0;
             }
@@ -261,20 +261,20 @@ fn reset_check() {
 
     let code = r#"
     module ModuleE (
-        clk_a: input `_a clock,
+        pwr_a: input `_a power,
         rst_a: input `_a reset<2>,
-        clk_b: input `_b clock,
+        pwr_b: input `_b power,
         rst_b: input `_b reset[2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (clk_a, rst_a) {
+        always_ff (pwr_a, rst_a) {
             if_reset {
                 a = 0;
             }
         }
-        always_ff (clk_b, rst_b[POS]) {
+        always_ff (pwr_b, rst_b[POS]) {
             if_reset {
                 b = 0;
             }
@@ -287,20 +287,20 @@ fn reset_check() {
 
     let code = r#"
     module ModuleF (
-        clk_a: input `_a clock,
+        pwr_a: input `_a power,
         rst_a: input `_a reset<2>,
-        clk_b: input `_b clock,
+        pwr_b: input `_b power,
         rst_b: input `_b reset[2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (clk_a, rst_a[POS]) {
+        always_ff (pwr_a, rst_a[POS]) {
             if_reset {
                 a = 0;
             }
         }
-        always_ff (clk_b, rst_b) {
+        always_ff (pwr_b, rst_b) {
             if_reset {
                 b = 0;
             }
@@ -313,20 +313,20 @@ fn reset_check() {
 
     let code = r#"
     module ModuleG (
-        clk_a: input `_a clock,
+        pwr_a: input `_a power,
         rst_a: input `_a reset<2, 2>,
-        clk_b: input `_b clock,
+        pwr_b: input `_b power,
         rst_b: input `_b reset[2, 2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (clk_a, rst_a[POS]) {
+        always_ff (pwr_a, rst_a[POS]) {
             if_reset {
                 a = 0;
             }
         }
-        always_ff (clk_b, rst_b[POS][POS]) {
+        always_ff (pwr_b, rst_b[POS][POS]) {
             if_reset {
                 b = 0;
             }
@@ -339,20 +339,20 @@ fn reset_check() {
 
     let code = r#"
     module ModuleH (
-        clk_a: input `_a clock,
+        pwr_a: input `_a power,
         rst_a: input `_a reset<2, 2>,
-        clk_b: input `_b clock,
+        pwr_b: input `_b power,
         rst_b: input `_b reset[2, 2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (clk_a, rst_a[POS][POS]) {
+        always_ff (pwr_a, rst_a[POS][POS]) {
             if_reset {
                 a = 0;
             }
         }
-        always_ff (clk_b, rst_b[POS]) {
+        always_ff (pwr_b, rst_b[POS]) {
             if_reset {
                 b = 0;
             }
@@ -365,18 +365,18 @@ fn reset_check() {
 }
 
 #[test]
-fn clock_connection_check() {
+fn power_connection_check() {
     let code = r#"
     module ModuleA (
-        clk: input logic
+        pwr: input logic
     ) {
         inst u: ModuleB (
-            clk,
+            pwr,
         );
     }
 
     module ModuleB (
-        clk: input clock
+        pwr: input power
     ) {}
     "#;
 
@@ -388,15 +388,15 @@ fn clock_connection_check() {
 fn reset_connection_check() {
     let code = r#"
     module ModuleA (
-        clk: input logic
+        pwr: input logic
     ) {
         inst u: ModuleB (
-            clk,
+            pwr,
         );
     }
 
     module ModuleB (
-        clk: input reset
+        pwr: input reset
     ) {}
     "#;
 
@@ -655,10 +655,10 @@ fn invalid_number_character() {
 fn invalid_statement() {
     let code = r#"
     module ModuleA (
-        clk: input logic,
+        pwr: input logic,
         rst: input logic,
     ) {
-        always_ff (clk, rst) {
+        always_ff (pwr, rst) {
             if_reset {
                 if_reset {
                 }
@@ -1257,10 +1257,10 @@ fn mismatch_type() {
 fn missing_if_reset() {
     let code = r#"
     module ModuleA (
-        clk: input logic,
+        pwr: input logic,
         rst: input logic,
     ) {
-        always_ff(clk, rst) {
+        always_ff(pwr, rst) {
         }
     }
     "#;
@@ -1277,7 +1277,7 @@ fn missing_port() {
     }
 
     module ModuleB (
-        clk: input logic,
+        pwr: input logic,
     ) {}
     "#;
 
@@ -1302,13 +1302,13 @@ fn missing_port() {
 }
 
 #[test]
-fn missing_clock_signal() {
+fn missing_power_signal() {
     let code = r#"
     module ModuleA (
-        clk: input clock
+        pwr: input power
     ){
         always_ff {}
-        always_ff (clk) {}
+        always_ff (pwr) {}
         for i in 0..1 : g {
             always_ff {}
         }
@@ -1320,7 +1320,7 @@ fn missing_clock_signal() {
 
     let code = r#"
     module ModuleB (
-        clk: input logic
+        pwr: input logic
     ){
         always_ff {}
     }
@@ -1329,13 +1329,13 @@ fn missing_clock_signal() {
     let errors = analyze(code);
     assert!(matches!(
         errors[0],
-        AnalyzerError::MissingClockSignal { .. }
+        AnalyzerError::MissingPowerSignal { .. }
     ));
 
     let code = r#"
     module ModuleC (
-        clk_0: input `_0 clock,
-        clk_1: input `_1 clock
+        pwr_0: input `_0 power,
+        pwr_1: input `_1 power
     ){
         always_ff {}
     }
@@ -1344,12 +1344,12 @@ fn missing_clock_signal() {
     let errors = analyze(code);
     assert!(matches!(
         errors[0],
-        AnalyzerError::MissingClockSignal { .. }
+        AnalyzerError::MissingPowerSignal { .. }
     ));
 
     let code = r#"
     module ModuleD (
-        clk: input clock<2>
+        pwr: input power<2>
     ){
         always_ff {}
     }
@@ -1358,13 +1358,13 @@ fn missing_clock_signal() {
     let errors = analyze(code);
     assert!(matches!(
         errors[0],
-        AnalyzerError::MissingClockSignal { .. }
+        AnalyzerError::MissingPowerSignal { .. }
     ));
 
     let code = r#"
     module ModuleE (){
         for i in 0..1 : g {
-            let _clk: clock = 0;
+            let _pwr: power = 0;
             always_ff {}
         }
     }
@@ -1373,7 +1373,7 @@ fn missing_clock_signal() {
     let errors = analyze(code);
     assert!(matches!(
         errors[0],
-        AnalyzerError::MissingClockSignal { .. }
+        AnalyzerError::MissingPowerSignal { .. }
     ));
 }
 
@@ -1381,23 +1381,23 @@ fn missing_clock_signal() {
 fn missing_reset_signal() {
     let code = r#"
     module ModuleA (
-        clk: input clock,
+        pwr: input power,
         rst: input reset
     ) {
         always_ff {
             if_reset {}
         }
-        always_ff (clk) {
+        always_ff (pwr) {
             if_reset {}
         }
-        always_ff (clk, rst) {
+        always_ff (pwr, rst) {
             if_reset {}
         }
         for i in 0..1 : g {
             always_ff {
                 if_reset {}
             }
-            always_ff (clk) {
+            always_ff (pwr) {
                 if_reset {}
             }
         }
@@ -1409,7 +1409,7 @@ fn missing_reset_signal() {
 
     let code = r#"
     module ModuleB (
-        clk: input clock,
+        pwr: input power,
         rst: input logic
     ) {
         always_ff {
@@ -1426,10 +1426,10 @@ fn missing_reset_signal() {
 
     let code = r#"
     module ModuleC (
-        clk: input clock,
+        pwr: input power,
         rst: input logic
     ) {
-        always_ff (clk) {
+        always_ff (pwr) {
             if_reset {}
         }
     }
@@ -1443,7 +1443,7 @@ fn missing_reset_signal() {
 
     let code = r#"
     module ModuleD (
-        clk:   input clock,
+        pwr:   input power,
         rst_0: input reset,
         rst_1: input reset
     ) {
@@ -1461,7 +1461,7 @@ fn missing_reset_signal() {
 
     let code = r#"
     module ModuleE (
-        clk: input clock,
+        pwr: input power,
         rst: input reset<2>
     ) {
         always_ff {
@@ -1478,7 +1478,7 @@ fn missing_reset_signal() {
 
     let code = r#"
     module ModuleF (
-        clk: input clock
+        pwr: input power
     ) {
         for i in 0..1 : g {
             let _rst: reset = 0;
@@ -1500,12 +1500,12 @@ fn missing_reset_signal() {
 fn missing_reset_statement() {
     let code = r#"
     module ModuleA (
-        clk: input clock,
+        pwr: input power,
         rst: input reset,
     ) {
         var a: logic;
 
-        always_ff(clk, rst) {
+        always_ff(pwr, rst) {
             if_reset {
             } else {
                 a = 1;
@@ -1535,11 +1535,11 @@ fn missing_tri() {
 }
 
 #[test]
-fn missing_clock_domain() {
+fn missing_power_domain() {
     let code = r#"
     module ModuleA (
-        clk0: input clock,
-        clk1: input clock,
+        pwr0: input power,
+        pwr1: input power,
     ) {
     }
     "#;
@@ -1547,7 +1547,7 @@ fn missing_clock_domain() {
     let errors = analyze(code);
     assert!(matches!(
         errors[0],
-        AnalyzerError::MissingClockDomain { .. }
+        AnalyzerError::MissingPowerDomain { .. }
     ));
 }
 
@@ -1965,10 +1965,10 @@ fn unknown_msb() {
 fn uknown_port() {
     let code = r#"
     module ModuleA (
-        clk: input logic,
+        pwr: input logic,
     ) {
         inst u: ModuleB (
-            clk
+            pwr
         );
     }
 
@@ -2343,7 +2343,7 @@ fn uncovered_branch() {
 fn anonymous_identifier() {
     let code = r#"
     module ModuleA (
-        i_clk: input `_ clock,
+        i_pwr: input `_ power,
     ) {
     }
     "#;
@@ -2462,7 +2462,7 @@ fn reserved_identifier() {
 fn reset_value_non_elaborative() {
     let code = r#"
     module ModuleA (
-        i_clk: input clock,
+        i_pwr: input power,
         i_rst: input reset,
     ) {
         var a: logic;
@@ -2570,7 +2570,7 @@ fn call_non_function() {
 fn invalid_assignment_to_const() {
     let code = r#"
     module ModuleA (
-        i_clk: input clock,
+        i_pwr: input power,
         i_rst: input reset,
     ) {
         always_comb {
@@ -2600,7 +2600,7 @@ fn invalid_assignment_to_const() {
 //    module ModuleA #(
 //        param K: i32 = 32,
 //    ) (
-//        i_clk: input   clock             ,
+//        i_pwr: input   power             ,
 //        i_rst: input   reset             ,
 //        mst  : modport InterfaceA::master,
 //    ) {
@@ -2650,7 +2650,7 @@ fn invalid_assignment_to_const() {
 //            $display("%d", s);
 //            $display("%d", state);
 //            $display("%d", mst.a);
-//            $display("%d", i_clk);
+//            $display("%d", i_pwr);
 //            $display("%d", K);
 //            $display("%d", J);
 //            $display("%d", foo());
@@ -2679,7 +2679,7 @@ fn invalid_assignment_to_const() {
 fn enum_non_const_exception() {
     let code = r#"
     module ModuleA (
-        i_clk: input clock,
+        i_pwr: input power,
         i_rst: input reset,
     ) {
 
@@ -2830,7 +2830,7 @@ fn invalid_case_condition_expression() {
 fn invalid_cast() {
     let code = r#"
     module ModuleA {
-        let a: clock = 1;
+        let a: power = 1;
         let _b: reset = a as reset;
     }
     "#;
@@ -2854,10 +2854,10 @@ fn invalid_test() {
 }
 
 #[test]
-fn clock_domain() {
+fn power_domain() {
     let code = r#"
     module ModuleA (
-        i_clk: input  `a clock,
+        i_pwr: input  `a power,
         i_dat: input  `a logic,
         o_dat: output `b logic,
     ) {
@@ -2868,12 +2868,12 @@ fn clock_domain() {
     let errors = analyze(code);
     assert!(matches!(
         errors[0],
-        AnalyzerError::MismatchClockDomain { .. }
+        AnalyzerError::MismatchPowerDomain { .. }
     ));
 
     let code = r#"
     module ModuleB (
-        i_clk : input  `a clock,
+        i_pwr : input  `a power,
         i_dat0: input  `a logic,
         i_dat1: input  `b logic,
         o_dat : output `a logic,
@@ -2885,12 +2885,12 @@ fn clock_domain() {
     let errors = analyze(code);
     assert!(matches!(
         errors[0],
-        AnalyzerError::MismatchClockDomain { .. }
+        AnalyzerError::MismatchPowerDomain { .. }
     ));
 
     let code = r#"
     module ModuleC (
-        i_clk : input  `a clock,
+        i_pwr : input  `a power,
         i_dat0: input  `a logic,
         i_dat1: input  `b logic,
         o_dat : output `a logic,
@@ -2912,12 +2912,12 @@ fn clock_domain() {
     let errors = analyze(code);
     assert!(matches!(
         errors[0],
-        AnalyzerError::MismatchClockDomain { .. }
+        AnalyzerError::MismatchPowerDomain { .. }
     ));
 
     let code = r#"
     module ModuleE (
-        i_clk : input  `a clock,
+        i_pwr : input  `a power,
         i_dat0: input  `a logic,
         i_dat1: input  `b logic,
         o_dat : output `a logic,
@@ -2932,12 +2932,12 @@ fn clock_domain() {
     let errors = analyze(code);
     assert!(matches!(
         errors[0],
-        AnalyzerError::MismatchClockDomain { .. }
+        AnalyzerError::MismatchPowerDomain { .. }
     ));
 
     let code = r#"
     module ModuleF (
-        i_clk : input  `a clock,
+        i_pwr : input  `a power,
         i_dat0: input  `a logic,
         i_dat1: input  `b logic,
         o_dat : output `b logic,
@@ -2955,12 +2955,12 @@ fn clock_domain() {
     let errors = analyze(code);
     assert!(matches!(
         errors[0],
-        AnalyzerError::MismatchClockDomain { .. }
+        AnalyzerError::MismatchPowerDomain { .. }
     ));
 
     let code = r#"
     module ModuleG (
-        i_clk: input   `a clock,
+        i_pwr: input   `a power,
         i_dat: input   `a logic,
         o_dat: modport `b InterfaceA::port,
     ) {
@@ -2979,12 +2979,12 @@ fn clock_domain() {
     let errors = analyze(code);
     assert!(matches!(
         errors[0],
-        AnalyzerError::MismatchClockDomain { .. }
+        AnalyzerError::MismatchPowerDomain { .. }
     ));
 
     let code = r#"
     module ModuleH (
-        i_clk: input  `a clock,
+        i_pwr: input  `a power,
         i_dat: input  `a logic,
         o_dat: output `b logic,
     ) {
@@ -2997,7 +2997,7 @@ fn clock_domain() {
     let errors = analyze(code);
     assert!(matches!(
         errors[0],
-        AnalyzerError::MismatchClockDomain { .. }
+        AnalyzerError::MismatchPowerDomain { .. }
     ));
 }
 

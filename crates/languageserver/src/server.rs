@@ -7,17 +7,17 @@ use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 use tower_lsp::lsp_types::*;
 use tower_lsp::Client;
-use veryl_analyzer::namespace::Namespace;
-use veryl_analyzer::symbol::SymbolKind as VerylSymbolKind;
-use veryl_analyzer::symbol::{Symbol, TypeKind};
-use veryl_analyzer::symbol_path::SymbolPath;
-use veryl_analyzer::{namespace_table, symbol_table, Analyzer, AnalyzerError};
-use veryl_formatter::Formatter;
-use veryl_metadata::Metadata;
-use veryl_parser::veryl_token::Token;
-use veryl_parser::veryl_walker::VerylWalker;
-use veryl_parser::{resource_table, Finder, Parser, ParserError};
-use veryl_path::PathSet;
+use veryla_analyzer::namespace::Namespace;
+use veryla_analyzer::symbol::SymbolKind as VerylaSymbolKind;
+use veryla_analyzer::symbol::{Symbol, TypeKind};
+use veryla_analyzer::symbol_path::SymbolPath;
+use veryla_analyzer::{namespace_table, symbol_table, Analyzer, AnalyzerError};
+use veryla_formatter::Formatter;
+use veryla_metadata::Metadata;
+use veryla_parser::veryla_token::Token;
+use veryla_parser::veryla_walker::VerylaWalker;
+use veryla_parser::{resource_table, Finder, Parser, ParserError};
+use veryla_path::PathSet;
 
 pub enum MsgToServer {
     DidOpen {
@@ -121,7 +121,7 @@ impl Server {
             document_map: DashMap::new(),
             parser_map: DashMap::new(),
             metadata_map: DashMap::new(),
-            cache_dir: veryl_path::cache_path(),
+            cache_dir: veryla_path::cache_path(),
             lsp_token: 0,
             background_tasks: VecDeque::new(),
             background_done: true,
@@ -298,7 +298,7 @@ impl Server {
                 let mut finder = Finder::new();
                 finder.line = line as u32;
                 finder.column = column as u32;
-                finder.veryl(&parser.veryl);
+                finder.veryla(&parser.veryla);
 
                 if let Some(token) = finder.token {
                     if let Some(namespace) = namespace_table::get(token.id) {
@@ -330,35 +330,35 @@ impl Server {
             let name = symbol.token.text.to_string();
             if name.contains(query) {
                 let kind = match symbol.kind {
-                    VerylSymbolKind::Port(_) => SymbolKind::VARIABLE,
-                    VerylSymbolKind::Variable(_) => SymbolKind::VARIABLE,
-                    VerylSymbolKind::Module(_) => SymbolKind::MODULE,
-                    VerylSymbolKind::ProtoModule(_) => SymbolKind::MODULE,
-                    VerylSymbolKind::Interface(_) => SymbolKind::INTERFACE,
-                    VerylSymbolKind::Function(_) => SymbolKind::FUNCTION,
-                    VerylSymbolKind::Parameter(_) => SymbolKind::CONSTANT,
-                    VerylSymbolKind::Instance(_) => SymbolKind::OBJECT,
-                    VerylSymbolKind::Block => SymbolKind::NAMESPACE,
-                    VerylSymbolKind::Package(_) => SymbolKind::PACKAGE,
-                    VerylSymbolKind::Struct(_) => SymbolKind::STRUCT,
-                    VerylSymbolKind::StructMember(_) => SymbolKind::VARIABLE,
-                    VerylSymbolKind::Union(_) => SymbolKind::STRUCT,
-                    VerylSymbolKind::UnionMember(_) => SymbolKind::VARIABLE,
-                    VerylSymbolKind::Enum(_) => SymbolKind::ENUM,
-                    VerylSymbolKind::EnumMember(_) => SymbolKind::ENUM_MEMBER,
-                    VerylSymbolKind::EnumMemberMangled => SymbolKind::ENUM_MEMBER,
-                    VerylSymbolKind::Modport(_) => SymbolKind::INTERFACE,
-                    VerylSymbolKind::Genvar => SymbolKind::VARIABLE,
-                    VerylSymbolKind::TypeDef(_) => SymbolKind::TYPE_PARAMETER,
-                    VerylSymbolKind::ModportVariableMember(_) => SymbolKind::VARIABLE,
-                    VerylSymbolKind::ModportFunctionMember(_) => SymbolKind::FUNCTION,
-                    VerylSymbolKind::SystemVerilog => SymbolKind::NAMESPACE,
-                    VerylSymbolKind::Namespace => SymbolKind::NAMESPACE,
-                    VerylSymbolKind::SystemFunction => SymbolKind::FUNCTION,
-                    VerylSymbolKind::GenericParameter(_) => SymbolKind::TYPE_PARAMETER,
-                    VerylSymbolKind::GenericInstance(_) => SymbolKind::MODULE,
-                    VerylSymbolKind::ClockDomain => SymbolKind::TYPE_PARAMETER,
-                    VerylSymbolKind::Test(_) => SymbolKind::MODULE,
+                    VerylaSymbolKind::Port(_) => SymbolKind::VARIABLE,
+                    VerylaSymbolKind::Variable(_) => SymbolKind::VARIABLE,
+                    VerylaSymbolKind::Module(_) => SymbolKind::MODULE,
+                    VerylaSymbolKind::ProtoModule(_) => SymbolKind::MODULE,
+                    VerylaSymbolKind::Interface(_) => SymbolKind::INTERFACE,
+                    VerylaSymbolKind::Function(_) => SymbolKind::FUNCTION,
+                    VerylaSymbolKind::Parameter(_) => SymbolKind::CONSTANT,
+                    VerylaSymbolKind::Instance(_) => SymbolKind::OBJECT,
+                    VerylaSymbolKind::Block => SymbolKind::NAMESPACE,
+                    VerylaSymbolKind::Package(_) => SymbolKind::PACKAGE,
+                    VerylaSymbolKind::Struct(_) => SymbolKind::STRUCT,
+                    VerylaSymbolKind::StructMember(_) => SymbolKind::VARIABLE,
+                    VerylaSymbolKind::Union(_) => SymbolKind::STRUCT,
+                    VerylaSymbolKind::UnionMember(_) => SymbolKind::VARIABLE,
+                    VerylaSymbolKind::Enum(_) => SymbolKind::ENUM,
+                    VerylaSymbolKind::EnumMember(_) => SymbolKind::ENUM_MEMBER,
+                    VerylaSymbolKind::EnumMemberMangled => SymbolKind::ENUM_MEMBER,
+                    VerylaSymbolKind::Modport(_) => SymbolKind::INTERFACE,
+                    VerylaSymbolKind::Genvar => SymbolKind::VARIABLE,
+                    VerylaSymbolKind::TypeDef(_) => SymbolKind::TYPE_PARAMETER,
+                    VerylaSymbolKind::ModportVariableMember(_) => SymbolKind::VARIABLE,
+                    VerylaSymbolKind::ModportFunctionMember(_) => SymbolKind::FUNCTION,
+                    VerylaSymbolKind::SystemVerilog => SymbolKind::NAMESPACE,
+                    VerylaSymbolKind::Namespace => SymbolKind::NAMESPACE,
+                    VerylaSymbolKind::SystemFunction => SymbolKind::FUNCTION,
+                    VerylaSymbolKind::GenericParameter(_) => SymbolKind::TYPE_PARAMETER,
+                    VerylaSymbolKind::GenericInstance(_) => SymbolKind::MODULE,
+                    VerylaSymbolKind::PowerDomain => SymbolKind::TYPE_PARAMETER,
+                    VerylaSymbolKind::Test(_) => SymbolKind::MODULE,
                 };
                 let location = to_location(&symbol.token);
                 #[allow(deprecated)]
@@ -382,7 +382,7 @@ impl Server {
                 let mut finder = Finder::new();
                 finder.line = line as u32;
                 finder.column = column as u32;
-                finder.veryl(&parser.veryl);
+                finder.veryla(&parser.veryla);
                 if let Some(token) = finder.token {
                     if let Some(namespace) = namespace_table::get(token.id) {
                         let path = if finder.token_group.is_empty() {
@@ -415,7 +415,7 @@ impl Server {
                 let mut finder = Finder::new();
                 finder.line = line as u32;
                 finder.column = column as u32;
-                finder.veryl(&parser.veryl);
+                finder.veryla(&parser.veryla);
                 if let Some(token) = finder.token {
                     if let Some(namespace) = namespace_table::get(token.id) {
                         let path = if finder.token_group.is_empty() {
@@ -446,7 +446,7 @@ impl Server {
                 let mut tokens = Vec::new();
                 for symbol in &symbol_table::get_all() {
                     if symbol.token.source == path {
-                        if let VerylSymbolKind::Port(_) = symbol.kind {
+                        if let VerylaSymbolKind::Port(_) = symbol.kind {
                             let token_type = semantic_legend::PROPERTY;
                             tokens.push((symbol.token, token_type));
                             for reference in &symbol.references {
@@ -512,7 +512,7 @@ impl Server {
                     let line = rope.len_lines() as u32;
                     if let Some(parser) = self.parser_map.get(&path) {
                         let mut formatter = Formatter::new(&metadata);
-                        formatter.format(&parser.veryl);
+                        formatter.format(&parser.veryla);
 
                         let text_edit = TextEdit {
                             range: Range::new(Position::new(0, 0), Position::new(line, u32::MAX)),
@@ -605,7 +605,7 @@ impl Server {
                     namespace_table::drop(src);
                 }
                 let analyzer = Analyzer::new(metadata);
-                let _ = analyzer.analyze_pass1(&path.prj, &text, &src, &x.veryl);
+                let _ = analyzer.analyze_pass1(&path.prj, &text, &src, &x.veryla);
 
                 block_on(self.client.log_message(
                     MessageType::INFO,
@@ -647,10 +647,10 @@ impl Server {
                             namespace_table::drop(path);
                         }
                         let analyzer = Analyzer::new(&metadata);
-                        let mut errors = analyzer.analyze_pass1(prj, text, &path, &x.veryl);
+                        let mut errors = analyzer.analyze_pass1(prj, text, &path, &x.veryla);
                         Analyzer::analyze_post_pass1();
-                        errors.append(&mut analyzer.analyze_pass2(prj, text, &path, &x.veryl));
-                        errors.append(&mut analyzer.analyze_pass3(prj, text, &path, &x.veryl));
+                        errors.append(&mut analyzer.analyze_pass2(prj, text, &path, &x.veryla));
+                        errors.append(&mut analyzer.analyze_pass3(prj, text, &path, &x.veryla));
                         let ret: Vec<_> = errors
                             .drain(0..)
                             .filter(|x| {
@@ -749,7 +749,7 @@ fn to_diag(err: miette::ErrReport, rope: &Rope) -> Diagnostic {
         range,
         Some(severity),
         code,
-        Some(String::from("veryl-ls")),
+        Some(String::from("veryla-ls")),
         message,
         None,
         None,
@@ -840,7 +840,7 @@ fn completion_operator(line: usize, column: usize, trigger: &str) -> Option<Comp
 fn get_member(symbol: &Symbol) -> Vec<CompletionItem> {
     let mut items = Vec::new();
     match &symbol.kind {
-        VerylSymbolKind::Modport(x) => {
+        VerylaSymbolKind::Modport(x) => {
             for member in &x.members {
                 let symbol = symbol_table::get(*member).unwrap();
                 let label = symbol.token.text.to_string();
@@ -868,7 +868,7 @@ fn get_member(symbol: &Symbol) -> Vec<CompletionItem> {
                 items.push(item);
             }
         }
-        VerylSymbolKind::Struct(x) => {
+        VerylaSymbolKind::Struct(x) => {
             for member in &x.members {
                 let symbol = symbol_table::get(*member).unwrap();
                 let label = symbol.token.text.to_string();
@@ -909,7 +909,7 @@ fn completion_member(url: &Url, line: usize, column: usize, text: &str) -> Vec<C
     if let Some(namespace) = current_namespace {
         if let Ok(symbol) = symbol_table::resolve((&vec![text], &namespace)) {
             match symbol.found.kind {
-                VerylSymbolKind::Port(x) => {
+                VerylaSymbolKind::Port(x) => {
                     if let Some(ref x) = x.r#type {
                         if let TypeKind::UserDefined(ref x) = x.kind {
                             if let Ok(symbol) = symbol_table::resolve((x, &namespace)) {
@@ -918,7 +918,7 @@ fn completion_member(url: &Url, line: usize, column: usize, text: &str) -> Vec<C
                         }
                     }
                 }
-                VerylSymbolKind::Variable(x) => {
+                VerylaSymbolKind::Variable(x) => {
                     if let TypeKind::UserDefined(ref x) = x.r#type.kind {
                         if let Ok(symbol) = symbol_table::resolve((x, &namespace)) {
                             items.append(&mut get_member(&symbol.found));
@@ -963,7 +963,7 @@ fn completion_symbol(
                 format!("{}::", symbol.namespace.paths[0])
             };
             let (new_text, kind) = match symbol.kind {
-                VerylSymbolKind::Module(ref x) => {
+                VerylaSymbolKind::Module(ref x) => {
                     let mut ports = String::new();
                     for port in &x.ports {
                         ports.push_str(&format!("{}, ", port.name()));
@@ -971,21 +971,21 @@ fn completion_symbol(
                     let text = format!("{}{} ({});", prefix, symbol.token.text, ports);
                     (text, Some(CompletionItemKind::CLASS))
                 }
-                VerylSymbolKind::Interface(_) => {
+                VerylaSymbolKind::Interface(_) => {
                     let text = format!("{}{} ();", prefix, symbol.token.text);
                     (text, Some(CompletionItemKind::INTERFACE))
                 }
-                VerylSymbolKind::Package(_) => {
+                VerylaSymbolKind::Package(_) => {
                     let text = format!("{}{}::", prefix, symbol.token.text);
                     (text, Some(CompletionItemKind::MODULE))
                 }
-                VerylSymbolKind::Port(_)
-                | VerylSymbolKind::Variable(_)
-                | VerylSymbolKind::Parameter(_) => {
+                VerylaSymbolKind::Port(_)
+                | VerylaSymbolKind::Variable(_)
+                | VerylaSymbolKind::Parameter(_) => {
                     let text = format!("{}{}", prefix, symbol.token.text);
                     (text, Some(CompletionItemKind::VARIABLE))
                 }
-                VerylSymbolKind::Function(_) | VerylSymbolKind::SystemFunction => {
+                VerylaSymbolKind::Function(_) | VerylaSymbolKind::SystemFunction => {
                     let text = format!("{}{}", prefix, symbol.token.text);
                     (text, Some(CompletionItemKind::FUNCTION))
                 }
@@ -1030,28 +1030,28 @@ fn current_namespace(url: &Url, line: usize, column: usize) -> Option<Namespace>
     let mut ret_func = None;
     for symbol in symbol_table::get_all() {
         match symbol.kind {
-            VerylSymbolKind::Module(x) => {
+            VerylaSymbolKind::Module(x) => {
                 if x.range.include(url, line as u32, column as u32) {
                     let mut namespace = symbol.namespace;
                     namespace.push(symbol.token.text);
                     ret = Some(namespace);
                 }
             }
-            VerylSymbolKind::Function(x) => {
+            VerylaSymbolKind::Function(x) => {
                 if x.range.include(url, line as u32, column as u32) {
                     let mut namespace = symbol.namespace;
                     namespace.push(symbol.token.text);
                     ret_func = Some(namespace);
                 }
             }
-            VerylSymbolKind::Interface(x) => {
+            VerylaSymbolKind::Interface(x) => {
                 if x.range.include(url, line as u32, column as u32) {
                     let mut namespace = symbol.namespace;
                     namespace.push(symbol.token.text);
                     ret = Some(namespace);
                 }
             }
-            VerylSymbolKind::Package(x) => {
+            VerylaSymbolKind::Package(x) => {
                 if x.range.include(url, line as u32, column as u32) {
                     let mut namespace = symbol.namespace;
                     namespace.push(symbol.token.text);

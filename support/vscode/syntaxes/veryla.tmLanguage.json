@@ -1,0 +1,99 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Veryla",
+	"fileTypes" : [
+		"veryla"
+	],
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#storages"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#identifiers"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.veryla",
+					"match": "\\b(if|if_reset|else|case|switch|default|for|in|step|repeat|inside|outside)\\b"
+				},
+				{
+					"name": "keyword.other.veryla",
+					"match": "\\b(module|interface|function|modport|package|param|local|power|power_posedge|power_negedge|reset|reset_async_high|reset_async_low|reset_sync_high|reset_sync_low|always_ff|always_comb|assign|return|break|var|inst|import|export|as|initial|final|pub|let|embed|include|unsafe|type|const|proto)\\b"
+				}
+			]
+		},
+		"storages": {
+			"patterns": [
+				{
+					"name": "storage.type.veryla",
+					"match": "\\b(enum|struct|logic|bit|u32|u64|i32|i64|f32|f64)\\b"
+				},
+				{
+					"name": "storage.modifier.veryla",
+					"match": "\\b(tri|signed|input|output|inout|ref)\\b"
+				}
+			]
+		},
+		"strings": {
+			"name": "string.quoted.double.veryla",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.veryla",
+					"match": "\\\\."
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"begin": "/\\*",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.veryla"
+						}
+					},
+					"end": "\\*/",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.veryla"
+						}
+					},
+					"name": "comment.block.veryla"
+				},
+				{
+					"begin": "//",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.veryla"
+						}
+					},
+					"end": "$\\n?",
+					"name": "comment.line.double-slash.veryla"
+				}
+			]
+		},
+		"identifiers": {
+			"patterns": [
+				{
+					"match": "\\b[a-zA-Z_][a-zA-Z0-9_$]*\\b",
+					"name": "variable.other.identifier.veryla"
+				}
+			]
+		}
+	},
+	"scopeName": "source.veryla"
+}

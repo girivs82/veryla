@@ -120,8 +120,8 @@ impl Git {
         tag: Option<&str>,
         branch: Option<&str>,
     ) -> Result<Self, MetadataError> {
-        std::env::set_var("GIT_COMMITTER_NAME", "veryl");
-        std::env::set_var("GIT_COMMITTER_EMAIL", "veryl");
+        std::env::set_var("GIT_COMMITTER_NAME", "veryla");
+        std::env::set_var("GIT_COMMITTER_EMAIL", "veryla");
 
         let repo = if path.exists() {
             git_repository::open(path)?

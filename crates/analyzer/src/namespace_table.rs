@@ -2,7 +2,7 @@ use crate::namespace::Namespace;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
-use veryl_parser::resource_table::{PathId, StrId, TokenId};
+use veryla_parser::resource_table::{PathId, StrId, TokenId};
 
 #[derive(Clone, Debug)]
 pub struct NamespaceTable {

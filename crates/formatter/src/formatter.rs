@@ -1,9 +1,9 @@
-use veryl_aligner::{align_kind, Aligner, Location};
-use veryl_metadata::{Format, Metadata};
-use veryl_parser::resource_table;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_token::{Token, VerylToken};
-use veryl_parser::veryl_walker::VerylWalker;
+use veryla_aligner::{align_kind, Aligner, Location};
+use veryla_metadata::{Format, Metadata};
+use veryla_parser::resource_table;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_token::{Token, VerylaToken};
+use veryla_parser::veryla_walker::VerylaWalker;
 
 #[cfg(target_os = "windows")]
 const NEWLINE: &str = "\r\n";
@@ -60,13 +60,13 @@ impl Formatter {
         }
     }
 
-    pub fn format(&mut self, input: &Veryl) {
+    pub fn format(&mut self, input: &Veryla) {
         self.mode = Mode::Align;
-        self.veryl(input);
+        self.veryla(input);
         self.aligner.finish_group();
         self.aligner.gather_additions();
         self.mode = Mode::Emit;
-        self.veryl(input);
+        self.veryla(input);
     }
 
     pub fn as_str(&self) -> &str {
@@ -207,7 +207,7 @@ impl Formatter {
         self.line = x.line + newlines_in_text;
     }
 
-    fn process_token(&mut self, x: &VerylToken, will_push: bool) {
+    fn process_token(&mut self, x: &VerylaToken, will_push: bool) {
         match self.mode {
             Mode::Emit => {
                 self.push_token(&x.token);
@@ -250,11 +250,11 @@ impl Formatter {
         }
     }
 
-    fn token(&mut self, x: &VerylToken) {
+    fn token(&mut self, x: &VerylaToken) {
         self.process_token(x, false)
     }
 
-    fn token_will_push(&mut self, x: &VerylToken) {
+    fn token_will_push(&mut self, x: &VerylaToken) {
         self.process_token(x, true)
     }
 
@@ -280,7 +280,7 @@ impl Formatter {
         }
     }
 
-    fn align_dummy_token(&mut self, kind: usize, token: &VerylToken) {
+    fn align_dummy_token(&mut self, kind: usize, token: &VerylaToken) {
         if self.mode == Mode::Align {
             self.aligner.aligns[kind].dummy_token(token);
         }
@@ -292,7 +292,7 @@ impl Formatter {
         }
     }
 
-    fn align_insert(&mut self, token: &VerylToken, width: usize) {
+    fn align_insert(&mut self, token: &VerylaToken, width: usize) {
         if self.mode == Mode::Align {
             let loc: Location = token.token.into();
             self.aligner
@@ -304,9 +304,9 @@ impl Formatter {
     }
 }
 
-impl VerylWalker for Formatter {
-    /// Semantic action for non-terminal 'VerylToken'
-    fn veryl_token(&mut self, arg: &VerylToken) {
+impl VerylaWalker for Formatter {
+    /// Semantic action for non-terminal 'VerylaToken'
+    fn veryla_token(&mut self, arg: &VerylaToken) {
         self.token(arg);
     }
 
@@ -813,7 +813,7 @@ impl VerylWalker for Formatter {
         self.space(1);
         if let Some(ref x) = arg.let_statement_opt {
             self.align_start(align_kind::CLOCK_DOMAIN);
-            self.clock_domain(&x.clock_domain);
+            self.power_domain(&x.power_domain);
             self.space(1);
             self.align_finish(align_kind::CLOCK_DOMAIN);
         } else {
@@ -1087,7 +1087,7 @@ impl VerylWalker for Formatter {
         self.space(1);
         if let Some(ref x) = arg.let_declaration_opt {
             self.align_start(align_kind::CLOCK_DOMAIN);
-            self.clock_domain(&x.clock_domain);
+            self.power_domain(&x.power_domain);
             self.space(1);
             self.align_finish(align_kind::CLOCK_DOMAIN);
         } else {
@@ -1114,7 +1114,7 @@ impl VerylWalker for Formatter {
         self.space(1);
         if let Some(ref x) = arg.var_declaration_opt {
             self.align_start(align_kind::CLOCK_DOMAIN);
-            self.clock_domain(&x.clock_domain);
+            self.power_domain(&x.power_domain);
             self.space(1);
             self.align_finish(align_kind::CLOCK_DOMAIN);
         } else {
@@ -1166,36 +1166,36 @@ impl VerylWalker for Formatter {
         self.semicolon(&arg.semicolon);
     }
 
-    /// Semantic action for non-terminal 'AlwaysFfDeclaration'
-    fn always_ff_declaration(&mut self, arg: &AlwaysFfDeclaration) {
-        self.always_ff(&arg.always_ff);
+    /// Semantic action for non-terminal 'SequenceDeclaration'
+    fn sequence_declaration(&mut self, arg: &SequenceDeclaration) {
+        self.sequence(&arg.sequence);
         self.space(1);
-        if let Some(ref x) = arg.always_ff_declaration_opt {
-            self.always_ff_event_list(&x.always_ff_event_list);
+        if let Some(ref x) = arg.sequence_declaration_opt {
+            self.sequence_event_list(&x.sequence_event_list);
         }
         self.statement_block(&arg.statement_block);
     }
 
-    /// Semantic action for non-terminal 'AlwaysFfEventList'
-    fn always_ff_event_list(&mut self, arg: &AlwaysFfEventList) {
+    /// Semantic action for non-terminal 'SequenceEventList'
+    fn sequence_event_list(&mut self, arg: &SequenceEventList) {
         self.l_paren(&arg.l_paren);
-        self.always_ff_clock(&arg.always_ff_clock);
-        if let Some(ref x) = arg.always_ff_event_list_opt {
+        self.sequence_power(&arg.sequence_power);
+        if let Some(ref x) = arg.sequence_event_list_opt {
             self.comma(&x.comma);
             self.space(1);
-            self.always_ff_reset(&x.always_ff_reset);
+            self.sequence_reset(&x.sequence_reset);
         }
         self.r_paren(&arg.r_paren);
         self.space(1);
     }
 
-    /// Semantic action for non-terminal 'AlwaysFfClock'
-    fn always_ff_clock(&mut self, arg: &AlwaysFfClock) {
+    /// Semantic action for non-terminal 'SequencePower'
+    fn sequence_power(&mut self, arg: &SequencePower) {
         self.hierarchical_identifier(&arg.hierarchical_identifier);
     }
 
-    /// Semantic action for non-terminal 'AlwaysFfReset'
-    fn always_ff_reset(&mut self, arg: &AlwaysFfReset) {
+    /// Semantic action for non-terminal 'SequenceReset'
+    fn sequence_reset(&mut self, arg: &SequenceReset) {
         self.hierarchical_identifier(&arg.hierarchical_identifier);
     }
 
@@ -1768,7 +1768,7 @@ impl VerylWalker for Formatter {
                 self.space(1);
                 if let Some(ref x) = x.port_type_concrete_opt {
                     self.align_start(align_kind::CLOCK_DOMAIN);
-                    self.clock_domain(&x.clock_domain);
+                    self.power_domain(&x.power_domain);
                     self.space(1);
                     self.align_finish(align_kind::CLOCK_DOMAIN);
                 } else {
@@ -1801,7 +1801,7 @@ impl VerylWalker for Formatter {
                 let x = x.port_type_abstract.as_ref();
                 if let Some(ref x) = x.port_type_abstract_opt {
                     self.align_start(align_kind::CLOCK_DOMAIN);
-                    self.clock_domain(&x.clock_domain);
+                    self.power_domain(&x.power_domain);
                     self.space(1);
                     self.align_finish(align_kind::CLOCK_DOMAIN);
                 } else {
@@ -2214,15 +2214,15 @@ impl VerylWalker for Formatter {
         }
     }
 
-    /// Semantic action for non-terminal 'Veryl'
-    fn veryl(&mut self, arg: &Veryl) {
+    /// Semantic action for non-terminal 'Veryla'
+    fn veryla(&mut self, arg: &Veryla) {
         self.in_start_token = true;
         self.start(&arg.start);
         self.in_start_token = false;
         if !arg.start.start_token.comments.is_empty() {
             self.newline();
         }
-        for (i, x) in arg.veryl_list.iter().enumerate() {
+        for (i, x) in arg.veryla_list.iter().enumerate() {
             if i != 0 {
                 self.newline();
             }

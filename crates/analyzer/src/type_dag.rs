@@ -4,7 +4,7 @@ use bimap::BiMap;
 use daggy::petgraph::visit::Dfs;
 use daggy::{petgraph::algo, Dag, Walker};
 use std::{cell::RefCell, collections::HashMap, collections::HashSet};
-use veryl_parser::veryl_token::Token;
+use veryla_parser::veryla_token::Token;
 
 #[derive(Clone, Default)]
 pub struct TypeDag {

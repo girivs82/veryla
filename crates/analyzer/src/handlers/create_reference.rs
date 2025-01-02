@@ -8,11 +8,11 @@ use crate::symbol_path::GenericSymbolPath;
 use crate::symbol_table::{self, ResolveError, ResolveErrorCause};
 use crate::type_dag::{self, Context, DagError};
 use std::collections::HashMap;
-use veryl_parser::resource_table;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_token::{is_anonymous_text, Token, TokenRange, TokenSource};
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_parser::resource_table;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_token::{is_anonymous_text, Token, TokenRange, TokenSource};
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 #[derive(Default)]
 pub struct CreateReference<'a> {
@@ -351,7 +351,7 @@ impl Handler for CreateReference<'_> {
     }
 }
 
-impl VerylGrammarTrait for CreateReference<'_> {
+impl VerylaGrammarTrait for CreateReference<'_> {
     fn hierarchical_identifier(&mut self, arg: &HierarchicalIdentifier) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             match symbol_table::resolve(arg) {
@@ -363,7 +363,7 @@ impl VerylGrammarTrait for CreateReference<'_> {
                 Err(err) => {
                     // hierarchical identifier is used for:
                     //  - LHS of assign declaratoin
-                    //  - identifier to specfy clock/reset in always_ff event list
+                    //  - identifier to specfy power/reset in sequence event list
                     // therefore, it should be known indentifer
                     // and we don't have to consider it is anonymous
 
@@ -654,10 +654,10 @@ impl VerylGrammarTrait for CreateReference<'_> {
         Ok(())
     }
 
-    fn veryl(&mut self, arg: &Veryl) -> Result<(), ParolError> {
+    fn veryla(&mut self, arg: &Veryla) -> Result<(), ParolError> {
         match self.point {
             HandlerPoint::Before => {
-                for x in &arg.veryl_list {
+                for x in &arg.veryla_list {
                     let items: Vec<DescriptionItem> = x.description_group.as_ref().into();
                     for item in items {
                         if let DescriptionItem::ImportDeclaration(x) = item {

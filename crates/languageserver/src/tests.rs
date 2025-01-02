@@ -116,11 +116,11 @@ fn build_did_open(text: &str) -> Request {
     let mut path = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     path.pop();
     path.pop();
-    path.push("test.veryl");
+    path.push("test.veryla");
     let uri = Url::from_file_path(path).unwrap();
     let text_document = TextDocumentItem {
         uri,
-        language_id: "veryl".to_string(),
+        language_id: "veryla".to_string(),
         version: 0,
         text: text.to_string(),
     };

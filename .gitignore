@@ -7,7 +7,7 @@ perf.data*
 /support/vscode/*.vsix
 /support/vscode/bin
 /support/highlightjs/dist/
-veryl_testcase.*
+veryla_testcase.*
 /dependencies/
 /book/po/messages.pot
 /book/po/*~
@@ -15,7 +15,7 @@ veryl_testcase.*
 /testcases/filelist/dependencies/
 /testcases/filelist/src/*.sv
 /testcases/filelist/*.f
-/testcases/filelist/Veryl.lock
+/testcases/filelist/Veryla.lock
 /crates/metadata/std/
-/crates/std/veryl/*.f
-/crates/std/veryl/target/
+/crates/std/veryla/*.f
+/crates/std/veryla/target/

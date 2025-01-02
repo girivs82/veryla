@@ -1,9 +1,9 @@
 use crate::analyzer_error::AnalyzerError;
 use crate::symbol::SymbolKind;
 use crate::symbol_table;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 pub struct CheckModport<'a> {
     pub errors: Vec<AnalyzerError>,
@@ -27,7 +27,7 @@ impl Handler for CheckModport<'_> {
     }
 }
 
-impl VerylGrammarTrait for CheckModport<'_> {
+impl VerylaGrammarTrait for CheckModport<'_> {
     fn modport_item(&mut self, arg: &ModportItem) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             if let Ok(symbol) = symbol_table::resolve(arg.identifier.as_ref()) {

@@ -1,13 +1,13 @@
 use crate::parser_error::ParserError;
 use crate::resource_table;
-use crate::veryl_grammar::VerylGrammar;
-use crate::veryl_grammar_trait::Veryl;
-use crate::veryl_parser::parse;
+use crate::veryla_grammar::VerylaGrammar;
+use crate::veryla_grammar_trait::Veryla;
+use crate::veryla_parser::parse;
 use std::path::Path;
 
 #[derive(Debug)]
 pub struct Parser {
-    pub veryl: Veryl,
+    pub veryla: Veryla,
 }
 
 impl Parser {
@@ -16,11 +16,11 @@ impl Parser {
         // Inserting PathId because it will not be inserted if input doesn't have token.
         let _ = resource_table::insert_path(file.as_ref());
 
-        let mut grammar = VerylGrammar::new();
+        let mut grammar = VerylaGrammar::new();
         parse(input, file, &mut grammar)?;
 
-        let veryl = grammar.veryl.unwrap();
+        let veryla = grammar.veryla.unwrap();
 
-        Ok(Parser { veryl })
+        Ok(Parser { veryla })
     }
 }

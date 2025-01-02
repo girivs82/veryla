@@ -6,9 +6,9 @@ use crate::symbol::Type as SymType;
 use crate::symbol::{Direction, SymbolKind, TypeKind};
 use crate::symbol_path::{SymbolPath, SymbolPathNamespace};
 use crate::symbol_table;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 pub struct CheckMsbLsb<'a> {
     pub errors: Vec<AnalyzerError>,
@@ -53,7 +53,7 @@ fn trace_type(r#type: &SymType, namespace: &Namespace) -> Vec<(SymType, Option<S
     ret
 }
 
-impl VerylGrammarTrait for CheckMsbLsb<'_> {
+impl VerylaGrammarTrait for CheckMsbLsb<'_> {
     fn lsb(&mut self, arg: &Lsb) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             if !(self.in_expression_identifier && self.in_select) {

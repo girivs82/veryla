@@ -1,5 +1,5 @@
-use crate::veryl_token::{Token, VerylToken};
-use crate::veryl_walker::VerylWalker;
+use crate::veryla_token::{Token, VerylaToken};
+use crate::veryla_walker::VerylaWalker;
 
 #[derive(Default)]
 pub struct LastToken {
@@ -16,9 +16,9 @@ impl LastToken {
     }
 }
 
-impl VerylWalker for LastToken {
-    /// Semantic action for non-terminal 'VerylToken'
-    fn veryl_token(&mut self, arg: &VerylToken) {
+impl VerylaWalker for LastToken {
+    /// Semantic action for non-terminal 'VerylaToken'
+    fn veryla_token(&mut self, arg: &VerylaToken) {
         self.token = Some(arg.token);
     }
 }

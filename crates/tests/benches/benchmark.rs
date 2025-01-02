@@ -9,10 +9,10 @@ use veryl_parser::Parser;
 mod perf;
 
 const EXCLUDES: [&str; 4] = [
-    r"25_dependency.veryl",
-    r"52_include.veryl",
-    r"67_cocotb.veryl",
-    r"68_std.veryl",
+    r"25_dependency.veryla",
+    r"52_include.veryla",
+    r"67_cocotb.veryla",
+    r"68_std.veryla",
 ];
 
 fn criterion_benchmark(c: &mut Criterion) {

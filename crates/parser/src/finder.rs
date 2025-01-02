@@ -1,6 +1,6 @@
-use crate::veryl_grammar_trait::*;
-use crate::veryl_token::{Token, VerylToken};
-use crate::veryl_walker::VerylWalker;
+use crate::veryla_grammar_trait::*;
+use crate::veryla_token::{Token, VerylaToken};
+use crate::veryla_walker::VerylaWalker;
 
 #[derive(Default)]
 pub struct Finder {
@@ -20,9 +20,9 @@ impl Finder {
     }
 }
 
-impl VerylWalker for Finder {
-    /// Semantic action for non-terminal 'VerylToken'
-    fn veryl_token(&mut self, arg: &VerylToken) {
+impl VerylaWalker for Finder {
+    /// Semantic action for non-terminal 'VerylaToken'
+    fn veryla_token(&mut self, arg: &VerylaToken) {
         if arg.token.line == self.line
             && arg.token.column <= self.column
             && self.column < arg.token.column + arg.token.length
@@ -141,14 +141,14 @@ impl VerylWalker for Finder {
         }
     }
 
-    /// Semantic action for non-terminal 'Veryl'
-    fn veryl(&mut self, arg: &Veryl) {
+    /// Semantic action for non-terminal 'Veryla'
+    fn veryla(&mut self, arg: &Veryla) {
         self.hit = false;
         self.lock_group = false;
         self.token_group.clear();
 
         self.start(&arg.start);
-        for x in &arg.veryl_list {
+        for x in &arg.veryla_list {
             self.description_group(&x.description_group);
         }
     }

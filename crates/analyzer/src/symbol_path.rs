@@ -4,9 +4,9 @@ use crate::symbol::{DocComment, GenericInstanceProperty, GenericMap, Symbol, Sym
 use crate::symbol_table;
 use std::cmp::Ordering;
 use std::fmt;
-use veryl_parser::resource_table::{self, StrId};
-use veryl_parser::veryl_grammar_trait as syntax_tree;
-use veryl_parser::veryl_token::{Token, TokenRange, TokenSource};
+use veryla_parser::resource_table::{self, StrId};
+use veryla_parser::veryla_grammar_trait as syntax_tree;
+use veryla_parser::veryla_token::{Token, TokenRange, TokenSource};
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct SymbolPath(pub Vec<StrId>);

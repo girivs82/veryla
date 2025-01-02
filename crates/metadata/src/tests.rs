@@ -6,7 +6,7 @@ use std::path::Path;
 use tempfile::TempDir;
 
 const GIT_IGNORE: &'static str = r#"
-Veryl.lock
+Veryla.lock
 "#;
 
 const TEST_TOML: &'static str = r#"
@@ -15,7 +15,7 @@ name = "test"
 version = "0.1.0"
 
 [build]
-clock_type = "posedge"
+power_type = "posedge"
 reset_type = "async_low"
 reset_low_suffix = "_n"
 target = {type = "source"}
@@ -93,10 +93,10 @@ fn create_metadata_multi() -> (Metadata, TempDir) {
 }
 
 fn create_project(root: &Path, name: &str, toml: &str, publish: bool) -> Metadata {
-    std::env::set_var("GIT_AUTHOR_NAME", "veryl");
-    std::env::set_var("GIT_AUTHOR_EMAIL", "veryl");
-    std::env::set_var("GIT_COMMITTER_NAME", "veryl");
-    std::env::set_var("GIT_COMMITTER_EMAIL", "veryl");
+    std::env::set_var("GIT_AUTHOR_NAME", "veryla");
+    std::env::set_var("GIT_AUTHOR_EMAIL", "veryla");
+    std::env::set_var("GIT_COMMITTER_NAME", "veryla");
+    std::env::set_var("GIT_COMMITTER_EMAIL", "veryla");
 
     let path = root.join(name);
     fs::create_dir(&path).unwrap();
@@ -111,7 +111,7 @@ fn create_project(root: &Path, name: &str, toml: &str, publish: bool) -> Metadat
     let git = Git::init(&path).unwrap();
     git.add(&toml_path).unwrap();
     git.add(&git_ignore_path).unwrap();
-    git.commit(&"Add Veryl.toml").unwrap();
+    git.commit(&"Add Veryla.toml").unwrap();
     let mut metadata = Metadata::load(&toml_path).unwrap();
     if publish {
         metadata.publish().unwrap();
@@ -130,12 +130,12 @@ fn check_toml() {
     let metadata: Metadata = toml::from_str(TEST_TOML).unwrap();
     assert_eq!(metadata.project.name, "test");
     assert_eq!(metadata.project.version, Version::parse("0.1.0").unwrap());
-    assert_eq!(metadata.build.clock_type, ClockType::PosEdge);
+    assert_eq!(metadata.build.power_type, PowerType::PosEdge);
     assert_eq!(metadata.build.reset_type, ResetType::AsyncLow);
-    assert!(metadata.build.clock_posedge_prefix.is_none());
-    assert!(metadata.build.clock_posedge_suffix.is_none());
-    assert!(metadata.build.clock_negedge_prefix.is_none());
-    assert!(metadata.build.clock_negedge_suffix.is_none());
+    assert!(metadata.build.power_posedge_prefix.is_none());
+    assert!(metadata.build.power_posedge_suffix.is_none());
+    assert!(metadata.build.power_negedge_prefix.is_none());
+    assert!(metadata.build.power_negedge_suffix.is_none());
     assert!(metadata.build.reset_high_prefix.is_none());
     assert!(metadata.build.reset_high_suffix.is_none());
     assert!(metadata.build.reset_low_prefix.is_none());

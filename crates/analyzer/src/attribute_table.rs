@@ -1,7 +1,7 @@
 use crate::attribute::Attribute;
 use crate::range_table::RangeTable;
 use std::cell::RefCell;
-use veryl_parser::veryl_token::{Token, TokenRange};
+use veryla_parser::veryla_token::{Token, TokenRange};
 
 thread_local!(static ATTRIBUTE_TABLE: RefCell<RangeTable<Attribute>> = RefCell::new(RangeTable::default()));
 

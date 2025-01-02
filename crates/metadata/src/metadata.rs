@@ -22,7 +22,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use url::Url;
-use veryl_path::PathSet;
+use veryla_path::PathSet;
 
 #[derive(Clone, Copy, Debug)]
 pub enum BumpKind {
@@ -90,7 +90,7 @@ impl Metadata {
 
     pub fn search_from<T: AsRef<Path>>(from: T) -> Result<PathBuf, MetadataError> {
         for path in from.as_ref().ancestors() {
-            let path = path.join("Veryl.toml");
+            let path = path.join("Veryla.toml");
             if path.is_file() {
                 return Ok(path);
             }
@@ -104,8 +104,8 @@ impl Metadata {
         let text = fs::read_to_string(&path)?;
         let mut metadata: Metadata = Self::from_str(&text)?;
         metadata.metadata_path.clone_from(&path);
-        metadata.pubfile_path = path.with_file_name("Veryl.pub");
-        metadata.lockfile_path = path.with_file_name("Veryl.lock");
+        metadata.pubfile_path = path.with_file_name("Veryla.pub");
+        metadata.lockfile_path = path.with_file_name("Veryla.lock");
         metadata.check()?;
 
         if metadata.pubfile_path.exists() {
@@ -243,7 +243,7 @@ impl Metadata {
         let base = self.project_path();
 
         let src_files = if files.is_empty() {
-            veryl_path::gather_files_with_extension(&base, "veryl", symlink)?
+            veryla_path::gather_files_with_extension(&base, "veryla", symlink)?
         } else {
             let mut ret = Vec::new();
             for file in files {
@@ -288,8 +288,8 @@ impl Metadata {
         }
 
         if !self.build.exclude_std {
-            veryl_std::expand()?;
-            ret.append(&mut veryl_std::paths(&base_dst)?);
+            veryla_std::expand()?;
+            ret.append(&mut veryla_std::paths(&base_dst)?);
         }
 
         self.update_lockfile()?;

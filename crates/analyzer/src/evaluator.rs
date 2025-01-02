@@ -1,14 +1,14 @@
 use crate::symbol::{Type, TypeKind};
 use crate::symbol_table::{self, ResolveError, ResolveResult};
-use veryl_parser::veryl_grammar_trait::*;
+use veryla_parser::veryla_grammar_trait::*;
 
 #[derive(Clone, Copy, Debug)]
 pub enum Evaluated {
     Fixed { width: usize, value: isize },
     Variable { width: usize },
-    Clock,
-    ClockPosedge,
-    ClockNegedge,
+    Power,
+    PowerPosedge,
+    PowerNegedge,
     Reset,
     ResetAsyncHigh,
     ResetAsyncLow,
@@ -24,10 +24,10 @@ impl Evaluated {
         matches!(self, Evaluated::Fixed { .. } | Evaluated::UnknownStatic)
     }
 
-    pub fn is_clock(&self) -> bool {
+    pub fn is_power(&self) -> bool {
         matches!(
             self,
-            Evaluated::Clock | Evaluated::ClockPosedge | Evaluated::ClockNegedge
+            Evaluated::Power | Evaluated::PowerPosedge | Evaluated::PowerNegedge
         )
     }
 
@@ -614,9 +614,9 @@ impl Evaluator {
         let ret = self.expression12(&arg.expression12);
         if let Some(x) = &arg.expression11_opt {
             match x.casting_type.as_ref() {
-                CastingType::Clock(_) => Evaluated::Clock,
-                CastingType::ClockPosedge(_) => Evaluated::ClockPosedge,
-                CastingType::ClockNegedge(_) => Evaluated::ClockNegedge,
+                CastingType::Power(_) => Evaluated::Power,
+                CastingType::PowerPosedge(_) => Evaluated::PowerPosedge,
+                CastingType::PowerNegedge(_) => Evaluated::PowerNegedge,
                 CastingType::Reset(_) => Evaluated::Reset,
                 CastingType::ResetAsyncHigh(_) => Evaluated::ResetAsyncHigh,
                 CastingType::ResetAsyncLow(_) => Evaluated::ResetAsyncLow,

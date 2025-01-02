@@ -1,7 +1,7 @@
 use crate::Emitter;
 use std::path::PathBuf;
 use veryl_analyzer::Analyzer;
-use veryl_metadata::{ClockType, Metadata, ResetType};
+use veryl_metadata::{PowerType, Metadata, ResetType};
 use veryl_parser::Parser;
 
 #[track_caller]
@@ -15,7 +15,7 @@ fn emit(metadata: &Metadata, code: &str) -> String {
 
     let mut emitter = Emitter::new(
         metadata,
-        &PathBuf::from("test.veryl"),
+        &PathBuf::from("test.veryla"),
         &PathBuf::from("test.sv"),
         &PathBuf::from("test.sv.map"),
     );
@@ -24,17 +24,17 @@ fn emit(metadata: &Metadata, code: &str) -> String {
 }
 
 #[test]
-fn prefix_suffix_clock_posedge_reset_high() {
+fn prefix_suffix_power_posedge_reset_high() {
     let code = r#"module ModuleA (
-    clk: input clock,
+    pwr: input power,
     rst: input reset,
 ) {
     inst u: ModuleB (
-        clk,
+        pwr,
         rst,
     );
 
-    let _a: logic = clk;
+    let _a: logic = pwr;
     let _b: logic = rst;
 
     var _c: logic;
@@ -48,27 +48,27 @@ fn prefix_suffix_clock_posedge_reset_high() {
 }
 
 module ModuleB (
-    clk: input clock,
+    pwr: input power,
     rst: input reset,
 ) {}
 "#;
 
     let expect = r#"module prj_ModuleA (
-    input logic clk_pos_clk_clk_pos  ,
+    input logic pwr_pos_pwr_pwr_pos  ,
     input logic rst_high_rst_rst_high
 );
     prj_ModuleB u (
-        .clk_pos_clk_clk_pos   (clk_pos_clk_clk_pos  ),
+        .pwr_pos_pwr_pwr_pos   (pwr_pos_pwr_pwr_pos  ),
         .rst_high_rst_rst_high (rst_high_rst_rst_high)
     );
 
     logic _a;
-    always_comb _a = clk_pos_clk_clk_pos;
+    always_comb _a = pwr_pos_pwr_pwr_pos;
     logic _b;
     always_comb _b = rst_high_rst_rst_high;
 
     logic _c;
-    always_ff @ (posedge clk_pos_clk_clk_pos, posedge rst_high_rst_rst_high) begin
+    always_ff @ (posedge pwr_pos_pwr_pwr_pos, posedge rst_high_rst_rst_high) begin
         if (rst_high_rst_rst_high) begin
             _c <= 0;
         end else begin
@@ -78,7 +78,7 @@ module ModuleB (
 endmodule
 
 module prj_ModuleB (
-    input logic clk_pos_clk_clk_pos  ,
+    input logic pwr_pos_pwr_pwr_pos  ,
     input logic rst_high_rst_rst_high
 );
 endmodule
@@ -88,10 +88,10 @@ endmodule
     let mut metadata: Metadata =
         toml::from_str(&Metadata::create_default_toml("prj").unwrap()).unwrap();
 
-    metadata.build.clock_type = ClockType::PosEdge;
+    metadata.build.power_type = PowerType::PosEdge;
     metadata.build.reset_type = ResetType::AsyncHigh;
-    metadata.build.clock_posedge_prefix = Some("clk_pos_".to_string());
-    metadata.build.clock_posedge_suffix = Some("_clk_pos".to_string());
+    metadata.build.power_posedge_prefix = Some("pwr_pos_".to_string());
+    metadata.build.power_posedge_suffix = Some("_pwr_pos".to_string());
     metadata.build.reset_high_prefix = Some("rst_high_".to_string());
     metadata.build.reset_high_suffix = Some("_rst_high".to_string());
 
@@ -105,17 +105,17 @@ endmodule
 }
 
 #[test]
-fn prefix_suffix_clock_negedge_reset_low() {
+fn prefix_suffix_power_negedge_reset_low() {
     let code = r#"module ModuleA (
-    clk: input clock,
+    pwr: input power,
     rst: input reset,
 ) {
     inst u: ModuleB (
-        clk,
+        pwr,
         rst,
     );
 
-    let _a: logic = clk;
+    let _a: logic = pwr;
     let _b: logic = rst;
 
     var _c: logic;
@@ -129,27 +129,27 @@ fn prefix_suffix_clock_negedge_reset_low() {
 }
 
 module ModuleB (
-    clk: input clock,
+    pwr: input power,
     rst: input reset,
 ) {}
 "#;
 
     let expect = r#"module prj_ModuleA (
-    input logic clk_neg_clk_clk_neg,
+    input logic pwr_neg_pwr_pwr_neg,
     input logic rst_low_rst_rst_low
 );
     prj_ModuleB u (
-        .clk_neg_clk_clk_neg (clk_neg_clk_clk_neg),
+        .pwr_neg_pwr_pwr_neg (pwr_neg_pwr_pwr_neg),
         .rst_low_rst_rst_low (rst_low_rst_rst_low)
     );
 
     logic _a;
-    always_comb _a = clk_neg_clk_clk_neg;
+    always_comb _a = pwr_neg_pwr_pwr_neg;
     logic _b;
     always_comb _b = rst_low_rst_rst_low;
 
     logic _c;
-    always_ff @ (negedge clk_neg_clk_clk_neg) begin
+    always_ff @ (negedge pwr_neg_pwr_pwr_neg) begin
         if (!rst_low_rst_rst_low) begin
             _c <= 0;
         end else begin
@@ -159,7 +159,7 @@ module ModuleB (
 endmodule
 
 module prj_ModuleB (
-    input logic clk_neg_clk_clk_neg,
+    input logic pwr_neg_pwr_pwr_neg,
     input logic rst_low_rst_rst_low
 );
 endmodule
@@ -169,10 +169,10 @@ endmodule
     let mut metadata: Metadata =
         toml::from_str(&Metadata::create_default_toml("prj").unwrap()).unwrap();
 
-    metadata.build.clock_type = ClockType::NegEdge;
+    metadata.build.power_type = PowerType::NegEdge;
     metadata.build.reset_type = ResetType::SyncLow;
-    metadata.build.clock_negedge_prefix = Some("clk_neg_".to_string());
-    metadata.build.clock_negedge_suffix = Some("_clk_neg".to_string());
+    metadata.build.power_negedge_prefix = Some("pwr_neg_".to_string());
+    metadata.build.power_negedge_suffix = Some("_pwr_neg".to_string());
     metadata.build.reset_low_prefix = Some("rst_low_".to_string());
     metadata.build.reset_low_suffix = Some("_rst_low".to_string());
 
@@ -471,7 +471,7 @@ endmodule
 #[test]
 fn emit_cond_type() {
     let code = r#"module ModuleA (
-    i_clk: input clock,
+    i_pwr: input power,
     i_rst: input reset,
 ) {
     let x: logic = 1;
@@ -552,7 +552,7 @@ fn emit_cond_type() {
 "#;
 
     let expect = r#"module prj_ModuleA (
-    input logic i_clk,
+    input logic i_pwr,
     input logic i_rst
 );
     logic x;
@@ -606,7 +606,7 @@ fn emit_cond_type() {
         end
     end
 
-    always_ff @ (posedge i_clk, negedge i_rst) begin
+    always_ff @ (posedge i_pwr, negedge i_rst) begin
 
         unique if (!i_rst) begin
             g <= 1;
@@ -614,7 +614,7 @@ fn emit_cond_type() {
             g <= 1;
         end
     end
-    always_ff @ (posedge i_clk, negedge i_rst) begin
+    always_ff @ (posedge i_pwr, negedge i_rst) begin
 
         unique0 if (!i_rst) begin
             h <= 1;
@@ -622,7 +622,7 @@ fn emit_cond_type() {
             h <= 1;
         end
     end
-    always_ff @ (posedge i_clk, negedge i_rst) begin
+    always_ff @ (posedge i_pwr, negedge i_rst) begin
 
         priority if (!i_rst) begin
             i <= 1;

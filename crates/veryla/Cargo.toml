@@ -1,0 +1,50 @@
+[package]
+name                  = "veryla"
+version               = "0.13.3"
+authors.workspace     = true
+repository.workspace  = true
+keywords.workspace    = true
+categories.workspace  = true
+license.workspace     = true
+readme.workspace      = true
+description.workspace = true
+edition               = "2021"
+
+[package.metadata.release]
+tag = true
+tag-name = "v{{version}}"
+pre-release-replacements = [
+    {file="../../support/vscode/package.json", search = "\"version\": \"[0-9\\.]+\",", replace = "\"version\": \"{{version}}\"," },
+]
+pre-release-hook = ["../../support/scripts/tag_submodule.sh", "{{version}}"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anstyle         = "1.0"
+clap            = {workspace = true}
+clap_complete   = "4.5"
+console         = "0.15.10"
+fern            = "0.7.0"
+futures         = {workspace = true}
+handlebars      = "6.2"
+log             = {workspace = true}
+once_cell       = {workspace = true}
+mdbook          = {workspace = true}
+miette          = {workspace = true}
+pulldown-cmark  = {workspace = true}
+regex           = {workspace = true}
+serde           = {workspace = true}
+serde_json      = {workspace = true}
+similar         = {workspace = true}
+tempfile        = {workspace = true}
+thiserror       = {workspace = true}
+tokio           = {workspace = true}
+tokio-util      = "0.7.13"
+veryla-analyzer  = {version = "0.13.3", path = "../analyzer"}
+veryla-emitter   = {version = "0.13.3", path = "../emitter"}
+veryla-formatter = {version = "0.13.3", path = "../formatter"}
+veryla-metadata  = {version = "0.13.3", path = "../metadata"}
+veryla-parser    = {version = "0.13.3", path = "../parser"}
+veryla-path      = {version = "0.13.3", path = "../path"}
+veryla-sourcemap = {version = "0.13.3", path = "../sourcemap"}

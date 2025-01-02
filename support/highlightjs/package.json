@@ -1,17 +1,17 @@
 {
-  "name": "highlightjs-veryl",
+  "name": "highlightjs-veryla",
   "version": "0.0.1",
   "description": "Veryl syntax highlighting plugin for highlight.js",
-  "main": "src/lauguages/veryl.js",
+  "main": "src/lauguages/veryla.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/veryl-lang/veryl.git"
+    "url": "git+https://github.com/girivs82/veryl-a.git"
   },
   "keywords": [
-    "veryl",
+    "veryla",
     "hljs",
     "highlightjs",
     "highlight.js"
@@ -21,5 +21,5 @@
   "bugs": {
     "url": "https://github.com/veryl-lang/veryl/issues"
   },
-  "homepage": "https://github.com/veryl-lang/veryl"
+  "homepage": "https://github.com/girivs82/veryla"
 }

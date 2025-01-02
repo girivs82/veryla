@@ -14,32 +14,32 @@ fn main() {
         }
     }
 
-    let par_file = PathBuf::from("veryl.par");
-    let exp_file = PathBuf::from("src/generated/veryl-exp.par");
+    let par_file = PathBuf::from("veryla.par");
+    let exp_file = PathBuf::from("src/generated/veryla-exp.par");
 
     let par_modified = fs::metadata(par_file).unwrap().modified().unwrap();
     let exp_modified = fs::metadata(exp_file).unwrap().modified().unwrap();
 
     if par_modified > exp_modified {
-        println!("cargo:warning=veryl.par was changed");
+        println!("cargo:warning=veryla.par was changed");
 
         let now = Instant::now();
 
         // CLI equivalent is:
-        // parol -f ./veryl.par -e ./veryl-exp.par -p ./src/veryl_parser.rs -a ./src/veryl_grammar_trait.rs -t VerylGrammar -m veryl_grammar -g
+        // parol -f ./veryla.par -e ./veryla-exp.par -p ./src/veryla_parser -a ./src/veryla_grammar_trait -t VerylGrammar -m veryla_grammar -g
         if let Err(err) = Builder::with_explicit_output_dir("src/generated")
-            .grammar_file("veryl.par")
-            .expanded_grammar_output_file("veryl-exp.par")
-            .parser_output_file("veryl_parser.rs")
-            .actions_output_file("veryl_grammar_trait.rs")
+            .grammar_file("veryla.par")
+            .expanded_grammar_output_file("veryla-exp.par")
+            .parser_output_file("veryla_parser.rs")
+            .actions_output_file("veryla_grammar_trait.rs")
             .enable_auto_generation()
-            .user_type_name("VerylGrammar")
-            .user_trait_module_name("veryl_grammar")
+            .user_type_name("VerylaGrammar")
+            .user_trait_module_name("veryla_grammar")
             .trim_parse_tree()
             .generate_parser()
         {
             {
-                ParolErrorReporter::report_error(&err, "veryl.par").unwrap_or_default();
+                ParolErrorReporter::report_error(&err, "veryla.par").unwrap_or_default();
                 process::exit(1);
             }
         }

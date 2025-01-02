@@ -19,7 +19,7 @@ pub struct PathSet {
 }
 
 pub fn cache_path() -> PathBuf {
-    let project_dir = ProjectDirs::from("org", "veryl-lang", "veryl").unwrap();
+    let project_dir = ProjectDirs::from("org", "veryla-lang", "veryla").unwrap();
     project_dir.cache_dir().to_path_buf()
 }
 
@@ -36,7 +36,7 @@ pub fn gather_files_with_extension<T: AsRef<Path>>(
     {
         if entry.file_type().is_file() {
             if let Some(x) = entry.path().file_name() {
-                if x == "Veryl.toml" {
+                if x == "Veryla.toml" {
                     let prj_dir = entry.path().parent().unwrap();
                     if prj_dir != base_dir.as_ref() {
                         debug!("Found inner project ({})", prj_dir.to_string_lossy());

@@ -1,10 +1,10 @@
-VERSION = $(patsubst "%",%, $(word 3, $(shell grep version ./crates/veryl/Cargo.toml)))
+VERSION = $(patsubst "%",%, $(word 3, $(shell grep version ./crates/veryla/Cargo.toml)))
 BUILD_TIME = $(shell date +"%Y/%m/%d %H:%M:%S")
 GIT_REVISION = $(shell git log -1 --format="%h")
 RUST_VERSION = $(word 2, $(shell rustc -V))
 LONG_VERSION = "$(VERSION) ( rev: $(GIT_REVISION), rustc: $(RUST_VERSION), build at: $(BUILD_TIME) )"
-ZIP_NAME = veryl
-BIN_NAMES = veryl veryl-ls
+ZIP_NAME = veryla
+BIN_NAMES = veryla veryla-ls
 
 export LONG_VERSION
 
@@ -55,11 +55,11 @@ watch:
 	cargo watch -i crates/parser/src/generated -x test -x bench
 
 install:
-	verylup install local
+	verylaup install local
 	cargo install --path crates/mdbook
 
 gen_sv:
-	cargo run --bin veryl -- build
+	cargo run --bin veryla -- build
 
 flamegraph:
 	cargo bench --bench benchmark -- --profile-time=5

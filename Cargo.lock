@@ -2832,7 +2832,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mdbook-veryl"
+name = "mdbook-veryla"
 version = "0.13.3"
 dependencies = [
  "anyhow",
@@ -2845,10 +2845,10 @@ dependencies = [
  "serde_json",
  "similar",
  "toml 0.8.19",
- "veryl-analyzer",
- "veryl-formatter",
- "veryl-metadata",
- "veryl-parser",
+ "veryla-analyzer",
+ "veryla-formatter",
+ "veryla-metadata",
+ "veryla-parser",
 ]
 
 [[package]]
@@ -4910,7 +4910,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
-name = "veryl"
+name = "veryla"
 version = "0.13.3"
 dependencies = [
  "anstyle",
@@ -4933,24 +4933,24 @@ dependencies = [
  "thiserror 2.0.9",
  "tokio",
  "tokio-util",
- "veryl-analyzer",
- "veryl-emitter",
- "veryl-formatter",
- "veryl-metadata",
- "veryl-parser",
- "veryl-path",
- "veryl-sourcemap",
+ "veryla-analyzer",
+ "veryla-emitter",
+ "veryla-formatter",
+ "veryla-metadata",
+ "veryla-parser",
+ "veryla-path",
+ "veryla-sourcemap",
 ]
 
 [[package]]
-name = "veryl-aligner"
+name = "veryla-aligner"
 version = "0.13.3"
 dependencies = [
- "veryl-parser",
+ "veryla-parser",
 ]
 
 [[package]]
-name = "veryl-analyzer"
+name = "veryla-analyzer"
 version = "0.13.3"
 dependencies = [
  "bimap",
@@ -4960,35 +4960,35 @@ dependencies = [
  "strnum_bitwidth",
  "thiserror 2.0.9",
  "toml 0.8.19",
- "veryl-metadata",
- "veryl-parser",
+ "veryla-metadata",
+ "veryla-parser",
 ]
 
 [[package]]
-name = "veryl-emitter"
+name = "veryla-emitter"
 version = "0.13.3"
 dependencies = [
  "serde",
  "strnum_bitwidth",
  "toml 0.8.19",
- "veryl-aligner",
- "veryl-analyzer",
- "veryl-metadata",
- "veryl-parser",
- "veryl-sourcemap",
+ "veryla-aligner",
+ "veryla-analyzer",
+ "veryla-metadata",
+ "veryla-parser",
+ "veryla-sourcemap",
 ]
 
 [[package]]
-name = "veryl-formatter"
+name = "veryla-formatter"
 version = "0.13.3"
 dependencies = [
- "veryl-aligner",
- "veryl-metadata",
- "veryl-parser",
+ "veryla-aligner",
+ "veryla-metadata",
+ "veryla-parser",
 ]
 
 [[package]]
-name = "veryl-ls"
+name = "veryla-ls"
 version = "0.13.3"
 dependencies = [
  "async-channel",
@@ -5000,15 +5000,15 @@ dependencies = [
  "serde_json",
  "tokio",
  "tower-lsp",
- "veryl-analyzer",
- "veryl-formatter",
- "veryl-metadata",
- "veryl-parser",
- "veryl-path",
+ "veryla-analyzer",
+ "veryla-formatter",
+ "veryla-metadata",
+ "veryla-parser",
+ "veryla-path",
 ]
 
 [[package]]
-name = "veryl-metadata"
+name = "veryla-metadata"
 version = "0.13.3"
 dependencies = [
  "git-repository",
@@ -5025,13 +5025,13 @@ dependencies = [
  "toml 0.8.19",
  "url",
  "uuid",
- "veryl-parser",
- "veryl-path",
- "veryl-std",
+ "veryla-parser",
+ "veryla-path",
+ "veryla-std",
 ]
 
 [[package]]
-name = "veryl-parser"
+name = "veryla-parser"
 version = "0.13.3"
 dependencies = [
  "anyhow",
@@ -5046,7 +5046,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "veryl-path"
+name = "veryla-path"
 version = "0.13.3"
 dependencies = [
  "directories",
@@ -5058,7 +5058,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "veryl-sourcemap"
+name = "veryla-sourcemap"
 version = "0.13.3"
 dependencies = [
  "miette",
@@ -5068,29 +5068,29 @@ dependencies = [
 ]
 
 [[package]]
-name = "veryl-std"
+name = "veryla-std"
 version = "0.13.3"
 dependencies = [
  "merkle_hash",
  "miette",
  "rust-embed",
  "thiserror 2.0.9",
- "veryl-path",
+ "veryla-path",
 ]
 
 [[package]]
-name = "veryl-tests"
+name = "veryla-tests"
 version = "0.1.0"
 dependencies = [
  "codspeed-criterion-compat",
  "pprof",
- "veryl",
- "veryl-analyzer",
- "veryl-emitter",
- "veryl-formatter",
- "veryl-metadata",
- "veryl-parser",
- "veryl-path",
+ "veryla",
+ "veryla-analyzer",
+ "veryla-emitter",
+ "veryla-formatter",
+ "veryla-metadata",
+ "veryla-parser",
+ "veryla-path",
  "walkdir",
 ]
 

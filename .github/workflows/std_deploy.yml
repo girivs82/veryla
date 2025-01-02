@@ -14,16 +14,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - name: Setup veryl
-        run:  cargo install --path crates/veryl
+      - name: Setup veryla
+        run:  cargo install --path crates/veryla
       - name: Build doc
-        run: veryl doc
-        working-directory: crates/std/veryl
+        run: veryla doc
+        working-directory: crates/std/veryla
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: std
-          path: crates/std/veryl/target/doc/
+          path: crates/std/veryla/target/doc/
 
   deploy:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -43,7 +43,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          cname: std.veryl-lang.org
+          cname: std.veryla-lang.org
 
   deploy-nightly:
     if: ${{ ! startsWith(github.ref, 'refs/tags/v') }}
@@ -63,5 +63,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          cname: std.veryl-lang.org
+          cname: std.veryla-lang.org
           destination_dir: nightly

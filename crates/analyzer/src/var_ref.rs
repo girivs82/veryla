@@ -6,10 +6,10 @@ use miette::Result;
 use std::convert::{From, TryFrom};
 use std::fmt;
 use std::ops::RangeInclusive;
-use veryl_parser::veryl_grammar_trait::{
+use veryla_parser::veryla_grammar_trait::{
     Expression, ExpressionIdentifier, HierarchicalIdentifier, Identifier, Select, SelectOperator,
 };
-use veryl_parser::veryl_token::Token;
+use veryla_parser::veryla_token::Token;
 
 #[derive(Clone, Debug)]
 pub struct VarRef {
@@ -651,7 +651,7 @@ impl AssignPositionTree {
         }
     }
 
-    pub fn check_always_ff_missing_reset(&self) -> Option<Token> {
+    pub fn check_sequence_missing_reset(&self) -> Option<Token> {
         if let Some(AssignPositionType::StatementBranch {
             ref r#type,
             ref token,
@@ -674,7 +674,7 @@ impl AssignPositionTree {
         }
 
         for child in &self.children {
-            let ret = child.check_always_ff_missing_reset();
+            let ret = child.check_sequence_missing_reset();
             if ret.is_some() {
                 return ret;
             }

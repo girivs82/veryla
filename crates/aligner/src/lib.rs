@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use veryl_parser::veryl_token::{Token, VerylToken};
+use veryla_parser::veryla_token::{Token, VerylaToken};
 
 #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
 pub struct Location {
@@ -72,7 +72,7 @@ impl Align {
         self.width = 0;
     }
 
-    fn token(&mut self, x: &VerylToken) {
+    fn token(&mut self, x: &VerylaToken) {
         if self.enable {
             self.width += x.token.length;
             let loc: Location = x.token.into();
@@ -87,7 +87,7 @@ impl Align {
         }
     }
 
-    pub fn dummy_token(&mut self, x: &VerylToken) {
+    pub fn dummy_token(&mut self, x: &VerylaToken) {
         if self.enable {
             self.width += 0; // 0 length token
             let loc: Location = x.token.into();
@@ -95,7 +95,7 @@ impl Align {
         }
     }
 
-    pub fn duplicated_token(&mut self, x: &VerylToken, i: usize) {
+    pub fn duplicated_token(&mut self, x: &VerylaToken, i: usize) {
         if self.enable {
             self.width += x.token.length;
             let mut loc: Location = x.token.into();
@@ -134,7 +134,7 @@ impl Aligner {
         Default::default()
     }
 
-    pub fn token(&mut self, x: &VerylToken) {
+    pub fn token(&mut self, x: &VerylaToken) {
         for i in 0..self.aligns.len() {
             self.aligns[i].token(x);
         }

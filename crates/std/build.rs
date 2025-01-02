@@ -4,7 +4,7 @@ use std::fs;
 use std::path::Path;
 
 fn main() {
-    let tree = MerkleTree::builder("./veryl/src")
+    let tree = MerkleTree::builder("./veryla/src")
         .algorithm(Algorithm::Blake3)
         .hash_names(true)
         .build()
@@ -24,5 +24,5 @@ fn main() {
         ),
     )
     .unwrap();
-    println!("cargo::rerun-if-changed=./veryl/src");
+    println!("cargo::rerun-if-changed=./veryla/src");
 }

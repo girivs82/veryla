@@ -1,7 +1,7 @@
 use crate::r#unsafe::Unsafe;
 use crate::range_table::RangeTable;
 use std::cell::RefCell;
-use veryl_parser::veryl_token::{Token, TokenRange};
+use veryla_parser::veryla_token::{Token, TokenRange};
 
 thread_local!(static UNSAFE_TABLE: RefCell<RangeTable<Unsafe>> = RefCell::new(RangeTable::default()));
 

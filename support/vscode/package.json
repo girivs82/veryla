@@ -1,13 +1,13 @@
 {
-  "name": "vscode-veryl",
-  "displayName": "Veryl",
-  "description": "Veryl extension for Visual Studio Code",
+  "name": "vscode-veryla",
+  "displayName": "Veryla",
+  "description": "Veryla extension for Visual Studio Code",
   "version": "0.13.3",
-  "publisher": "dalance",
-  "icon": "veryl_icon.png",
+  "publisher": "girivs82",
+  "icon": "veryla_icon.png",
   "galleryBanner": {
-      "color": "#ffffff",
-      "themr": "light"
+    "color": "#ffffff",
+    "themr": "light"
   },
   "engines": {
     "vscode": "^1.61.0"
@@ -15,58 +15,58 @@
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
     "type": "git",
-    "url": "https://github.com/veryl-lang/veryl.git"
+    "url": "https://github.com/girivs82/veryl-a.git"
   },
   "categories": [
     "Programming Languages"
   ],
   "activationEvents": [
-    "onLanguage:veryl",
-    "workspaceContains:*/Veryl.toml"
+    "onLanguage:veryla",
+    "workspaceContains:*/Veryla.toml"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "vscode-veryl.restartServer",
+        "command": "vscode-veryla.restartServer",
         "title": "Restart language server",
-        "category": "vscode-veryl"
+        "category": "vscode-veryla"
       }
     ],
     "configuration": [
       {
-        "title": "Veryl Language Server",
+        "title": "Veryla Language Server",
         "properties": {
-          "vscode-veryl.verylLsBinary.path": {
+          "vscode-veryla.verylaLsBinary.path": {
             "scope": "window",
             "type": [
               "string",
               "null"
             ],
             "default": null,
-            "markdownDescription": "Specify veryl-ls binary path."
+            "markdownDescription": "Specify veryla-ls binary path."
           }
         }
       }
     ],
     "languages": [
       {
-        "id": "veryl",
+        "id": "veryla",
         "aliases": [
-          "Veryl",
-          "veryl"
+          "Veryla",
+          "veryla"
         ],
         "extensions": [
-          ".veryl"
+          ".veryla"
         ],
         "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
       {
-        "language": "veryl",
-        "scopeName": "source.veryl",
-        "path": "./syntaxes/veryl.tmLanguage.json"
+        "language": "veryla",
+        "scopeName": "source.veryla",
+        "path": "./syntaxes/veryla.tmLanguage.json"
       }
     ]
   },
@@ -90,13 +90,14 @@
     "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.45.0",
     "@vscode/test-electron": "^2.2.0",
-    "@vscode/vsce": "^2.16.0",
+    "@vscode/vsce": "^2.32.0",
     "eslint": "^8.28.0",
     "glob": "^8.0.3",
     "mocha": "^10.1.0",
     "typescript": "^4.9.3"
   },
   "dependencies": {
+    "vsce": "^2.15.0",
     "vscode-languageclient": "^8.0.2"
   }
 }

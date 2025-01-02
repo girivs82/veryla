@@ -6,10 +6,10 @@ use crate::namespace_table;
 use crate::symbol::{GenericBoundKind, Symbol, SymbolKind, TypeKind};
 use crate::symbol_path::GenericSymbolPath;
 use crate::symbol_table;
-use veryl_parser::resource_table;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint, VerylWalker};
-use veryl_parser::{ParolError, Stringifier};
+use veryla_parser::resource_table;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint, VerylaWalker};
+use veryla_parser::{ParolError, Stringifier};
 
 #[derive(Default)]
 pub struct CheckType<'a> {
@@ -66,7 +66,7 @@ fn is_casting_type(symbol: &Symbol) -> bool {
     }
 }
 
-impl VerylGrammarTrait for CheckType<'_> {
+impl VerylaGrammarTrait for CheckType<'_> {
     fn user_defined_type(&mut self, _arg: &UserDefinedType) -> Result<(), ParolError> {
         match self.point {
             HandlerPoint::Before => {

@@ -1,6 +1,6 @@
 use miette::{self, Diagnostic, NamedSource, SourceSpan};
 use thiserror::Error;
-use veryl_parser::veryl_token::TokenRange;
+use veryla_parser::veryla_token::TokenRange;
 
 #[derive(Error, Diagnostic, Debug)]
 pub enum AnalyzerError {
@@ -260,12 +260,12 @@ pub enum AnalyzerError {
 
     #[diagnostic(
         severity(Error),
-        code(invalid_clock),
+        code(invalid_power),
         help(""),
-        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#invalid_clock")
+        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#invalid_power")
     )]
-    #[error("#{identifier} can't be used as a clock because it is not 'clock' type nor a single bit signal")]
-    InvalidClock {
+    #[error("#{identifier} can't be used as a power because it is not 'power' type nor a single bit signal")]
+    InvalidPower {
         identifier: String,
         #[source_code]
         input: NamedSource<String>,
@@ -486,19 +486,19 @@ pub enum AnalyzerError {
 
     #[diagnostic(
         severity(Error),
-        code(mismatch_clock_domain),
+        code(mismatch_power_domain),
         help(""),
-        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#mismatch_clock_domain")
+        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#mismatch_power_domain")
     )]
-    #[error("Clock domain crossing is detected")]
-    MismatchClockDomain {
-        clock_domain: String,
+    #[error("Power domain crossing is detected")]
+    MismatchPowerDomain {
+        power_domain: String,
         other_domain: String,
         #[source_code]
         input: NamedSource<String>,
-        #[label("clock domain {clock_domain}")]
+        #[label("power domain {power_domain}")]
         error_location: SourceSpan,
-        #[label("clock domain {other_domain}")]
+        #[label("power domain {other_domain}")]
         other_location: SourceSpan,
     },
 
@@ -508,7 +508,7 @@ pub enum AnalyzerError {
         help("add if_reset statement"),
         url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#missing_if_reset")
     )]
-    #[error("if_reset statement is required for always_ff with reset signal")]
+    #[error("if_reset statement is required for sequence with reset signal")]
     MissingIfReset {
         #[source_code]
         input: NamedSource<String>,
@@ -534,12 +534,12 @@ pub enum AnalyzerError {
 
     #[diagnostic(
         severity(Error),
-        code(missing_clock_signal),
-        help("add clock port"),
-        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#missing_clock_signal")
+        code(missing_power_signal),
+        help("add power port"),
+        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#missing_power_signal")
     )]
-    #[error("clock signal is required for always_ff statement")]
-    MissingClockSignal {
+    #[error("power signal is required for sequence statement")]
+    MissingPowerSignal {
         #[source_code]
         input: NamedSource<String>,
         #[label("Error location")]
@@ -552,7 +552,7 @@ pub enum AnalyzerError {
         help("add reset port"),
         url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#missing_reset_signal")
     )]
-    #[error("reset signal is required for always_ff with if_reset statement")]
+    #[error("reset signal is required for sequence with if_reset statement")]
     MissingResetSignal {
         #[source_code]
         input: NamedSource<String>,
@@ -593,12 +593,12 @@ pub enum AnalyzerError {
 
     #[diagnostic(
         severity(Error),
-        code(missing_clock_domain),
-        help("add clock domain annotation"),
-        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#missing_clock_domain")
+        code(missing_power_domain),
+        help("add power domain annotation"),
+        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#missing_power_domain")
     )]
-    #[error("clock domain annotation is required when there are multiple clocks")]
-    MissingClockDomain {
+    #[error("power domain annotation is required when there are multiple powers")]
+    MissingPowerDomain {
         #[source_code]
         input: NamedSource<String>,
         #[label("Error location")]
@@ -1238,8 +1238,8 @@ impl AnalyzerError {
         }
     }
 
-    pub fn invalid_clock(identifier: &str, source: &str, token: &TokenRange) -> Self {
-        AnalyzerError::InvalidClock {
+    pub fn invalid_power(identifier: &str, source: &str, token: &TokenRange) -> Self {
+        AnalyzerError::InvalidPower {
             identifier: identifier.into(),
             input: AnalyzerError::named_source(source, token),
             error_location: token.into(),
@@ -1395,15 +1395,15 @@ impl AnalyzerError {
         }
     }
 
-    pub fn mismatch_clock_domain(
-        clock_domain: &str,
+    pub fn mismatch_power_domain(
+        power_domain: &str,
         other_domain: &str,
         source: &str,
         token: &TokenRange,
         other_token: &TokenRange,
     ) -> Self {
-        AnalyzerError::MismatchClockDomain {
-            clock_domain: clock_domain.to_string(),
+        AnalyzerError::MismatchPowerDomain {
+            power_domain: power_domain.to_string(),
             other_domain: other_domain.to_string(),
             input: AnalyzerError::named_source(source, token),
             error_location: token.into(),
@@ -1411,8 +1411,8 @@ impl AnalyzerError {
         }
     }
 
-    pub fn missing_clock_signal(source: &str, token: &TokenRange) -> Self {
-        AnalyzerError::MissingClockSignal {
+    pub fn missing_power_signal(source: &str, token: &TokenRange) -> Self {
+        AnalyzerError::MissingPowerSignal {
             input: AnalyzerError::named_source(source, token),
             error_location: token.into(),
         }
@@ -1453,8 +1453,8 @@ impl AnalyzerError {
         }
     }
 
-    pub fn missing_clock_domain(source: &str, token: &TokenRange) -> Self {
-        AnalyzerError::MissingClockDomain {
+    pub fn missing_power_domain(source: &str, token: &TokenRange) -> Self {
+        AnalyzerError::MissingPowerDomain {
             input: AnalyzerError::named_source(source, token),
             error_location: token.into(),
         }

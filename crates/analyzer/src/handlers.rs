@@ -1,6 +1,6 @@
 pub mod check_attribute;
-pub mod check_clock_domain;
-pub mod check_clock_reset;
+pub mod check_power_domain;
+pub mod check_power_reset;
 pub mod check_embed_include;
 pub mod check_enum;
 pub mod check_expression;
@@ -19,8 +19,8 @@ pub mod check_var_ref;
 pub mod create_reference;
 pub mod create_symbol_table;
 use check_attribute::*;
-use check_clock_domain::*;
-use check_clock_reset::*;
+use check_power_domain::*;
+use check_power_reset::*;
 use check_embed_include::*;
 use check_enum::*;
 use check_expression::*;
@@ -40,8 +40,8 @@ use create_reference::*;
 use create_symbol_table::*;
 
 use crate::analyzer_error::AnalyzerError;
-use veryl_metadata::{Build, Lint};
-use veryl_parser::veryl_walker::Handler;
+use veryla_metadata::{Build, Lint};
+use veryla_parser::veryla_walker::Handler;
 
 pub struct Pass1Handlers<'a> {
     check_attribute: CheckAttribute<'a>,
@@ -102,10 +102,10 @@ pub struct Pass2Handlers<'a> {
     check_function: CheckFunction<'a>,
     check_msb_lsb: CheckMsbLsb<'a>,
     check_var_ref: CheckVarRef<'a>,
-    check_clock_reset: CheckClockReset<'a>,
+    check_power_reset: CheckPowerReset<'a>,
     create_reference: CreateReference<'a>,
     check_expression: CheckExpression<'a>,
-    check_clock_domain: CheckClockDomain<'a>,
+    check_power_domain: CheckPowerDomain<'a>,
     check_proto: CheckProto<'a>,
     check_type: CheckType<'a>,
 }
@@ -119,10 +119,10 @@ impl<'a> Pass2Handlers<'a> {
             check_function: CheckFunction::new(text),
             check_msb_lsb: CheckMsbLsb::new(text),
             check_var_ref: CheckVarRef::new(text),
-            check_clock_reset: CheckClockReset::new(text),
+            check_power_reset: CheckPowerReset::new(text),
             create_reference: CreateReference::new(text),
             check_expression: CheckExpression::new(text),
-            check_clock_domain: CheckClockDomain::new(text),
+            check_power_domain: CheckPowerDomain::new(text),
             check_proto: CheckProto::new(text),
             check_type: CheckType::new(text),
         }
@@ -136,10 +136,10 @@ impl<'a> Pass2Handlers<'a> {
             &mut self.check_function as &mut dyn Handler,
             &mut self.check_msb_lsb as &mut dyn Handler,
             &mut self.check_var_ref as &mut dyn Handler,
-            &mut self.check_clock_reset as &mut dyn Handler,
+            &mut self.check_power_reset as &mut dyn Handler,
             &mut self.create_reference as &mut dyn Handler,
             &mut self.check_expression as &mut dyn Handler,
-            &mut self.check_clock_domain as &mut dyn Handler,
+            &mut self.check_power_domain as &mut dyn Handler,
             &mut self.check_proto as &mut dyn Handler,
             &mut self.check_type as &mut dyn Handler,
         ]
@@ -153,10 +153,10 @@ impl<'a> Pass2Handlers<'a> {
         ret.append(&mut self.check_function.errors);
         ret.append(&mut self.check_msb_lsb.errors);
         ret.append(&mut self.check_var_ref.errors);
-        ret.append(&mut self.check_clock_reset.errors);
+        ret.append(&mut self.check_power_reset.errors);
         ret.append(&mut self.create_reference.errors);
         ret.append(&mut self.check_expression.errors);
-        ret.append(&mut self.check_clock_domain.errors);
+        ret.append(&mut self.check_power_domain.errors);
         ret.append(&mut self.check_proto.errors);
         ret.append(&mut self.check_type.errors);
         ret

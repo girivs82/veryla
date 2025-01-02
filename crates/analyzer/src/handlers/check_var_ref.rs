@@ -10,10 +10,10 @@ use crate::var_ref::{
     VarRefType,
 };
 use std::collections::HashMap;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_token::Token;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_token::Token;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 struct FunctionCallContext {
     pub token: Token,
@@ -239,7 +239,7 @@ fn map_assignable_factor(arg: &Expression) -> Option<VarRefPath> {
     None
 }
 
-impl VerylGrammarTrait for CheckVarRef<'_> {
+impl VerylaGrammarTrait for CheckVarRef<'_> {
     fn r#else(&mut self, arg: &Else) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             if self.in_if_expression.is_empty() {
@@ -578,14 +578,14 @@ impl VerylGrammarTrait for CheckVarRef<'_> {
         Ok(())
     }
 
-    fn always_ff_declaration(&mut self, arg: &AlwaysFfDeclaration) -> Result<(), ParolError> {
+    fn sequence_declaration(&mut self, arg: &SequenceDeclaration) -> Result<(), ParolError> {
         match self.point {
             HandlerPoint::Before => {
                 self.affiliation.push(VarRefAffiliation::AlwaysFF {
-                    token: arg.always_ff.always_ff_token.token,
+                    token: arg.sequence.sequence_token.token,
                 });
                 self.assign_position.push(AssignPositionType::Declaration {
-                    token: arg.always_ff.always_ff_token.token,
+                    token: arg.sequence.sequence_token.token,
                     r#type: AssignDeclarationType::AlwaysFF,
                 });
             }
@@ -705,11 +705,11 @@ impl VerylGrammarTrait for CheckVarRef<'_> {
                                     self.add_assign(&path);
                                 }
 
-                                // Check assignment of clock/reset type
-                                let (is_clock, is_reset) =
+                                // Check assignment of power/reset type
+                                let (is_power, is_reset) =
                                     if let Some(port) = ports.get(&token.text) {
                                         if let Some(x) = &port.r#type {
-                                            (x.kind.is_clock(), x.kind.is_reset())
+                                            (x.kind.is_power(), x.kind.is_reset())
                                         } else {
                                             (false, false)
                                         }
@@ -717,11 +717,11 @@ impl VerylGrammarTrait for CheckVarRef<'_> {
                                         (false, false)
                                     };
 
-                                if is_clock && !symbol.kind.is_clock() {
+                                if is_power && !symbol.kind.is_power() {
                                     self.errors.push(AnalyzerError::mismatch_type(
                                         &token.text.to_string(),
-                                        "clock type",
-                                        "non-clock type",
+                                        "power type",
+                                        "non-power type",
                                         self.text,
                                         &token.into(),
                                     ));

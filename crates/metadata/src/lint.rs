@@ -13,7 +13,7 @@ pub struct Lint {
 #[serde(deny_unknown_fields)]
 pub struct LintNaming {
     #[serde(default)]
-    pub case_clock_domain: Option<Case>,
+    pub case_power_domain: Option<Case>,
     #[serde(default)]
     pub case_enum: Option<Case>,
     #[serde(default)]
@@ -57,7 +57,7 @@ pub struct LintNaming {
     #[serde(default)]
     pub case_wire: Option<Case>,
     #[serde(default)]
-    pub prefix_clock_domain: Option<String>,
+    pub prefix_power_domain: Option<String>,
     #[serde(default)]
     pub prefix_enum: Option<String>,
     #[serde(default)]
@@ -101,7 +101,7 @@ pub struct LintNaming {
     #[serde(default)]
     pub prefix_wire: Option<String>,
     #[serde(default)]
-    pub suffix_clock_domain: Option<String>,
+    pub suffix_power_domain: Option<String>,
     #[serde(default)]
     pub suffix_enum: Option<String>,
     #[serde(default)]
@@ -145,7 +145,7 @@ pub struct LintNaming {
     #[serde(default)]
     pub suffix_wire: Option<String>,
     #[serde(default, with = "serde_regex")]
-    pub re_forbidden_clock_domain: Option<Regex>,
+    pub re_forbidden_power_domain: Option<Regex>,
     #[serde(default, with = "serde_regex")]
     pub re_forbidden_enum: Option<Regex>,
     #[serde(default, with = "serde_regex")]
@@ -189,7 +189,7 @@ pub struct LintNaming {
     #[serde(default, with = "serde_regex")]
     pub re_forbidden_wire: Option<Regex>,
     #[serde(default, with = "serde_regex")]
-    pub re_required_clock_domain: Option<Regex>,
+    pub re_required_power_domain: Option<Regex>,
     #[serde(default, with = "serde_regex")]
     pub re_required_enum: Option<Regex>,
     #[serde(default, with = "serde_regex")]

@@ -6,11 +6,11 @@ use crate::symbol_table;
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::fmt;
-use veryl_parser::resource_table::{PathId, StrId};
-use veryl_parser::veryl_grammar_trait as syntax_tree;
-use veryl_parser::veryl_token::{Token, TokenRange, VerylToken};
-use veryl_parser::veryl_walker::VerylWalker;
-use veryl_parser::Stringifier;
+use veryla_parser::resource_table::{PathId, StrId};
+use veryla_parser::veryla_grammar_trait as syntax_tree;
+use veryla_parser::veryla_token::{Token, TokenRange, VerylaToken};
+use veryla_parser::veryla_walker::VerylaWalker;
+use veryla_parser::Stringifier;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct SymbolId(pub usize);
@@ -120,11 +120,11 @@ impl Symbol {
             let evaluated = match &self.kind {
                 SymbolKind::Variable(x) => {
                     let mut evaluator = Evaluator::new();
-                    if x.r#type.kind.is_clock() | x.r#type.kind.is_reset() {
+                    if x.r#type.kind.is_power() | x.r#type.kind.is_reset() {
                         match x.r#type.kind {
-                            TypeKind::Clock => Evaluated::Clock,
-                            TypeKind::ClockPosedge => Evaluated::ClockPosedge,
-                            TypeKind::ClockNegedge => Evaluated::ClockNegedge,
+                            TypeKind::Power => Evaluated::Power,
+                            TypeKind::PowerPosedge => Evaluated::PowerPosedge,
+                            TypeKind::PowerNegedge => Evaluated::PowerNegedge,
                             TypeKind::Reset => Evaluated::Reset,
                             TypeKind::ResetAsyncHigh => Evaluated::ResetAsyncHigh,
                             TypeKind::ResetAsyncLow => Evaluated::ResetAsyncLow,
@@ -145,9 +145,9 @@ impl Symbol {
                 SymbolKind::Port(x) => {
                     if let Some(x) = &x.r#type {
                         match x.kind {
-                            TypeKind::Clock => Evaluated::Clock,
-                            TypeKind::ClockPosedge => Evaluated::ClockPosedge,
-                            TypeKind::ClockNegedge => Evaluated::ClockNegedge,
+                            TypeKind::Power => Evaluated::Power,
+                            TypeKind::PowerPosedge => Evaluated::PowerPosedge,
+                            TypeKind::PowerNegedge => Evaluated::PowerNegedge,
                             TypeKind::Reset => Evaluated::Reset,
                             TypeKind::ResetAsyncHigh => Evaluated::ResetAsyncHigh,
                             TypeKind::ResetAsyncLow => Evaluated::ResetAsyncLow,
@@ -330,7 +330,7 @@ pub enum SymbolKind {
     SystemFunction,
     GenericParameter(GenericParameterProperty),
     GenericInstance(GenericInstanceProperty),
-    ClockDomain,
+    PowerDomain,
     Test(TestProperty),
 }
 
@@ -373,7 +373,7 @@ impl SymbolKind {
             SymbolKind::SystemFunction => "system function".to_string(),
             SymbolKind::GenericParameter(_) => "generic parameter".to_string(),
             SymbolKind::GenericInstance(_) => "generic instance".to_string(),
-            SymbolKind::ClockDomain => "clock domain".to_string(),
+            SymbolKind::PowerDomain => "power domain".to_string(),
             SymbolKind::Test(_) => "test".to_string(),
         }
     }
@@ -390,16 +390,16 @@ impl SymbolKind {
         }
     }
 
-    pub fn is_clock(&self) -> bool {
+    pub fn is_power(&self) -> bool {
         match self {
             SymbolKind::Port(x) => {
                 if let Some(x) = &x.r#type {
-                    x.kind.is_clock()
+                    x.kind.is_power()
                 } else {
                     false
                 }
             }
-            SymbolKind::Variable(x) => x.r#type.kind.is_clock(),
+            SymbolKind::Variable(x) => x.r#type.kind.is_power(),
             _ => false,
         }
     }
@@ -533,7 +533,7 @@ impl fmt::Display for SymbolKind {
             SymbolKind::SystemFunction => "system function".to_string(),
             SymbolKind::GenericParameter(_) => "generic parameter".to_string(),
             SymbolKind::GenericInstance(_) => "generic instance".to_string(),
-            SymbolKind::ClockDomain => "clock domain".to_string(),
+            SymbolKind::PowerDomain => "power domain".to_string(),
             SymbolKind::Test(_) => "test".to_string(),
         };
         text.fmt(f)
@@ -590,9 +590,9 @@ pub struct Type {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TypeKind {
-    Clock,
-    ClockPosedge,
-    ClockNegedge,
+    Power,
+    PowerPosedge,
+    PowerNegedge,
     Reset,
     ResetAsyncHigh,
     ResetAsyncLow,
@@ -612,10 +612,10 @@ pub enum TypeKind {
 }
 
 impl TypeKind {
-    pub fn is_clock(&self) -> bool {
+    pub fn is_power(&self) -> bool {
         matches!(
             self,
-            TypeKind::Clock | TypeKind::ClockPosedge | TypeKind::ClockNegedge
+            TypeKind::Power | TypeKind::PowerPosedge | TypeKind::PowerNegedge
         )
     }
 
@@ -647,9 +647,9 @@ impl fmt::Display for Type {
             }
         }
         match &self.kind {
-            TypeKind::Clock => text.push_str("clock"),
-            TypeKind::ClockPosedge => text.push_str("clock posedge"),
-            TypeKind::ClockNegedge => text.push_str("clock negedge"),
+            TypeKind::Power => text.push_str("power"),
+            TypeKind::PowerPosedge => text.push_str("power posedge"),
+            TypeKind::PowerNegedge => text.push_str("power negedge"),
             TypeKind::Reset => text.push_str("reset"),
             TypeKind::ResetAsyncHigh => text.push_str("reset async high"),
             TypeKind::ResetAsyncLow => text.push_str("reset async low"),
@@ -829,9 +829,9 @@ impl From<&syntax_tree::FactorType> for Type {
         match value.factor_type_group.as_ref() {
             syntax_tree::FactorTypeGroup::VariableTypeFactorTypeOpt(x) => {
                 let kind = match x.variable_type.as_ref() {
-                    syntax_tree::VariableType::Clock(_) => TypeKind::Clock,
-                    syntax_tree::VariableType::ClockPosedge(_) => TypeKind::ClockPosedge,
-                    syntax_tree::VariableType::ClockNegedge(_) => TypeKind::ClockNegedge,
+                    syntax_tree::VariableType::Power(_) => TypeKind::Power,
+                    syntax_tree::VariableType::PowerPosedge(_) => TypeKind::PowerPosedge,
+                    syntax_tree::VariableType::PowerNegedge(_) => TypeKind::PowerNegedge,
                     syntax_tree::VariableType::Reset(_) => TypeKind::Reset,
                     syntax_tree::VariableType::ResetAsyncHigh(_) => TypeKind::ResetAsyncHigh,
                     syntax_tree::VariableType::ResetAsyncLow(_) => TypeKind::ResetAsyncLow,
@@ -955,28 +955,28 @@ impl From<&syntax_tree::ArrayType> for Type {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum ClockDomain {
+pub enum PowerDomain {
     Explicit(SymbolId),
     Implicit,
     None,
 }
 
-impl ClockDomain {
-    pub fn compatible(&self, x: &ClockDomain) -> bool {
+impl PowerDomain {
+    pub fn compatible(&self, x: &PowerDomain) -> bool {
         match (self, x) {
-            (ClockDomain::None, _) => true,
-            (_, ClockDomain::None) => true,
+            (PowerDomain::None, _) => true,
+            (_, PowerDomain::None) => true,
             (x, y) => x == y,
         }
     }
 }
 
-impl fmt::Display for ClockDomain {
+impl fmt::Display for PowerDomain {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let text = match self {
-            ClockDomain::Explicit(x) => format!("'{}", symbol_table::get(*x).unwrap().token),
-            ClockDomain::Implicit => "'_".to_string(),
-            ClockDomain::None => "".to_string(),
+            PowerDomain::Explicit(x) => format!("'{}", symbol_table::get(*x).unwrap().token),
+            PowerDomain::Implicit => "'_".to_string(),
+            PowerDomain::None => "".to_string(),
         };
         text.fmt(f)
     }
@@ -988,7 +988,7 @@ pub struct VariableProperty {
     pub affiliation: VariableAffiliation,
     pub prefix: Option<String>,
     pub suffix: Option<String>,
-    pub clock_domain: ClockDomain,
+    pub power_domain: PowerDomain,
     pub loop_variable: bool,
 }
 
@@ -1008,14 +1008,14 @@ pub struct PortProperty {
     pub direction: Direction,
     pub prefix: Option<String>,
     pub suffix: Option<String>,
-    pub clock_domain: ClockDomain,
+    pub power_domain: PowerDomain,
     pub default_value: Option<syntax_tree::Expression>,
     pub is_proto: bool,
 }
 
 #[derive(Debug, Clone)]
 pub struct Port {
-    pub token: VerylToken,
+    pub token: VerylaToken,
     pub symbol: SymbolId,
 }
 
@@ -1085,7 +1085,7 @@ pub struct ModuleProperty {
     pub generic_references: Vec<GenericSymbolPath>,
     pub parameters: Vec<Parameter>,
     pub ports: Vec<Port>,
-    pub default_clock: Option<SymbolId>,
+    pub default_power: Option<SymbolId>,
     pub default_reset: Option<SymbolId>,
 }
 

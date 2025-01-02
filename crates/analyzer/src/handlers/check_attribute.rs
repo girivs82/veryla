@@ -1,10 +1,10 @@
 use crate::analyzer_error::AnalyzerError;
 use crate::attribute::AttributeError;
 use crate::attribute_table;
-use veryl_parser::last_token::LastToken;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint, VerylWalker};
-use veryl_parser::ParolError;
+use veryla_parser::last_token::LastToken;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint, VerylaWalker};
+use veryla_parser::ParolError;
 
 pub struct CheckAttribute<'a> {
     pub errors: Vec<AnalyzerError>,
@@ -28,7 +28,7 @@ impl Handler for CheckAttribute<'_> {
     }
 }
 
-impl VerylGrammarTrait for CheckAttribute<'_> {
+impl VerylaGrammarTrait for CheckAttribute<'_> {
     fn attribute(&mut self, arg: &Attribute) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             let attr: Result<crate::attribute::Attribute, crate::attribute::AttributeError> =

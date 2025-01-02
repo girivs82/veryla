@@ -1,19 +1,19 @@
 use crate::analyzer_error::AnalyzerError;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 #[derive(Default)]
 pub struct CheckStatement<'a> {
     pub errors: Vec<AnalyzerError>,
     text: &'a str,
     point: HandlerPoint,
-    in_always_ff: bool,
+    in_sequence: bool,
     in_always_comb: bool,
     in_function: bool,
     in_initial: bool,
     in_final: bool,
-    statement_depth_in_always_ff: usize,
+    statement_depth_in_sequence: usize,
     statement_depth_in_loop: usize,
 }
 
@@ -32,10 +32,10 @@ impl Handler for CheckStatement<'_> {
     }
 }
 
-impl VerylGrammarTrait for CheckStatement<'_> {
+impl VerylaGrammarTrait for CheckStatement<'_> {
     fn statement(&mut self, _arg: &Statement) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
-            self.statement_depth_in_always_ff += 1;
+            self.statement_depth_in_sequence += 1;
         }
         Ok(())
     }
@@ -61,7 +61,7 @@ impl VerylGrammarTrait for CheckStatement<'_> {
 
     fn if_reset_statement(&mut self, arg: &IfResetStatement) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
-            if !self.in_always_ff {
+            if !self.in_sequence {
                 self.errors.push(AnalyzerError::invalid_statement(
                     "if_reset",
                     self.text,
@@ -69,7 +69,7 @@ impl VerylGrammarTrait for CheckStatement<'_> {
                 ));
             }
 
-            if self.in_always_ff && self.statement_depth_in_always_ff != 1 {
+            if self.in_sequence && self.statement_depth_in_sequence != 1 {
                 self.errors.push(AnalyzerError::invalid_statement(
                     "if_reset",
                     self.text,
@@ -114,13 +114,13 @@ impl VerylGrammarTrait for CheckStatement<'_> {
         Ok(())
     }
 
-    fn always_ff_declaration(&mut self, _arg: &AlwaysFfDeclaration) -> Result<(), ParolError> {
+    fn sequence_declaration(&mut self, _arg: &SequenceDeclaration) -> Result<(), ParolError> {
         match self.point {
             HandlerPoint::Before => {
-                self.in_always_ff = true;
-                self.statement_depth_in_always_ff = 0;
+                self.in_sequence = true;
+                self.statement_depth_in_sequence = 0;
             }
-            HandlerPoint::After => self.in_always_ff = false,
+            HandlerPoint::After => self.in_sequence = false,
         }
         Ok(())
     }

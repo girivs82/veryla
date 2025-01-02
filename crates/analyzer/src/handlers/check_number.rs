@@ -1,7 +1,7 @@
 use crate::analyzer_error::AnalyzerError;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 const BINARY_CHARS: [char; 6] = ['0', '1', 'x', 'z', 'X', 'Z'];
 const OCTAL_CHARS: [char; 12] = ['0', '1', '2', '3', '4', '5', '6', '7', 'x', 'z', 'X', 'Z'];
@@ -29,7 +29,7 @@ impl Handler for CheckNumber<'_> {
     }
 }
 
-impl VerylGrammarTrait for CheckNumber<'_> {
+impl VerylaGrammarTrait for CheckNumber<'_> {
     fn based(&mut self, arg: &Based) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             let token = &arg.based_token.token;

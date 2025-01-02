@@ -1,5 +1,5 @@
 [package]
-name                  = "veryl-path"
+name                  = "veryla-path"
 version               = "0.13.3"
 authors.workspace     = true
 repository.workspace  = true

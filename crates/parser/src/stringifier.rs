@@ -1,7 +1,7 @@
 use crate::resource_table::StrId;
-use crate::veryl_grammar_trait::{HierarchicalIdentifier, Identifier};
-use crate::veryl_token::VerylToken;
-use crate::veryl_walker::VerylWalker;
+use crate::veryla_grammar_trait::{HierarchicalIdentifier, Identifier};
+use crate::veryla_token::VerylaToken;
+use crate::veryla_walker::VerylaWalker;
 
 #[derive(Default)]
 pub struct Stringifier {
@@ -61,16 +61,16 @@ impl Stringifier {
     ) {
         if prefix.is_some() || suffix.is_some() {
             let token = identifier.identifier_token.append(prefix, suffix);
-            self.veryl_token(&token);
+            self.veryla_token(&token);
         } else {
-            self.veryl_token(&identifier.identifier_token);
+            self.veryla_token(&identifier.identifier_token);
         }
     }
 }
 
-impl VerylWalker for Stringifier {
-    /// Semantic action for non-terminal 'VerylToken'
-    fn veryl_token(&mut self, arg: &VerylToken) {
+impl VerylaWalker for Stringifier {
+    /// Semantic action for non-terminal 'VerylaToken'
+    fn veryla_token(&mut self, arg: &VerylaToken) {
         self.string.push_str(&arg.to_string());
         self.ids.push(arg.token.text);
     }

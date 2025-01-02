@@ -6,8 +6,8 @@ use crate::var_ref::{Assign, VarRef, VarRefAffiliation};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
-use veryl_parser::resource_table::{PathId, StrId, TokenId};
-use veryl_parser::veryl_token::{Token, TokenSource};
+use veryla_parser::resource_table::{PathId, StrId, TokenId};
+use veryla_parser::veryla_token::{Token, TokenSource};
 
 #[derive(Clone, Debug)]
 pub struct ResolveResult {
@@ -284,7 +284,7 @@ impl SymbolTable {
                         | SymbolKind::Block
                         | SymbolKind::SystemFunction
                         | SymbolKind::Genvar
-                        | SymbolKind::ClockDomain
+                        | SymbolKind::PowerDomain
                         | SymbolKind::Test(_) => (),
                     }
                 } else {
@@ -572,7 +572,7 @@ const SYSTEMVERILOG_KEYWORDS: [&str; 248] = [
     "alias",
     "always",
     "always_comb",
-    "always_ff",
+    "sequence",
     "always_latch",
     "and",
     "assert",
@@ -597,7 +597,7 @@ const SYSTEMVERILOG_KEYWORDS: [&str; 248] = [
     "chandle",
     "checker",
     "class",
-    "clocking",
+    "powering",
     "cmos",
     "config",
     "const",
@@ -621,7 +621,7 @@ const SYSTEMVERILOG_KEYWORDS: [&str; 248] = [
     "endcase",
     "endchecker",
     "endclass",
-    "endclocking",
+    "endpowering",
     "endconfig",
     "endfunction",
     "endgenerate",
@@ -855,8 +855,8 @@ const DEFINED_SYSTEM_FUNCTIONS: [&str; 196] = [
     "$cast",
     "$ceil",
     "$changed",
-    "$changed_gclk",
-    "$changing_gclk",
+    "$changed_gpwr",
+    "$changing_gpwr",
     "$clog2",
     "$cos",
     "$cosh",
@@ -895,7 +895,7 @@ const DEFINED_SYSTEM_FUNCTIONS: [&str; 196] = [
     "$error",
     "$exit",
     "$exp",
-    "$falling_gclk",
+    "$falling_gpwr",
     "$fatal",
     "$fclose",
     "$fdisplay",
@@ -903,7 +903,7 @@ const DEFINED_SYSTEM_FUNCTIONS: [&str; 196] = [
     "$fdisplayh",
     "$fdisplayo",
     "$fell",
-    "$fell_gclk",
+    "$fell_gpwr",
     "$feof",
     "$ferror",
     "$fflush",
@@ -924,7 +924,7 @@ const DEFINED_SYSTEM_FUNCTIONS: [&str; 196] = [
     "$fstrobeh",
     "$fstrobeo",
     "$ftell",
-    "$future_gclk",
+    "$future_gpwr",
     "$fwrite",
     "$fwriteb",
     "$fwriteh",
@@ -951,7 +951,7 @@ const DEFINED_SYSTEM_FUNCTIONS: [&str; 196] = [
     "$onehot",
     "$onehot0",
     "$past",
-    "$past_gclk",
+    "$past_gpwr",
     "$pow",
     "$printtimescale",
     "$q_add",
@@ -966,9 +966,9 @@ const DEFINED_SYSTEM_FUNCTIONS: [&str; 196] = [
     "$realtobits",
     "$rewind",
     "$right",
-    "$rising_gclk",
+    "$rising_gpwr",
     "$rose",
-    "$rose_gclk",
+    "$rose_gpwr",
     "$rtoi",
     "$sampled",
     "$set_coverage_db_name",
@@ -982,8 +982,8 @@ const DEFINED_SYSTEM_FUNCTIONS: [&str; 196] = [
     "$sqrt",
     "$sscanf",
     "$stable",
-    "$stable_gclk",
-    "$steady_gclk",
+    "$stable_gpwr",
+    "$steady_gpwr",
     "$stime",
     "$stop",
     "$strobe",

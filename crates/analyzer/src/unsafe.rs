@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::fmt;
-use veryl_parser::resource_table::{self, StrId};
+use veryla_parser::resource_table::{self, StrId};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Unsafe {
@@ -35,11 +35,11 @@ impl Pattern {
 
 thread_local!(static PAT: RefCell<Pattern> = RefCell::new(Pattern::new()));
 
-impl TryFrom<&veryl_parser::veryl_grammar_trait::UnsafeBlock> for Unsafe {
+impl TryFrom<&veryla_parser::veryla_grammar_trait::UnsafeBlock> for Unsafe {
     type Error = UnsafeError;
 
     fn try_from(
-        value: &veryl_parser::veryl_grammar_trait::UnsafeBlock,
+        value: &veryla_parser::veryla_grammar_trait::UnsafeBlock,
     ) -> Result<Self, Self::Error> {
         PAT.with_borrow(|pat| match value.identifier.identifier_token.token.text {
             x if x == pat.cdc => Ok(Unsafe::Cdc),

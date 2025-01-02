@@ -1,9 +1,9 @@
 use crate::analyzer_error::AnalyzerError;
 use crate::symbol::{ProtoIncompatible, SymbolKind};
 use crate::symbol_table;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 #[derive(Default)]
 pub struct CheckProto<'a> {
@@ -27,7 +27,7 @@ impl Handler for CheckProto<'_> {
     }
 }
 
-impl VerylGrammarTrait for CheckProto<'_> {
+impl VerylaGrammarTrait for CheckProto<'_> {
     fn module_declaration(&mut self, arg: &ModuleDeclaration) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             if let Some(ref x) = arg.module_declaration_opt1 {

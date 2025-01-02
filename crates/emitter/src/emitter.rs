@@ -1,25 +1,25 @@
 use std::fs;
 use std::path::Path;
-use veryl_aligner::{align_kind, Aligner, Location};
-use veryl_analyzer::attribute::Attribute as Attr;
-use veryl_analyzer::attribute::{AllowItem, CondTypeItem, EnumEncodingItem};
-use veryl_analyzer::attribute_table;
-use veryl_analyzer::evaluator::{Evaluated, Evaluator};
-use veryl_analyzer::namespace::Namespace;
-use veryl_analyzer::symbol::TypeModifier as SymTypeModifier;
-use veryl_analyzer::symbol::{
+use veryla_aligner::{align_kind, Aligner, Location};
+use veryla_analyzer::attribute::Attribute as Attr;
+use veryla_analyzer::attribute::{AllowItem, CondTypeItem, EnumEncodingItem};
+use veryla_analyzer::attribute_table;
+use veryla_analyzer::evaluator::{Evaluated, Evaluator};
+use veryla_analyzer::namespace::Namespace;
+use veryla_analyzer::symbol::TypeModifier as SymTypeModifier;
+use veryla_analyzer::symbol::{
     GenericMap, Port, Symbol, SymbolId, SymbolKind, TypeKind, VariableAffiliation,
 };
-use veryl_analyzer::symbol_path::{GenericSymbolPath, SymbolPath};
-use veryl_analyzer::symbol_table::{self, ResolveError, ResolveResult};
-use veryl_analyzer::{msb_table, namespace_table};
-use veryl_metadata::{Build, BuiltinType, ClockType, Format, Metadata, ResetType, SourceMapTarget};
-use veryl_parser::resource_table::{self, StrId};
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_token::{is_anonymous_token, Token, TokenSource, VerylToken};
-use veryl_parser::veryl_walker::VerylWalker;
-use veryl_parser::Stringifier;
-use veryl_sourcemap::SourceMap;
+use veryla_analyzer::symbol_path::{GenericSymbolPath, SymbolPath};
+use veryla_analyzer::symbol_table::{self, ResolveError, ResolveResult};
+use veryla_analyzer::{msb_table, namespace_table};
+use veryla_metadata::{Build, BuiltinType, PowerType, Format, Metadata, ResetType, SourceMapTarget};
+use veryla_parser::resource_table::{self, StrId};
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_token::{is_anonymous_token, Token, TokenSource, VerylaToken};
+use veryla_parser::veryla_walker::VerylaWalker;
+use veryla_parser::Stringifier;
+use veryla_sourcemap::SourceMap;
 
 #[cfg(target_os = "windows")]
 const NEWLINE: &str = "\r\n";
@@ -54,13 +54,13 @@ pub struct Emitter {
     single_line: bool,
     adjust_line: bool,
     case_item_indent: Option<usize>,
-    in_always_ff: bool,
+    in_sequence: bool,
     in_direction_modport: bool,
     in_import: bool,
     in_scalar_type: bool,
     in_expression: Vec<()>,
     signed: bool,
-    default_clock: Option<SymbolId>,
+    default_power: Option<SymbolId>,
     default_reset: Option<SymbolId>,
     reset_signal: Option<String>,
     default_block: Option<String>,
@@ -92,13 +92,13 @@ impl Default for Emitter {
             single_line: false,
             adjust_line: false,
             case_item_indent: None,
-            in_always_ff: false,
+            in_sequence: false,
             in_direction_modport: false,
             in_import: false,
             in_scalar_type: false,
             in_expression: Vec::new(),
             signed: false,
-            default_clock: None,
+            default_power: None,
             default_reset: None,
             reset_signal: None,
             default_block: None,
@@ -135,14 +135,14 @@ impl Emitter {
         }
     }
 
-    pub fn emit(&mut self, project_name: &str, input: &Veryl) {
+    pub fn emit(&mut self, project_name: &str, input: &Veryla) {
         namespace_table::set_default(&[project_name.into()]);
         self.mode = Mode::Align;
-        self.veryl(input);
+        self.veryla(input);
         self.aligner.finish_group();
         self.aligner.gather_additions();
         self.mode = Mode::Emit;
-        self.veryl(input);
+        self.veryla(input);
     }
 
     pub fn as_str(&self) -> &str {
@@ -320,7 +320,7 @@ impl Emitter {
         self.src_line = x.line + newlines_in_text;
     }
 
-    fn process_token(&mut self, x: &VerylToken, will_push: bool, duplicated: Option<usize>) {
+    fn process_token(&mut self, x: &VerylaToken, will_push: bool, duplicated: Option<usize>) {
         match self.mode {
             Mode::Emit => {
                 self.push_token(&x.token);
@@ -369,15 +369,15 @@ impl Emitter {
         }
     }
 
-    fn token(&mut self, x: &VerylToken) {
+    fn token(&mut self, x: &VerylaToken) {
         self.process_token(x, false, None)
     }
 
-    fn token_will_push(&mut self, x: &VerylToken) {
+    fn token_will_push(&mut self, x: &VerylaToken) {
         self.process_token(x, true, None)
     }
 
-    fn duplicated_token(&mut self, x: &VerylToken, i: usize) {
+    fn duplicated_token(&mut self, x: &VerylaToken, i: usize) {
         if self.mode == Mode::Emit {
             self.process_token(x, false, Some(i))
         }
@@ -405,7 +405,7 @@ impl Emitter {
         }
     }
 
-    fn align_duplicated_token(&mut self, kind: usize, x: &VerylToken, i: usize) {
+    fn align_duplicated_token(&mut self, kind: usize, x: &VerylaToken, i: usize) {
         if self.mode == Mode::Align {
             self.aligner.aligns[kind].duplicated_token(x, i);
         }
@@ -589,37 +589,37 @@ impl Emitter {
         }
     }
 
-    fn always_ff_explicit_event_list(
+    fn sequence_explicit_event_list(
         &mut self,
-        arg: &AlwaysFfEventList,
-        decl: &AlwaysFfDeclaration,
+        arg: &SequenceEventList,
+        decl: &SequenceDeclaration,
     ) {
         self.l_paren(&arg.l_paren);
-        self.always_ff_clock(&arg.always_ff_clock);
-        if let Some(ref x) = arg.always_ff_event_list_opt {
-            if self.always_ff_reset_exist_in_sensitivity_list(&x.always_ff_reset) {
+        self.sequence_power(&arg.sequence_power);
+        if let Some(ref x) = arg.sequence_event_list_opt {
+            if self.sequence_reset_exist_in_sensitivity_list(&x.sequence_reset) {
                 self.comma(&x.comma);
                 self.space(1);
             }
-            self.always_ff_reset(&x.always_ff_reset);
-        } else if self.always_ff_if_reset_exists(decl) {
-            self.always_ff_implicit_reset_event();
+            self.sequence_reset(&x.sequence_reset);
+        } else if self.sequence_if_reset_exists(decl) {
+            self.sequence_implicit_reset_event();
         }
         self.r_paren(&arg.r_paren);
     }
 
-    fn always_ff_implicit_event_list(&mut self, arg: &AlwaysFfDeclaration) {
+    fn sequence_implicit_event_list(&mut self, arg: &SequenceDeclaration) {
         self.str("(");
-        self.always_ff_implicit_clock_event();
-        if self.always_ff_if_reset_exists(arg) {
-            self.always_ff_implicit_reset_event();
+        self.sequence_implicit_power_event();
+        if self.sequence_if_reset_exists(arg) {
+            self.sequence_implicit_reset_event();
         }
         self.str(")")
     }
 
-    fn always_ff_implicit_clock_event(&mut self) {
-        let symbol = symbol_table::get(self.default_clock.unwrap()).unwrap();
-        let (clock_kind, prefix, suffix) = match symbol.kind {
+    fn sequence_implicit_power_event(&mut self) {
+        let symbol = symbol_table::get(self.default_power.unwrap()).unwrap();
+        let (power_kind, prefix, suffix) = match symbol.kind {
             SymbolKind::Port(x) => (
                 x.r#type.clone().unwrap().kind,
                 x.prefix.clone(),
@@ -628,28 +628,28 @@ impl Emitter {
             SymbolKind::Variable(x) => (x.r#type.kind, x.prefix.clone(), x.suffix.clone()),
             _ => unreachable!(),
         };
-        let clock_type = match clock_kind {
-            TypeKind::ClockPosedge => ClockType::PosEdge,
-            TypeKind::ClockNegedge => ClockType::NegEdge,
-            TypeKind::Clock => self.build_opt.clock_type,
+        let power_type = match power_kind {
+            TypeKind::PowerPosedge => PowerType::PosEdge,
+            TypeKind::PowerNegedge => PowerType::NegEdge,
+            TypeKind::Power => self.build_opt.power_type,
             _ => unreachable!(),
         };
 
-        match clock_type {
-            ClockType::PosEdge => self.str("posedge"),
-            ClockType::NegEdge => self.str("negedge"),
+        match power_type {
+            PowerType::PosEdge => self.str("posedge"),
+            PowerType::NegEdge => self.str("negedge"),
         }
         self.space(1);
 
         if prefix.is_some() || suffix.is_some() {
-            let token = VerylToken::new(symbol.token).append(&prefix, &suffix);
+            let token = VerylaToken::new(symbol.token).append(&prefix, &suffix);
             self.str(&token.token.to_string());
         } else {
             self.str(&symbol.token.to_string());
         }
     }
 
-    fn always_ff_if_reset_exists(&mut self, arg: &AlwaysFfDeclaration) -> bool {
+    fn sequence_if_reset_exists(&mut self, arg: &SequenceDeclaration) -> bool {
         if let Some(x) = arg.statement_block.statement_block_list.first() {
             let x: Vec<_> = x.statement_block_group.as_ref().into();
             if let Some(StatementBlockItem::Statement(x)) = x.first() {
@@ -662,7 +662,7 @@ impl Emitter {
         }
     }
 
-    fn always_ff_implicit_reset_event(&mut self) {
+    fn sequence_implicit_reset_event(&mut self) {
         let symbol = symbol_table::get(self.default_reset.unwrap()).unwrap();
         let (reset_kind, prefix, suffix) = match symbol.kind {
             SymbolKind::Port(x) => (
@@ -683,7 +683,7 @@ impl Emitter {
         };
 
         let token = if prefix.is_some() || suffix.is_some() {
-            VerylToken::new(symbol.token).append(&prefix, &suffix).token
+            VerylaToken::new(symbol.token).append(&prefix, &suffix).token
         } else {
             symbol.token
         };
@@ -712,7 +712,7 @@ impl Emitter {
         self.reset_signal = Some(format!("{}{}", prefix_op, token));
     }
 
-    fn always_ff_reset_exist_in_sensitivity_list(&mut self, arg: &AlwaysFfReset) -> bool {
+    fn sequence_reset_exist_in_sensitivity_list(&mut self, arg: &SequenceReset) -> bool {
         if let Ok(found) = symbol_table::resolve(arg.hierarchical_identifier.as_ref()) {
             let reset_kind = match found.found.kind {
                 SymbolKind::Port(x) => x.r#type.clone().unwrap().kind,
@@ -1051,9 +1051,9 @@ fn is_let_statement(arg: &StatementBlockItem) -> bool {
     matches!(arg, StatementBlockItem::LetStatement(_))
 }
 
-impl VerylWalker for Emitter {
-    /// Semantic action for non-terminal 'VerylToken'
-    fn veryl_token(&mut self, arg: &VerylToken) {
+impl VerylaWalker for Emitter {
+    /// Semantic action for non-terminal 'VerylaToken'
+    fn veryla_token(&mut self, arg: &VerylaToken) {
         self.token(arg);
     }
 
@@ -1076,12 +1076,12 @@ impl VerylWalker for Emitter {
 
             if let Some(actual_width) = strnum_bitwidth::bitwidth(number, base_num) {
                 let text = format!("{actual_width}'{base}{number}");
-                self.veryl_token(&arg.based_token.replace(&text));
+                self.veryla_token(&arg.based_token.replace(&text));
             } else {
                 unreachable!()
             }
         } else {
-            self.veryl_token(&arg.based_token);
+            self.veryla_token(&arg.based_token);
         }
     }
 
@@ -1091,11 +1091,11 @@ impl VerylWalker for Emitter {
         let (width, tail) = text.split_once('\'').unwrap();
 
         if width.is_empty() {
-            self.veryl_token(&arg.all_bit_token);
+            self.veryla_token(&arg.all_bit_token);
         } else {
             let width: usize = width.parse().unwrap();
             let text = format!("{width}'b{}", tail.repeat(width));
-            self.veryl_token(&arg.all_bit_token.replace(&text));
+            self.veryla_token(&arg.all_bit_token.replace(&text));
         }
     }
 
@@ -1115,80 +1115,80 @@ impl VerylWalker for Emitter {
                 additional_endif += 1;
             }
 
-            self.veryl_token(&arg.comma_token);
+            self.veryla_token(&arg.comma_token);
             self.str("`endif");
             for _ in 0..additional_endif {
                 self.newline();
                 self.str("`endif");
             }
         } else {
-            self.veryl_token(&arg.comma_token);
+            self.veryla_token(&arg.comma_token);
         }
     }
 
-    /// Semantic action for non-terminal 'Clock'
-    fn clock(&mut self, arg: &Clock) {
-        self.veryl_token(&arg.clock_token.replace("logic"));
+    /// Semantic action for non-terminal 'Power'
+    fn power(&mut self, arg: &Power) {
+        self.veryla_token(&arg.power_token.replace("logic"));
     }
 
-    /// Semantic action for non-terminal 'ClockPosedge'
-    fn clock_posedge(&mut self, arg: &ClockPosedge) {
-        self.veryl_token(&arg.clock_posedge_token.replace("logic"));
+    /// Semantic action for non-terminal 'PowerPosedge'
+    fn power_posedge(&mut self, arg: &PowerPosedge) {
+        self.veryla_token(&arg.power_posedge_token.replace("logic"));
     }
 
-    /// Semantic action for non-terminal 'ClockNegedge'
-    fn clock_negedge(&mut self, arg: &ClockNegedge) {
-        self.veryl_token(&arg.clock_negedge_token.replace("logic"));
+    /// Semantic action for non-terminal 'PowerNegedge'
+    fn power_negedge(&mut self, arg: &PowerNegedge) {
+        self.veryla_token(&arg.power_negedge_token.replace("logic"));
     }
 
     /// Semantic action for non-terminal 'Const'
     fn r#const(&mut self, arg: &Const) {
-        self.veryl_token(&arg.const_token.replace("localparam"));
+        self.veryla_token(&arg.const_token.replace("localparam"));
     }
 
     /// Semantic action for non-terminal 'Reset'
     fn reset(&mut self, arg: &Reset) {
-        self.veryl_token(&arg.reset_token.replace("logic"));
+        self.veryla_token(&arg.reset_token.replace("logic"));
     }
 
     /// Semantic action for non-terminal 'ResetAsyncHigh'
     fn reset_async_high(&mut self, arg: &ResetAsyncHigh) {
-        self.veryl_token(&arg.reset_async_high_token.replace("logic"));
+        self.veryla_token(&arg.reset_async_high_token.replace("logic"));
     }
 
     /// Semantic action for non-terminal 'ResetAsyncLow'
     fn reset_async_low(&mut self, arg: &ResetAsyncLow) {
-        self.veryl_token(&arg.reset_async_low_token.replace("logic"));
+        self.veryla_token(&arg.reset_async_low_token.replace("logic"));
     }
 
     /// Semantic action for non-terminal 'ResetSyncHigh'
     fn reset_sync_high(&mut self, arg: &ResetSyncHigh) {
-        self.veryl_token(&arg.reset_sync_high_token.replace("logic"));
+        self.veryla_token(&arg.reset_sync_high_token.replace("logic"));
     }
 
     /// Semantic action for non-terminal 'ResetSyncLow'
     fn reset_sync_low(&mut self, arg: &ResetSyncLow) {
-        self.veryl_token(&arg.reset_sync_low_token.replace("logic"));
+        self.veryla_token(&arg.reset_sync_low_token.replace("logic"));
     }
 
     /// Semantic action for non-terminal 'F32'
     fn f32(&mut self, arg: &F32) {
-        self.veryl_token(&arg.f32_token.replace("shortreal"));
+        self.veryla_token(&arg.f32_token.replace("shortreal"));
     }
 
     /// Semantic action for non-terminal 'F64'
     fn f64(&mut self, arg: &F64) {
-        self.veryl_token(&arg.f64_token.replace("real"));
+        self.veryla_token(&arg.f64_token.replace("real"));
     }
 
     /// Semantic action for non-terminal 'I32'
     fn i32(&mut self, arg: &I32) {
-        self.veryl_token(&arg.i32_token.replace("int signed"));
+        self.veryla_token(&arg.i32_token.replace("int signed"));
     }
 
     /// Semantic action for non-terminal 'I64'
     fn i64(&mut self, arg: &I64) {
-        self.veryl_token(&arg.i64_token.replace("longint signed"));
+        self.veryla_token(&arg.i64_token.replace("longint signed"));
     }
 
     /// Semantic action for non-terminal 'Lsb'
@@ -1211,28 +1211,28 @@ impl VerylWalker for Emitter {
 
     /// Semantic action for non-terminal 'Param'
     fn param(&mut self, arg: &Param) {
-        self.veryl_token(&arg.param_token.replace("parameter"));
+        self.veryla_token(&arg.param_token.replace("parameter"));
     }
 
     /// Semantic action for non-terminal 'Switch'
     fn switch(&mut self, arg: &Switch) {
-        self.veryl_token(&arg.switch_token.replace("case"));
+        self.veryla_token(&arg.switch_token.replace("case"));
     }
 
     /// Semantic action for non-terminal 'U32'
     fn u32(&mut self, arg: &U32) {
-        self.veryl_token(&arg.u32_token.replace("int unsigned"));
+        self.veryla_token(&arg.u32_token.replace("int unsigned"));
     }
 
     /// Semantic action for non-terminal 'U64'
     fn u64(&mut self, arg: &U64) {
-        self.veryl_token(&arg.u64_token.replace("longint unsigned"));
+        self.veryla_token(&arg.u64_token.replace("longint unsigned"));
     }
 
     /// Semantic action for non-terminal 'Identifier'
     fn identifier(&mut self, arg: &Identifier) {
         let text = emitting_identifier(arg);
-        self.veryl_token(&text);
+        self.veryla_token(&text);
         self.push_resolved_identifier(&text.to_string());
     }
 
@@ -1250,7 +1250,7 @@ impl VerylWalker for Emitter {
         };
 
         if *list_len == 0 {
-            self.veryl_token(&identifier_with_prefix_suffix(
+            self.veryla_token(&identifier_with_prefix_suffix(
                 &arg.identifier,
                 &prefix,
                 &suffix,
@@ -1266,7 +1266,7 @@ impl VerylWalker for Emitter {
         for (i, x) in arg.hierarchical_identifier_list0.iter().enumerate() {
             self.dot(&x.dot);
             if (i + 1) == *list_len {
-                self.veryl_token(&identifier_with_prefix_suffix(
+                self.veryla_token(&identifier_with_prefix_suffix(
                     &x.identifier,
                     &prefix,
                     &suffix,
@@ -1285,26 +1285,26 @@ impl VerylWalker for Emitter {
         match arg.operator07_token.to_string().as_str() {
             "<:" => self.str("<"),
             ">:" => self.str(">"),
-            _ => self.veryl_token(&arg.operator07_token),
+            _ => self.veryla_token(&arg.operator07_token),
         }
     }
 
     /// Semantic action for non-terminal 'ScopedIdentifier'
     fn scoped_identifier(&mut self, arg: &ScopedIdentifier) {
         if is_anonymous_token(&arg.identifier().token) {
-            self.veryl_token(&arg.identifier().replace(""));
+            self.veryla_token(&arg.identifier().replace(""));
         } else {
             match self.resolve_symbol_with_generics(arg) {
                 (Ok(symbol), _) => {
                     let context: SymbolContext = self.into();
                     let text = symbol_string(arg.identifier(), &symbol.found, &context);
-                    self.veryl_token(&arg.identifier().replace(&text));
+                    self.veryla_token(&arg.identifier().replace(&text));
                     self.push_resolved_identifier(&text);
                 }
                 (Err(_), path) if !path.is_resolvable() => {
                     // emit literal by generics
                     let text = path.base_path(0).0[0].to_string();
-                    self.veryl_token(&arg.identifier().replace(&text));
+                    self.veryla_token(&arg.identifier().replace(&text));
                     self.push_resolved_identifier(&text);
                 }
                 _ => {}
@@ -1504,10 +1504,10 @@ impl VerylWalker for Emitter {
                     self.base_less(&x.base_less);
                     self.str("'(");
                 }
-                // casting to clock type doesn't change polarity
-                CastingType::Clock(_)
-                | CastingType::ClockPosedge(_)
-                | CastingType::ClockNegedge(_) => (),
+                // casting to power type doesn't change polarity
+                CastingType::Power(_)
+                | CastingType::PowerPosedge(_)
+                | CastingType::PowerNegedge(_) => (),
                 CastingType::Reset(_)
                 | CastingType::ResetAsyncHigh(_)
                 | CastingType::ResetAsyncLow(_)
@@ -2013,7 +2013,7 @@ impl VerylWalker for Emitter {
 
     /// Semantic action for non-terminal 'Assignment'
     fn assignment(&mut self, arg: &Assignment) {
-        let is_nba = if !self.in_always_ff {
+        let is_nba = if !self.in_sequence {
             false
         } else if let Some(lhs) = &self.assignment_lefthand_side {
             if let Ok(lhs_symbol) = symbol_table::resolve(lhs.scoped_identifier.as_ref()) {
@@ -2325,15 +2325,15 @@ impl VerylWalker for Emitter {
                     if let AttributeItem::Identifier(x) = &*x.attribute_list.attribute_item {
                         let test_name = x.identifier.identifier_token.to_string();
                         let text = format!(
-                            "`ifdef __veryl_test_{}_{}__",
+                            "`ifdef __veryla_test_{}_{}__",
                             self.project_name.unwrap(),
                             test_name
                         );
                         self.token(&arg.hash.hash_token.replace(&text));
                         self.newline();
                         let mut wavedump = format!(
-                            r##"    `ifdef __veryl_wavedump_{}_{}__
-        module __veryl_wavedump;
+                            r##"    `ifdef __veryla_wavedump_{}_{}__
+        module __veryla_wavedump;
             initial begin
                 $dumpfile("{}.vcd");
                 $dumpvars();
@@ -2489,41 +2489,41 @@ impl VerylWalker for Emitter {
         self.semicolon(&arg.semicolon);
     }
 
-    /// Semantic action for non-terminal 'AlwaysFfDeclaration'
-    fn always_ff_declaration(&mut self, arg: &AlwaysFfDeclaration) {
-        self.in_always_ff = true;
-        self.always_ff(&arg.always_ff);
+    /// Semantic action for non-terminal 'SequenceDeclaration'
+    fn sequence_declaration(&mut self, arg: &SequenceDeclaration) {
+        self.in_sequence = true;
+        self.sequence(&arg.sequence);
         self.space(1);
         self.str("@");
         self.space(1);
-        if let Some(ref x) = arg.always_ff_declaration_opt {
-            self.always_ff_explicit_event_list(&x.always_ff_event_list, arg);
+        if let Some(ref x) = arg.sequence_declaration_opt {
+            self.sequence_explicit_event_list(&x.sequence_event_list, arg);
         } else {
-            self.always_ff_implicit_event_list(arg);
+            self.sequence_implicit_event_list(arg);
         }
         self.space(1);
         self.statement_block(&arg.statement_block);
-        self.in_always_ff = false;
+        self.in_sequence = false;
     }
 
-    /// Semantic action for non-terminal 'AlwaysFfClock'
-    fn always_ff_clock(&mut self, arg: &AlwaysFfClock) {
+    /// Semantic action for non-terminal 'SequencePower'
+    fn sequence_power(&mut self, arg: &SequencePower) {
         if let Ok(found) = symbol_table::resolve(arg.hierarchical_identifier.as_ref()) {
-            let clock = match found.found.kind {
+            let power = match found.found.kind {
                 SymbolKind::Port(x) => x.r#type.clone().unwrap().kind,
                 SymbolKind::Variable(x) => x.r#type.kind,
                 _ => unreachable!(),
             };
-            let clock_type = match clock {
-                TypeKind::ClockPosedge => ClockType::PosEdge,
-                TypeKind::ClockNegedge => ClockType::NegEdge,
-                TypeKind::Clock => self.build_opt.clock_type,
+            let power_type = match power {
+                TypeKind::PowerPosedge => PowerType::PosEdge,
+                TypeKind::PowerNegedge => PowerType::NegEdge,
+                TypeKind::Power => self.build_opt.power_type,
                 _ => unreachable!(),
             };
 
-            match clock_type {
-                ClockType::PosEdge => self.str("posedge"),
-                ClockType::NegEdge => self.str("negedge"),
+            match power_type {
+                PowerType::PosEdge => self.str("posedge"),
+                PowerType::NegEdge => self.str("negedge"),
             }
             self.space(1);
             self.hierarchical_identifier(&arg.hierarchical_identifier);
@@ -2532,8 +2532,8 @@ impl VerylWalker for Emitter {
         }
     }
 
-    /// Semantic action for non-terminal 'AlwaysFfReset'
-    fn always_ff_reset(&mut self, arg: &AlwaysFfReset) {
+    /// Semantic action for non-terminal 'SequenceReset'
+    fn sequence_reset(&mut self, arg: &SequenceReset) {
         if let Ok(found) = symbol_table::resolve(arg.hierarchical_identifier.as_ref()) {
             let (reset_kind, prefix, suffix) = match found.found.kind {
                 SymbolKind::Port(x) => (
@@ -3373,7 +3373,7 @@ impl VerylWalker for Emitter {
     fn module_declaration(&mut self, arg: &ModuleDeclaration) {
         let symbol = symbol_table::resolve(arg.identifier.as_ref()).unwrap();
         if let SymbolKind::Module(ref x) = symbol.found.kind {
-            self.default_clock = x.default_clock;
+            self.default_power = x.default_power;
             self.default_reset = x.default_reset;
         }
 
@@ -3427,7 +3427,7 @@ impl VerylWalker for Emitter {
             self.pop_generic_map();
         }
 
-        self.default_clock = None;
+        self.default_power = None;
         self.default_reset = None;
     }
 
@@ -3721,7 +3721,7 @@ impl VerylWalker for Emitter {
             let text = arg.embed_content.embed_content_token.to_string();
             let text = text.strip_prefix("{{{").unwrap();
             let text = text.strip_suffix("}}}").unwrap();
-            self.veryl_token(&arg.embed_content.embed_content_token.replace(text));
+            self.veryla_token(&arg.embed_content.embed_content_token.replace(text));
         }
     }
 
@@ -3784,8 +3784,8 @@ impl VerylWalker for Emitter {
         };
     }
 
-    /// Semantic action for non-terminal 'Veryl'
-    fn veryl(&mut self, arg: &Veryl) {
+    /// Semantic action for non-terminal 'Veryla'
+    fn veryla(&mut self, arg: &Veryla) {
         match self.mode {
             Mode::Emit => {
                 self.in_start_token = true;
@@ -3794,7 +3794,7 @@ impl VerylWalker for Emitter {
                 if !arg.start.start_token.comments.is_empty() {
                     self.newline();
                 }
-                for x in &arg.veryl_list {
+                for x in &arg.veryla_list {
                     let items: Vec<DescriptionItem> = x.description_group.as_ref().into();
                     for item in items {
                         if let DescriptionItem::ImportDeclaration(x) = item {
@@ -3809,7 +3809,7 @@ impl VerylWalker for Emitter {
                         }
                     }
                 }
-                for (i, x) in arg.veryl_list.iter().enumerate() {
+                for (i, x) in arg.veryla_list.iter().enumerate() {
                     if i != 0 {
                         self.newline();
                     }
@@ -3826,7 +3826,7 @@ impl VerylWalker for Emitter {
             }
             Mode::Align => {
                 self.start(&arg.start);
-                for x in &arg.veryl_list {
+                for x in &arg.veryla_list {
                     self.description_group(&x.description_group);
                 }
             }
@@ -3913,7 +3913,7 @@ fn namespace_string(namespace: &Namespace, context: &SymbolContext) -> String {
     ret
 }
 
-pub fn symbol_string(token: &VerylToken, symbol: &Symbol, context: &SymbolContext) -> String {
+pub fn symbol_string(token: &VerylaToken, symbol: &Symbol, context: &SymbolContext) -> String {
     let mut ret = String::new();
     let namespace = namespace_table::get(token.token.id).unwrap();
 
@@ -4005,7 +4005,7 @@ pub fn symbol_string(token: &VerylToken, symbol: &Symbol, context: &SymbolContex
         | SymbolKind::Genvar
         | SymbolKind::Namespace
         | SymbolKind::SystemFunction => ret.push_str(&token_text),
-        SymbolKind::ClockDomain | SymbolKind::EnumMemberMangled | SymbolKind::Test(_) => {
+        SymbolKind::PowerDomain | SymbolKind::EnumMemberMangled | SymbolKind::Test(_) => {
             unreachable!()
         }
     }
@@ -4016,7 +4016,7 @@ pub fn identifier_with_prefix_suffix(
     identifier: &Identifier,
     prefix: &Option<String>,
     suffix: &Option<String>,
-) -> VerylToken {
+) -> VerylaToken {
     if prefix.is_some() || suffix.is_some() {
         let token = &identifier.identifier_token.strip_prefix("r#");
         token.append(prefix, suffix)
@@ -4025,7 +4025,7 @@ pub fn identifier_with_prefix_suffix(
     }
 }
 
-pub fn emitting_identifier(arg: &Identifier) -> VerylToken {
+pub fn emitting_identifier(arg: &Identifier) -> VerylaToken {
     let (prefix, suffix) = if let Ok(found) = symbol_table::resolve(arg) {
         match &found.found.kind {
             SymbolKind::Port(x) => (x.prefix.clone(), x.suffix.clone()),

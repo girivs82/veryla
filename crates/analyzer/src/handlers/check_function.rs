@@ -2,9 +2,9 @@ use crate::analyzer_error::AnalyzerError;
 use crate::symbol::SymbolKind;
 use crate::symbol_path::SymbolPath;
 use crate::symbol_table;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 pub struct CheckFunction<'a> {
     pub errors: Vec<AnalyzerError>,
@@ -28,7 +28,7 @@ impl Handler for CheckFunction<'_> {
     }
 }
 
-impl VerylGrammarTrait for CheckFunction<'_> {
+impl VerylaGrammarTrait for CheckFunction<'_> {
     fn identifier_statement(&mut self, arg: &IdentifierStatement) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             if let IdentifierStatementGroup::FunctionCall(_) = &*arg.identifier_statement_group {

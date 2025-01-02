@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
-use veryl_parser::resource_table::TokenId;
+use veryla_parser::resource_table::TokenId;
 
 #[derive(Clone, Default, Debug)]
 pub struct MsbTable {

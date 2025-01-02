@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::fmt;
-use veryl_parser::resource_table::{self, StrId};
-use veryl_parser::veryl_token::Token;
+use veryla_parser::resource_table::{self, StrId};
+use veryla_parser::veryla_token::Token;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Attribute {
@@ -41,10 +41,10 @@ pub enum AttributeError {
 }
 
 fn get_arg_ident(
-    args: &Option<veryl_parser::veryl_grammar_trait::AttributeOpt>,
+    args: &Option<veryla_parser::veryla_grammar_trait::AttributeOpt>,
     pos: usize,
 ) -> Option<Token> {
-    use veryl_parser::veryl_grammar_trait as g;
+    use veryla_parser::veryla_grammar_trait as g;
 
     if let Some(ref x) = args {
         let args: Vec<g::AttributeItem> = x.attribute_list.as_ref().into();
@@ -61,10 +61,10 @@ fn get_arg_ident(
 }
 
 fn get_arg_string(
-    args: &Option<veryl_parser::veryl_grammar_trait::AttributeOpt>,
+    args: &Option<veryla_parser::veryla_grammar_trait::AttributeOpt>,
     pos: usize,
 ) -> Option<Token> {
-    use veryl_parser::veryl_grammar_trait as g;
+    use veryla_parser::veryla_grammar_trait as g;
 
     if let Some(ref x) = args {
         let args: Vec<g::AttributeItem> = x.attribute_list.as_ref().into();
@@ -128,10 +128,10 @@ impl Pattern {
 
 thread_local!(static PAT: RefCell<Pattern> = RefCell::new(Pattern::new()));
 
-impl TryFrom<&veryl_parser::veryl_grammar_trait::Attribute> for Attribute {
+impl TryFrom<&veryla_parser::veryla_grammar_trait::Attribute> for Attribute {
     type Error = AttributeError;
 
-    fn try_from(value: &veryl_parser::veryl_grammar_trait::Attribute) -> Result<Self, Self::Error> {
+    fn try_from(value: &veryla_parser::veryla_grammar_trait::Attribute) -> Result<Self, Self::Error> {
         PAT.with_borrow(|pat| match value.identifier.identifier_token.token.text {
             x if x == pat.ifdef || x == pat.ifndef => {
                 let arg = get_arg_ident(&value.attribute_opt, 0);

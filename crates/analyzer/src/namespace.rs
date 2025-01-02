@@ -2,7 +2,7 @@ use crate::namespace_table;
 use crate::symbol_path::SymbolPath;
 use std::collections::HashMap;
 use std::fmt;
-use veryl_parser::resource_table::StrId;
+use veryla_parser::resource_table::StrId;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Namespace {

@@ -1,18 +1,18 @@
 [package]
-name = "veryl-tests"
+name = "veryla-tests"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-veryl-analyzer  = {version = "0.13.3", path = "../analyzer"}
-veryl-emitter   = {version = "0.13.3", path = "../emitter"}
-veryl-formatter = {version = "0.13.3", path = "../formatter"}
-veryl-metadata  = {version = "0.13.3", path = "../metadata"}
-veryl-parser    = {version = "0.13.3", path = "../parser"}
-veryl-path      = {version = "0.13.3", path = "../path"}
-veryl           = {version = "0.13.3", path = "../veryl"}
+veryla-analyzer  = {version = "0.13.3", path = "../analyzer"}
+veryla-emitter   = {version = "0.13.3", path = "../emitter"}
+veryla-formatter = {version = "0.13.3", path = "../formatter"}
+veryla-metadata  = {version = "0.13.3", path = "../metadata"}
+veryla-parser    = {version = "0.13.3", path = "../parser"}
+veryla-path      = {version = "0.13.3", path = "../path"}
+veryla           = {version = "0.13.3", path = "../veryla" }
 
 [dev-dependencies]
 criterion = {package = "codspeed-criterion-compat", version = "2.7"}

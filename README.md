@@ -69,7 +69,7 @@ With these features, Veryl provides powerful support for designers to efficientl
 pub module Delay #( // visibility control by `pub` keyword
     param WIDTH: u32 = 1, // trailing comma is allowed
 ) (
-    i_clk : input  clock       ,
+    i_pwr : input  power       ,
     i_rst : input  reset       ,
     i_data: input  logic<WIDTH>,
     o_data: output logic<WIDTH>,
@@ -77,9 +77,9 @@ pub module Delay #( // visibility control by `pub` keyword
     // unused variable which is not started with `_` are warned
     var _unused_variable: logic;
 
-    // clock and reset signals can be omitted
+    // power and reset signals can be omitted
     // because Veryl can infer these signals
-    always_ff {
+    sequence {
         // abstraction syntax of reset polarity and synchronicity
         if_reset {
             o_data = '0;
@@ -100,14 +100,14 @@ pub module Delay #( // visibility control by `pub` keyword
 module Delay #(
     parameter int WIDTH = 1
 ) (
-    input              i_clk ,
+    input              i_pwr ,
     input              i_rst ,
     input  [WIDTH-1:0] i_data,
     output [WIDTH-1:0] o_data
 );
     logic unused_variable;
 
-    always_ff @ (posedge i_clk or negedge i_rst) begin
+    always_ff @ (posedge i_pwr or negedge i_rst) begin
         if (!i_rst) begin
             o_data <= '0;
         end else begin

@@ -17,11 +17,11 @@ use crate::var_ref::{
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::path::Path;
-use veryl_metadata::{Build, Lint, Metadata};
-use veryl_parser::resource_table;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_token::{Token, TokenSource};
-use veryl_parser::veryl_walker::{Handler, VerylWalker};
+use veryla_metadata::{Build, Lint, Metadata};
+use veryla_parser::resource_table;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_token::{Token, TokenSource};
+use veryla_parser::veryla_walker::{Handler, VerylaWalker};
 
 pub struct AnalyzerPass1<'a> {
     handlers: Pass1Handlers<'a>,
@@ -35,7 +35,7 @@ impl<'a> AnalyzerPass1<'a> {
     }
 }
 
-impl VerylWalker for AnalyzerPass1<'_> {
+impl VerylaWalker for AnalyzerPass1<'_> {
     fn get_handlers(&mut self) -> Option<Vec<&mut dyn Handler>> {
         Some(self.handlers.get_handlers())
     }
@@ -53,7 +53,7 @@ impl<'a> AnalyzerPass2<'a> {
     }
 }
 
-impl VerylWalker for AnalyzerPass2<'_> {
+impl VerylaWalker for AnalyzerPass2<'_> {
     fn get_handlers(&mut self) -> Option<Vec<&mut dyn Handler>> {
         Some(self.handlers.get_handlers())
     }
@@ -267,13 +267,13 @@ impl Analyzer {
         project_name: &str,
         text: &str,
         _path: T,
-        input: &Veryl,
+        input: &Veryla,
     ) -> Vec<AnalyzerError> {
         let mut ret = Vec::new();
 
         namespace_table::set_default(&[project_name.into()]);
         let mut pass1 = AnalyzerPass1::new(text, &self.build_opt, &self.lint_opt);
-        pass1.veryl(input);
+        pass1.veryla(input);
         ret.append(&mut pass1.handlers.get_errors());
 
         ret
@@ -288,13 +288,13 @@ impl Analyzer {
         project_name: &str,
         text: &str,
         _path: T,
-        input: &Veryl,
+        input: &Veryla,
     ) -> Vec<AnalyzerError> {
         let mut ret = Vec::new();
 
         namespace_table::set_default(&[project_name.into()]);
         let mut pass2 = AnalyzerPass2::new(text, &self.build_opt, &self.lint_opt);
-        pass2.veryl(input);
+        pass2.veryla(input);
         ret.append(&mut pass2.handlers.get_errors());
 
         ret
@@ -305,7 +305,7 @@ impl Analyzer {
         project_name: &str,
         text: &str,
         path: T,
-        _input: &Veryl,
+        _input: &Veryla,
     ) -> Vec<AnalyzerError> {
         let mut ret = Vec::new();
 
@@ -546,7 +546,7 @@ fn check_assign_position_tree(
         ));
     }
 
-    if let Some(token) = tree.check_always_ff_missing_reset() {
+    if let Some(token) = tree.check_sequence_missing_reset() {
         ret.push(AnalyzerError::missing_reset_statement(
             &symbol.token.to_string(),
             text,

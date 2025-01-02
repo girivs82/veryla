@@ -1,8 +1,8 @@
 use crate::analyzer_error::AnalyzerError;
 use crate::unsafe_table;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 pub struct CheckUnsafe<'a> {
     pub errors: Vec<AnalyzerError>,
@@ -26,7 +26,7 @@ impl Handler for CheckUnsafe<'_> {
     }
 }
 
-impl VerylGrammarTrait for CheckUnsafe<'_> {
+impl VerylaGrammarTrait for CheckUnsafe<'_> {
     fn unsafe_block(&mut self, arg: &UnsafeBlock) -> Result<(), ParolError> {
         match self.point {
             HandlerPoint::Before => {

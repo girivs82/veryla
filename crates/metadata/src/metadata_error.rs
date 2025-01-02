@@ -4,7 +4,7 @@ use semver::Version;
 use std::path::PathBuf;
 use thiserror::Error;
 use url::Url;
-use veryl_path::PathError;
+use veryla_path::PathError;
 
 #[derive(Error, Diagnostic, Debug)]
 pub enum MetadataError {
@@ -13,7 +13,7 @@ pub enum MetadataError {
     FileIO(#[from] std::io::Error),
 
     #[diagnostic(code(MetadataError::FileNotFound), help(""))]
-    #[error("Veryl.toml is not found")]
+    #[error("Veryla.toml is not found")]
     FileNotFound,
 
     #[diagnostic(code(MetadataError::Deserialize), help(""))]

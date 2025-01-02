@@ -1,5 +1,5 @@
 [package]
-name                  = "veryl-aligner"
+name                  = "veryla-aligner"
 version               = "0.13.3"
 authors.workspace     = true
 repository.workspace  = true
@@ -11,4 +11,4 @@ description.workspace = true
 edition               = "2021"
 
 [dependencies]
-veryl-parser = {version = "0.13.3", path = "../parser"}
+veryla-parser = {version = "0.13.3", path = "../parser"}

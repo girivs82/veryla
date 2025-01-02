@@ -7,7 +7,7 @@ mod parser {
     use veryl_parser::Parser;
 
     fn test(name: &str) {
-        let file = format!("../../testcases/veryl/{}.veryl", name);
+        let file = format!("../../testcases/veryla/{}.veryla", name);
         let input = fs::read_to_string(&file).unwrap();
         let ret = Parser::parse(&input, &file);
         match ret {
@@ -43,7 +43,7 @@ mod analyzer {
             }
         }
 
-        let file = format!("../../testcases/veryl/{}.veryl", name);
+        let file = format!("../../testcases/veryla/{}.veryla", name);
         let input = fs::read_to_string(&file).unwrap();
 
         let ret = Parser::parse(&input, &file).unwrap();
@@ -78,7 +78,7 @@ mod formatter {
         let metadata_path = Metadata::search_from_current().unwrap();
         let metadata = Metadata::load(&metadata_path).unwrap();
 
-        let file = format!("../../testcases/veryl/{}.veryl", name);
+        let file = format!("../../testcases/veryla/{}.veryla", name);
         let input = fs::read_to_string(&file).unwrap();
         let original = input.clone();
 
@@ -128,7 +128,7 @@ mod emitter {
             }
         }
 
-        let src_path = PathBuf::from(format!("../../testcases/veryl/{}.veryl", name));
+        let src_path = PathBuf::from(format!("../../testcases/veryla/{}.veryla", name));
         let dst_path = PathBuf::from(format!("../../testcases/sv/{}.sv", name));
         let map_path = PathBuf::from(format!("../../testcases/map/testcases/sv/{}.sv.map", name));
 
@@ -172,7 +172,7 @@ mod path {
         let paths = metadata.paths::<PathBuf>(&[], false).unwrap();
 
         for path in paths {
-            if path.src.file_name().unwrap() == "01_number.veryl" {
+            if path.src.file_name().unwrap() == "01_number.veryla" {
                 assert_eq!(path.src, base.join(src_exp));
                 assert_eq!(path.dst, base.join(dst_exp));
                 assert_eq!(path.map, base.join(map_exp));
@@ -190,9 +190,9 @@ mod path {
 
         path_test(
             metadata,
-            "testcases/veryl/01_number.veryl",
-            "testcases/veryl/01_number.sv",
-            "testcases/veryl/01_number.sv.map",
+            "testcases/veryla/01_number.veryla",
+            "testcases/veryla/01_number.sv",
+            "testcases/veryla/01_number.sv.map",
         );
     }
 
@@ -208,9 +208,9 @@ mod path {
 
         path_test(
             metadata,
-            "testcases/veryl/01_number.veryl",
-            "testcases/veryl/01_number.sv",
-            "testcases/map/testcases/veryl/01_number.sv.map",
+            "testcases/veryla/01_number.veryla",
+            "testcases/veryla/01_number.sv",
+            "testcases/map/testcases/veryla/01_number.sv.map",
         );
     }
 
@@ -226,7 +226,7 @@ mod path {
 
         path_test(
             metadata,
-            "testcases/veryl/01_number.veryl",
+            "testcases/veryla/01_number.veryla",
             "testcases/sv/01_number.sv",
             "testcases/sv/01_number.sv.map",
         );
@@ -246,7 +246,7 @@ mod path {
 
         path_test(
             metadata,
-            "testcases/veryl/01_number.veryl",
+            "testcases/veryla/01_number.veryla",
             "testcases/sv/01_number.sv",
             "testcases/map/testcases/sv/01_number.sv.map",
         );
@@ -321,17 +321,17 @@ mod filelist {
         dbg!(&paths);
 
         let all = &[
-            "01_package_a.veryl",
-            "02_package_b.veryl",
-            "03_module_a.veryl",
-            "04_module_b.veryl",
-            "05_module_c.veryl",
-            "ram.veryl",
+            "01_package_a.veryla",
+            "02_package_b.veryla",
+            "03_module_a.veryla",
+            "04_module_b.veryla",
+            "05_module_c.veryla",
+            "ram.veryla",
         ];
         check_list(&paths, all);
 
-        check_order(&paths, "01_package_a.veryl", "03_module_a.veryl");
-        check_order(&paths, "02_package_b.veryl", "04_module_b.veryl");
-        check_order(&paths, "ram.veryl", "05_module_c.veryl");
+        check_order(&paths, "01_package_a.veryla", "03_module_a.veryla");
+        check_order(&paths, "02_package_b.veryla", "04_module_b.veryla");
+        check_order(&paths, "ram.veryla", "05_module_c.veryla");
     }
 }

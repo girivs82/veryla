@@ -1,5 +1,5 @@
 [package]
-name                  = "veryl-parser"
+name                  = "veryla-parser"
 version               = "0.13.3"
 authors.workspace     = true
 repository.workspace  = true

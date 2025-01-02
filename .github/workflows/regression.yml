@@ -60,16 +60,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - name: Setup veryl
-        run:  cargo install --path crates/veryl
+      - name: Setup veryla
+        run:  cargo install --path crates/veryla
       - name: Setup verilator
         uses: veryl-lang/setup-verilator@v1
       - name: Format check
-        run: veryl fmt --check
-        working-directory: crates/std/veryl
+        run: veryla fmt --check
+        working-directory: crates/std/veryla
       - name: Build check
-        run: veryl check
-        working-directory: crates/std/veryl
+        run: veryla check
+        working-directory: crates/std/veryla
       - name: Test
-        run: veryl test --sim verilator
-        working-directory: crates/std/veryl
+        run: veryla test --sim verilator
+        working-directory: crates/std/veryla

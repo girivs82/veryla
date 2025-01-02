@@ -92,7 +92,7 @@ impl LanguageServer for Backend {
                 ..ServerCapabilities::default()
             },
             server_info: Some(ServerInfo {
-                name: String::from("veryl-ls"),
+                name: String::from("veryla-ls"),
                 version: Some(String::from(env!("CARGO_PKG_VERSION"))),
             }),
         })
@@ -140,7 +140,7 @@ impl LanguageServer for Backend {
 
     async fn did_change_configuration(&self, params: DidChangeConfigurationParams) {
         if let Value::Object(x) = params.settings {
-            if let Some(x) = x.get("veryl-ls") {
+            if let Some(x) = x.get("veryla-ls") {
                 if let Some(Value::Bool(x)) = x.get("useOperatorCompletion") {
                     let x = ServerConfigItem::UseOperatorCompletion(*x);
                     self.send(MsgToServer::DidChangeConfiguration(x)).await;

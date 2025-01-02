@@ -1,7 +1,7 @@
 use crate::analyzer_error::AnalyzerError;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 #[derive(Default)]
 pub struct CheckPort<'a> {
@@ -28,7 +28,7 @@ impl Handler for CheckPort<'_> {
     }
 }
 
-impl VerylGrammarTrait for CheckPort<'_> {
+impl VerylaGrammarTrait for CheckPort<'_> {
     fn port_declaration_item(&mut self, arg: &PortDeclarationItem) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             if let PortDeclarationItemGroup::PortTypeConcrete(x) =

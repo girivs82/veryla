@@ -18,32 +18,32 @@ import { start } from 'repl';
 let client: LanguageClient;
 
 function startServer(context: vscode.ExtensionContext) {
-	let verylLsIntegrated = context.asAbsolutePath(path.join('bin', 'veryl-ls'));
+	let verylaLsIntegrated = context.asAbsolutePath(path.join('bin', 'veryla-ls'));
 
-	let verylLsBinaryPath: string | undefined = workspace.getConfiguration("vscode-veryl").get("verylLsBinary.path");
-	if (typeof verylLsBinaryPath === "undefined") {
-		verylLsBinaryPath = verylLsIntegrated;
-	} else if (verylLsBinaryPath === null) {
-		verylLsBinaryPath = verylLsIntegrated;
+	let verylaLsBinaryPath: string | undefined = workspace.getConfiguration("vscode-veryla").get("verylaLsBinary.path");
+	if (typeof verylaLsBinaryPath === "undefined") {
+		verylaLsBinaryPath = verylaLsIntegrated;
+	} else if (verylaLsBinaryPath === null) {
+		verylaLsBinaryPath = verylaLsIntegrated;
 	}
 
 	// If the extension is launched in debug mode then the debug server options are used
 	// Otherwise the run options are used
 	let serverOptions: ServerOptions = {
-		run: {command: verylLsBinaryPath},
-		debug: {command: verylLsBinaryPath},
+		run: {command: verylaLsBinaryPath},
+		debug: {command: verylaLsBinaryPath},
 	};
 
 	// Options to control the language client
 	let clientOptions: LanguageClientOptions = {
 		// Register the server for plain text documents
-		documentSelector: [{ scheme: 'file', language: 'veryl' }],
+		documentSelector: [{ scheme: 'file', language: 'veryla' }],
 	};
 
 	// Create the language client and start the client.
 	client = new LanguageClient(
-		'veryl-ls',
-		'Veryl language server',
+		'veryla-ls',
+		'Veryla language server',
 		serverOptions,
 		clientOptions
 	);
@@ -65,10 +65,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vscode-veryl" is now active!');
+	console.log('Congratulations, your extension "vscode-veryla" is now active!');
 
 	context.subscriptions.push(
-		commands.registerCommand("vscode-veryl.restartServer", () => {
+		commands.registerCommand("vscode-veryla.restartServer", () => {
 			stopServer().then(function () {startServer(context);}, startServer);
 		})
 	);

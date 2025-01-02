@@ -1,11 +1,11 @@
 use crate::analyzer_error::AnalyzerError;
 use std::fs;
 use std::path::PathBuf;
-use veryl_parser::resource_table;
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_token::TokenSource;
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_parser::resource_table;
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_token::TokenSource;
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 pub struct CheckEmbedInclude<'a> {
     pub errors: Vec<AnalyzerError>,
@@ -29,7 +29,7 @@ impl Handler for CheckEmbedInclude<'_> {
     }
 }
 
-impl VerylGrammarTrait for CheckEmbedInclude<'_> {
+impl VerylaGrammarTrait for CheckEmbedInclude<'_> {
     fn embed_declaration(&mut self, arg: &EmbedDeclaration) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             let way = arg.identifier.identifier_token.to_string();

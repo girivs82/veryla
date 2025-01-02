@@ -1,11 +1,11 @@
 use crate::analyzer_error::AnalyzerError;
 use crate::symbol::Direction as SymDirection;
 use crate::symbol_table::is_sv_keyword;
-use veryl_metadata::{Case, Lint};
-use veryl_parser::veryl_grammar_trait::*;
-use veryl_parser::veryl_token::{is_anonymous_token, Token};
-use veryl_parser::veryl_walker::{Handler, HandlerPoint};
-use veryl_parser::ParolError;
+use veryla_metadata::{Case, Lint};
+use veryla_parser::veryla_grammar_trait::*;
+use veryla_parser::veryla_token::{is_anonymous_token, Token};
+use veryla_parser::veryla_walker::{Handler, HandlerPoint};
+use veryla_parser::ParolError;
 
 pub struct CheckIdentifier<'a> {
     pub errors: Vec<AnalyzerError>,
@@ -13,12 +13,12 @@ pub struct CheckIdentifier<'a> {
     lint_opt: &'a Lint,
     point: HandlerPoint,
     in_always_comb: bool,
-    in_always_ff: bool,
+    in_sequence: bool,
     in_function: bool,
 }
 
 enum Kind {
-    ClockDomain,
+    PowerDomain,
     Enum,
     Function,
     FunctionInout,
@@ -50,7 +50,7 @@ impl<'a> CheckIdentifier<'a> {
             lint_opt,
             point: HandlerPoint::Before,
             in_always_comb: false,
-            in_always_ff: false,
+            in_sequence: false,
             in_function: false,
         }
     }
@@ -59,7 +59,7 @@ impl<'a> CheckIdentifier<'a> {
         let opt = &self.lint_opt.naming;
 
         let prefix = match kind {
-            Kind::ClockDomain => &opt.prefix_clock_domain,
+            Kind::PowerDomain => &opt.prefix_power_domain,
             Kind::Enum => &opt.prefix_enum,
             Kind::Function => &opt.prefix_function,
             Kind::FunctionInout => &opt.prefix_function_inout,
@@ -84,7 +84,7 @@ impl<'a> CheckIdentifier<'a> {
         };
 
         let suffix = match kind {
-            Kind::ClockDomain => &opt.suffix_clock_domain,
+            Kind::PowerDomain => &opt.suffix_power_domain,
             Kind::Enum => &opt.suffix_enum,
             Kind::Function => &opt.suffix_function,
             Kind::FunctionInout => &opt.suffix_function_inout,
@@ -109,7 +109,7 @@ impl<'a> CheckIdentifier<'a> {
         };
 
         let case = match kind {
-            Kind::ClockDomain => &opt.case_clock_domain,
+            Kind::PowerDomain => &opt.case_power_domain,
             Kind::Enum => &opt.case_enum,
             Kind::Function => &opt.case_function,
             Kind::FunctionInout => &opt.case_function_inout,
@@ -134,7 +134,7 @@ impl<'a> CheckIdentifier<'a> {
         };
 
         let re_required = match kind {
-            Kind::ClockDomain => &opt.re_required_clock_domain,
+            Kind::PowerDomain => &opt.re_required_power_domain,
             Kind::Enum => &opt.re_required_enum,
             Kind::Function => &opt.re_required_function,
             Kind::FunctionInout => &opt.re_required_function_inout,
@@ -159,7 +159,7 @@ impl<'a> CheckIdentifier<'a> {
         };
 
         let re_forbidden = match kind {
-            Kind::ClockDomain => &opt.re_forbidden_clock_domain,
+            Kind::PowerDomain => &opt.re_forbidden_power_domain,
             Kind::Enum => &opt.re_forbidden_enum,
             Kind::Function => &opt.re_forbidden_function,
             Kind::FunctionInout => &opt.re_forbidden_function_inout,
@@ -185,7 +185,7 @@ impl<'a> CheckIdentifier<'a> {
 
         let identifier = token.to_string();
 
-        if !matches!(kind, Kind::ClockDomain) && is_anonymous_token(token) {
+        if !matches!(kind, Kind::PowerDomain) && is_anonymous_token(token) {
             self.errors.push(AnalyzerError::anonymous_identifier_usage(
                 self.text,
                 &token.into(),
@@ -293,10 +293,10 @@ impl Handler for CheckIdentifier<'_> {
     }
 }
 
-impl VerylGrammarTrait for CheckIdentifier<'_> {
-    fn clock_domain(&mut self, arg: &ClockDomain) -> Result<(), ParolError> {
+impl VerylaGrammarTrait for CheckIdentifier<'_> {
+    fn power_domain(&mut self, arg: &PowerDomain) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
-            self.check(&arg.identifier.identifier_token.token, Kind::ClockDomain);
+            self.check(&arg.identifier.identifier_token.token, Kind::PowerDomain);
         }
         Ok(())
     }
@@ -307,7 +307,7 @@ impl VerylGrammarTrait for CheckIdentifier<'_> {
             if self.in_always_comb {
                 self.check(&token, Kind::Wire);
             }
-            if self.in_always_ff {
+            if self.in_sequence {
                 self.check(&token, Kind::Reg);
             }
         }
@@ -399,10 +399,10 @@ impl VerylGrammarTrait for CheckIdentifier<'_> {
         Ok(())
     }
 
-    fn always_ff_declaration(&mut self, _arg: &AlwaysFfDeclaration) -> Result<(), ParolError> {
+    fn sequence_declaration(&mut self, _arg: &SequenceDeclaration) -> Result<(), ParolError> {
         match self.point {
-            HandlerPoint::Before => self.in_always_ff = true,
-            HandlerPoint::After => self.in_always_ff = false,
+            HandlerPoint::Before => self.in_sequence = true,
+            HandlerPoint::After => self.in_sequence = false,
         }
         Ok(())
     }

@@ -5,13 +5,13 @@ use std::path::PathBuf;
 #[serde(deny_unknown_fields)]
 pub struct Build {
     #[serde(default)]
-    pub clock_type: ClockType,
+    pub power_type: PowerType,
     #[serde(default)]
     pub reset_type: ResetType,
-    pub clock_posedge_prefix: Option<String>,
-    pub clock_posedge_suffix: Option<String>,
-    pub clock_negedge_prefix: Option<String>,
-    pub clock_negedge_suffix: Option<String>,
+    pub power_posedge_prefix: Option<String>,
+    pub power_posedge_suffix: Option<String>,
+    pub power_negedge_prefix: Option<String>,
+    pub power_negedge_suffix: Option<String>,
     pub reset_high_prefix: Option<String>,
     pub reset_high_suffix: Option<String>,
     pub reset_low_prefix: Option<String>,
@@ -37,7 +37,7 @@ pub struct Build {
 }
 
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
-pub enum ClockType {
+pub enum PowerType {
     #[default]
     #[serde(rename = "posedge")]
     PosEdge,
