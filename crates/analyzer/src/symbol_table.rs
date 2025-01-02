@@ -1102,8 +1102,8 @@ mod tests {
     use crate::namespace::Namespace;
     use crate::symbol_table::{ResolveError, ResolveResult, SymbolPath};
     use crate::{symbol_table, Analyzer};
-    use veryl_metadata::Metadata;
-    use veryl_parser::{resource_table, Parser};
+    use veryla_metadata::Metadata;
+    use veryla_parser::{resource_table, Parser};
 
     const CODE: &str = r##"
     module ModuleA #(
@@ -1175,7 +1175,7 @@ mod tests {
             toml::from_str(&Metadata::create_default_toml("prj").unwrap()).unwrap();
         let parser = Parser::parse(&CODE, &"").unwrap();
         let analyzer = Analyzer::new(&metadata);
-        analyzer.analyze_pass1(&"prj", &CODE, &"", &parser.veryl);
+        analyzer.analyze_pass1(&"prj", &CODE, &"", &parser.veryla);
     }
 
     #[track_caller]
