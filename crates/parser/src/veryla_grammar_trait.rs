@@ -182,12 +182,17 @@ pub fn is_anonymous_expression(arg: &Expression) -> bool {
     }
 
     let exp = &*exp.expression11;
-    if exp.expression11_opt.is_some() {
+    if !exp.expression11_list.is_empty() {
         return false;
     }
 
     let exp = &*exp.expression12;
-    if !exp.expression12_list.is_empty() {
+    if exp.expression12_opt.is_some() {
+        return false;
+    }
+
+    let exp = &*exp.expression13;
+    if !exp.expression13_list.is_empty() {
         return false;
     }
 

@@ -316,11 +316,11 @@ pub enum AnalyzerError {
 
     #[diagnostic(
         severity(Error),
-        code(invalid_reset),
+        code(invalid_enable),
         help(""),
-        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#invalid_reset")
+        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#invalid_enable")
     )]
-    #[error("#{identifier} can't be used as a reset because it is not 'reset' type nor a single bit signal")]
+    #[error("#{identifier} can't be used as a enable because it is not 'enable' type nor a single bit signal")]
     InvalidReset {
         identifier: String,
         #[source_code]
@@ -331,9 +331,9 @@ pub enum AnalyzerError {
 
     #[diagnostic(
         severity(Error),
-        code(invalid_reset_non_elaborative),
+        code(invalid_enable_non_elaborative),
         help(""),
-        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#invalid_reset_non_elaborative")
+        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#invalid_enable_non_elaborative")
     )]
     #[error("Reset-value cannot be used because it is not evaluable at elaboration time")]
     InvalidResetNonElaborative {
@@ -504,11 +504,11 @@ pub enum AnalyzerError {
 
     #[diagnostic(
         severity(Error),
-        code(missing_if_reset),
-        help("add if_reset statement"),
-        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#missing_if_reset")
+        code(missing_if_enable),
+        help("add if_enable statement"),
+        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#missing_if_enable")
     )]
-    #[error("if_reset statement is required for sequence with reset signal")]
+    #[error("if_enable statement is required for sequence with enable signal")]
     MissingIfReset {
         #[source_code]
         input: NamedSource<String>,
@@ -548,11 +548,11 @@ pub enum AnalyzerError {
 
     #[diagnostic(
         severity(Error),
-        code(missing_reset_signal),
-        help("add reset port"),
-        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#missing_reset_signal")
+        code(missing_enable_signal),
+        help("add enable port"),
+        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#missing_enable_signal")
     )]
-    #[error("reset signal is required for sequence with if_reset statement")]
+    #[error("enable signal is required for sequence with if_enable statement")]
     MissingResetSignal {
         #[source_code]
         input: NamedSource<String>,
@@ -562,19 +562,19 @@ pub enum AnalyzerError {
 
     #[diagnostic(
         severity(Warning),
-        code(missing_reset_statement),
-        help("add reset statement"),
-        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#missing_reset_statement")
+        code(missing_enable_statement),
+        help("add enable statement"),
+        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#missing_enable_statement")
     )]
-    #[error("{name} is not reset in if_reset statement")]
+    #[error("{name} is not enable in if_enable statement")]
     MissingResetStatement {
         name: String,
         #[source_code]
         input: NamedSource<String>,
         #[label("Error location")]
         error_location: SourceSpan,
-        #[label("Not reset")]
-        reset: SourceSpan,
+        #[label("Not enable")]
+        enable: SourceSpan,
     },
 
     #[diagnostic(
@@ -622,9 +622,9 @@ pub enum AnalyzerError {
 
     #[diagnostic(
         severity(Error),
-        code(sv_with_implicit_reset),
-        help("Use types with explicit synchronisity and polarity like `reset_async_low`"),
-        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#sv_with_implicit_reset")
+        code(sv_with_implicit_enable),
+        help("Use types with explicit polarity like `enable_low`"),
+        url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#sv_with_implicit_enable")
     )]
     #[error("Reset type with implicit synchronisity and polarity can't be connected to SystemVerilog module")]
     SvWithImplicitReset {
@@ -1246,7 +1246,7 @@ impl AnalyzerError {
         }
     }
 
-    pub fn invalid_reset(identifier: &str, source: &str, token: &TokenRange) -> Self {
+    pub fn invalid_enable(identifier: &str, source: &str, token: &TokenRange) -> Self {
         AnalyzerError::InvalidReset {
             identifier: identifier.into(),
             input: AnalyzerError::named_source(source, token),
@@ -1254,7 +1254,7 @@ impl AnalyzerError {
         }
     }
 
-    pub fn invalid_reset_non_elaborative(source: &str, token: &TokenRange) -> Self {
+    pub fn invalid_enable_non_elaborative(source: &str, token: &TokenRange) -> Self {
         AnalyzerError::InvalidResetNonElaborative {
             input: AnalyzerError::named_source(source, token),
             error_location: token.into(),
@@ -1418,31 +1418,31 @@ impl AnalyzerError {
         }
     }
 
-    pub fn missing_if_reset(source: &str, token: &TokenRange) -> Self {
+    pub fn missing_if_enable(source: &str, token: &TokenRange) -> Self {
         AnalyzerError::MissingIfReset {
             input: AnalyzerError::named_source(source, token),
             error_location: token.into(),
         }
     }
 
-    pub fn missing_reset_signal(source: &str, token: &TokenRange) -> Self {
+    pub fn missing_enable_signal(source: &str, token: &TokenRange) -> Self {
         AnalyzerError::MissingResetSignal {
             input: AnalyzerError::named_source(source, token),
             error_location: token.into(),
         }
     }
 
-    pub fn missing_reset_statement(
+    pub fn missing_enable_statement(
         name: &str,
         source: &str,
         token: &TokenRange,
-        reset: &TokenRange,
+        enable: &TokenRange,
     ) -> Self {
         AnalyzerError::MissingResetStatement {
             name: name.to_string(),
             input: AnalyzerError::named_source(source, token),
             error_location: token.into(),
-            reset: reset.into(),
+            enable: enable.into(),
         }
     }
 
@@ -1491,7 +1491,7 @@ impl AnalyzerError {
         }
     }
 
-    pub fn sv_with_implicit_reset(source: &str, token: &TokenRange) -> Self {
+    pub fn sv_with_implicit_enable(source: &str, token: &TokenRange) -> Self {
         AnalyzerError::SvWithImplicitReset {
             input: AnalyzerError::named_source(source, token),
             error_location: token.into(),

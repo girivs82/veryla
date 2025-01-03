@@ -546,8 +546,8 @@ fn check_assign_position_tree(
         ));
     }
 
-    if let Some(token) = tree.check_sequence_missing_reset() {
-        ret.push(AnalyzerError::missing_reset_statement(
+    if let Some(token) = tree.check_sequence_missing_enable() {
+        ret.push(AnalyzerError::missing_enable_statement(
             &symbol.token.to_string(),
             text,
             &symbol.token.into(),

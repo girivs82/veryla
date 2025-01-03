@@ -13,7 +13,7 @@ use veryla_analyzer::symbol::{
 use veryla_analyzer::symbol_path::{GenericSymbolPath, SymbolPath};
 use veryla_analyzer::symbol_table::{self, ResolveError, ResolveResult};
 use veryla_analyzer::{msb_table, namespace_table};
-use veryla_metadata::{Build, BuiltinType, PowerType, Format, Metadata, ResetType, SourceMapTarget};
+use veryla_metadata::{Build, BuiltinType, PowerType, Format, Metadata, EnableType, SourceMapTarget};
 use veryla_parser::resource_table::{self, StrId};
 use veryla_parser::veryla_grammar_trait::*;
 use veryla_parser::veryla_token::{is_anonymous_token, Token, TokenSource, VerylaToken};
@@ -59,10 +59,11 @@ pub struct Emitter {
     in_import: bool,
     in_scalar_type: bool,
     in_expression: Vec<()>,
-    signed: bool,
+    open_collector: bool,
+    open_drain: bool,
     default_power: Option<SymbolId>,
-    default_reset: Option<SymbolId>,
-    reset_signal: Option<String>,
+    default_enable: Option<SymbolId>,
+    enable_signal: Option<String>,
     default_block: Option<String>,
     enum_width: usize,
     emit_enum_implicit_valiant: bool,
@@ -97,10 +98,11 @@ impl Default for Emitter {
             in_import: false,
             in_scalar_type: false,
             in_expression: Vec::new(),
-            signed: false,
+            open_collector: false,
+            open_drain: false,
             default_power: None,
-            default_reset: None,
-            reset_signal: None,
+            default_enable: None,
+            enable_signal: None,
             default_block: None,
             enum_width: 0,
             emit_enum_implicit_valiant: false,
@@ -597,13 +599,13 @@ impl Emitter {
         self.l_paren(&arg.l_paren);
         self.sequence_power(&arg.sequence_power);
         if let Some(ref x) = arg.sequence_event_list_opt {
-            if self.sequence_reset_exist_in_sensitivity_list(&x.sequence_reset) {
+            if self.sequence_enable_exist_in_sensitivity_list(&x.sequence_enable) {
                 self.comma(&x.comma);
                 self.space(1);
             }
-            self.sequence_reset(&x.sequence_reset);
-        } else if self.sequence_if_reset_exists(decl) {
-            self.sequence_implicit_reset_event();
+            self.sequence_enable(&x.sequence_enable);
+        } else if self.sequence_if_enable_exists(decl) {
+            self.sequence_implicit_enable_event();
         }
         self.r_paren(&arg.r_paren);
     }
@@ -611,8 +613,8 @@ impl Emitter {
     fn sequence_implicit_event_list(&mut self, arg: &SequenceDeclaration) {
         self.str("(");
         self.sequence_implicit_power_event();
-        if self.sequence_if_reset_exists(arg) {
-            self.sequence_implicit_reset_event();
+        if self.sequence_if_enable_exists(arg) {
+            self.sequence_implicit_enable_event();
         }
         self.str(")")
     }
@@ -649,11 +651,11 @@ impl Emitter {
         }
     }
 
-    fn sequence_if_reset_exists(&mut self, arg: &SequenceDeclaration) -> bool {
+    fn sequence_if_enable_exists(&mut self, arg: &SequenceDeclaration) -> bool {
         if let Some(x) = arg.statement_block.statement_block_list.first() {
             let x: Vec<_> = x.statement_block_group.as_ref().into();
             if let Some(StatementBlockItem::Statement(x)) = x.first() {
-                matches!(*x.statement, Statement::IfResetStatement(_))
+                matches!(*x.statement, Statement::IfEnableStatement(_))
             } else {
                 false
             }
@@ -662,9 +664,9 @@ impl Emitter {
         }
     }
 
-    fn sequence_implicit_reset_event(&mut self) {
-        let symbol = symbol_table::get(self.default_reset.unwrap()).unwrap();
-        let (reset_kind, prefix, suffix) = match symbol.kind {
+    fn sequence_implicit_enable_event(&mut self) {
+        let symbol = symbol_table::get(self.default_enable.unwrap()).unwrap();
+        let (enable_kind, prefix, suffix) = match symbol.kind {
             SymbolKind::Port(x) => (
                 x.r#type.clone().unwrap().kind,
                 x.prefix.clone(),
@@ -673,12 +675,10 @@ impl Emitter {
             SymbolKind::Variable(x) => (x.r#type.kind, x.prefix.clone(), x.suffix.clone()),
             _ => unreachable!(),
         };
-        let reset_type = match reset_kind {
-            TypeKind::ResetAsyncHigh => ResetType::AsyncHigh,
-            TypeKind::ResetAsyncLow => ResetType::AsyncLow,
-            TypeKind::ResetSyncHigh => ResetType::SyncHigh,
-            TypeKind::ResetSyncLow => ResetType::SyncLow,
-            TypeKind::Reset => self.build_opt.reset_type,
+        let enable_type = match enable_kind {
+            TypeKind::EnableHigh => EnableType::High,
+            TypeKind::EnableLow => EnableType::Low,
+            TypeKind::Enable => self.build_opt.enable_type,
             _ => unreachable!(),
         };
 
@@ -688,8 +688,8 @@ impl Emitter {
             symbol.token
         };
 
-        let prefix_op = match reset_type {
-            ResetType::AsyncHigh => {
+        let prefix_op = match enable_type {
+            EnableType::High => {
                 self.str(",");
                 self.space(1);
                 self.str("posedge");
@@ -697,7 +697,7 @@ impl Emitter {
                 self.str(&token.to_string());
                 ""
             }
-            ResetType::AsyncLow => {
+            EnableType::Low => {
                 self.str(",");
                 self.space(1);
                 self.str("negedge");
@@ -705,29 +705,24 @@ impl Emitter {
                 self.str(&token.to_string());
                 "!"
             }
-            ResetType::SyncHigh => "",
-            ResetType::SyncLow => "!",
         };
 
-        self.reset_signal = Some(format!("{}{}", prefix_op, token));
+        self.enable_signal = Some(format!("{}{}", prefix_op, token));
     }
 
-    fn sequence_reset_exist_in_sensitivity_list(&mut self, arg: &SequenceReset) -> bool {
+    fn sequence_enable_exist_in_sensitivity_list(&mut self, arg: &SequenceEnable) -> bool {
         if let Ok(found) = symbol_table::resolve(arg.hierarchical_identifier.as_ref()) {
-            let reset_kind = match found.found.kind {
+            let enable_kind = match found.found.kind {
                 SymbolKind::Port(x) => x.r#type.clone().unwrap().kind,
                 SymbolKind::Variable(x) => x.r#type.kind,
                 _ => unreachable!(),
             };
 
-            match reset_kind {
-                TypeKind::ResetAsyncHigh | TypeKind::ResetAsyncLow => true,
-                TypeKind::ResetSyncHigh | TypeKind::ResetSyncLow => false,
-                _ => match self.build_opt.reset_type {
-                    ResetType::AsyncLow => true,
-                    ResetType::AsyncHigh => true,
-                    ResetType::SyncLow => false,
-                    ResetType::SyncHigh => false,
+            match enable_kind {
+                TypeKind::EnableHigh | TypeKind::EnableLow => true,
+                _ => match self.build_opt.enable_type {
+                    EnableType::Low => true,
+                    EnableType::High => true,
                 },
             }
         } else {
@@ -1146,29 +1141,19 @@ impl VerylaWalker for Emitter {
         self.veryla_token(&arg.const_token.replace("localparam"));
     }
 
-    /// Semantic action for non-terminal 'Reset'
-    fn reset(&mut self, arg: &Reset) {
-        self.veryla_token(&arg.reset_token.replace("logic"));
+    /// Semantic action for non-terminal 'Enable'
+    fn enable(&mut self, arg: &Enable) {
+        self.veryla_token(&arg.enable_token.replace("logic"));
     }
 
-    /// Semantic action for non-terminal 'ResetAsyncHigh'
-    fn reset_async_high(&mut self, arg: &ResetAsyncHigh) {
-        self.veryla_token(&arg.reset_async_high_token.replace("logic"));
+    /// Semantic action for non-terminal 'EnableHigh'
+    fn enable_high(&mut self, arg: &EnableHigh) {
+        self.veryla_token(&arg.enable_high_token.replace("logic"));
     }
 
-    /// Semantic action for non-terminal 'ResetAsyncLow'
-    fn reset_async_low(&mut self, arg: &ResetAsyncLow) {
-        self.veryla_token(&arg.reset_async_low_token.replace("logic"));
-    }
-
-    /// Semantic action for non-terminal 'ResetSyncHigh'
-    fn reset_sync_high(&mut self, arg: &ResetSyncHigh) {
-        self.veryla_token(&arg.reset_sync_high_token.replace("logic"));
-    }
-
-    /// Semantic action for non-terminal 'ResetSyncLow'
-    fn reset_sync_low(&mut self, arg: &ResetSyncLow) {
-        self.veryla_token(&arg.reset_sync_low_token.replace("logic"));
+    /// Semantic action for non-terminal 'EnableAsyncLow'
+    fn enable_low(&mut self, arg: &EnableLow) {
+        self.veryla_token(&arg.enable_low_token.replace("logic"));
     }
 
     /// Semantic action for non-terminal 'F32'
@@ -1436,7 +1421,7 @@ impl VerylaWalker for Emitter {
         }
     }
 
-    /// Semantic action for non-terminal 'Expression08'
+    /// Semantic action for non-terminal 'Expression07'
     #[inline(never)]
     fn expression08(&mut self, arg: &Expression08) {
         self.expression09(&arg.expression09);
@@ -1448,37 +1433,49 @@ impl VerylaWalker for Emitter {
         }
     }
 
-    /// Semantic action for non-terminal 'Expression09'
+    /// Semantic action for non-terminal 'Expression08'
     #[inline(never)]
     fn expression09(&mut self, arg: &Expression09) {
         self.expression10(&arg.expression10);
         for x in &arg.expression09_list {
             self.space(1);
-            match &*x.expression09_list_group {
-                Expression09ListGroup::Operator10(x) => self.operator10(&x.operator10),
-                Expression09ListGroup::Star(x) => self.star(&x.star),
-            }
+            self.operator10(&x.operator10);
             self.space(1);
             self.expression10(&x.expression10);
         }
     }
 
-    /// Semantic action for non-terminal 'Expression10'
+    /// Semantic action for non-terminal 'Expression09'
     #[inline(never)]
     fn expression10(&mut self, arg: &Expression10) {
         self.expression11(&arg.expression11);
         for x in &arg.expression10_list {
             self.space(1);
-            self.operator11(&x.operator11);
+            match &*x.expression10_list_group {
+                Expression10ListGroup::Operator11(x) => self.operator11(&x.operator11),
+                Expression10ListGroup::Star(x) => self.star(&x.star),
+            }
             self.space(1);
             self.expression11(&x.expression11);
         }
     }
 
-    /// Semantic action for non-terminal 'Expression11'
+    /// Semantic action for non-terminal 'Expression10'
     #[inline(never)]
     fn expression11(&mut self, arg: &Expression11) {
-        if let Some(x) = &arg.expression11_opt {
+        self.expression12(&arg.expression12);
+        for x in &arg.expression11_list {
+            self.space(1);
+            self.operator12(&x.operator12);
+            self.space(1);
+            self.expression12(&x.expression12);
+        }
+    }
+
+    /// Semantic action for non-terminal 'Expression11'
+    #[inline(never)]
+    fn expression12(&mut self, arg: &Expression12) {
+        if let Some(x) = &arg.expression12_opt {
             match x.casting_type.as_ref() {
                 CastingType::U32(_) => self.str("unsigned'(int'("),
                 CastingType::U64(_) => self.str("unsigned'(longint'("),
@@ -1508,45 +1505,37 @@ impl VerylaWalker for Emitter {
                 CastingType::Power(_)
                 | CastingType::PowerPosedge(_)
                 | CastingType::PowerNegedge(_) => (),
-                CastingType::Reset(_)
-                | CastingType::ResetAsyncHigh(_)
-                | CastingType::ResetAsyncLow(_)
-                | CastingType::ResetSyncHigh(_)
-                | CastingType::ResetSyncLow(_) => {
+                CastingType::Enable(_)
+                | CastingType::EnableHigh(_)
+                | CastingType::EnableLow(_) => {
                     let mut eval = Evaluator::new();
-                    let src = eval.expression12(&arg.expression12);
+                    let src = eval.expression13(&arg.expression13);
                     let dst = x.casting_type.as_ref();
-                    let reset_type = self.build_opt.reset_type;
+                    let enable_type = self.build_opt.enable_type;
 
                     let src_is_high =
-                        matches!((src, reset_type), (Evaluated::Reset, ResetType::AsyncHigh))
-                            | matches!((src, reset_type), (Evaluated::Reset, ResetType::SyncHigh))
-                            | matches!(src, Evaluated::ResetAsyncHigh)
-                            | matches!(src, Evaluated::ResetSyncHigh);
+                        matches!((src, enable_type), (Evaluated::Enable, EnableType::High))
+                            | matches!((src, enable_type), (Evaluated::Enable, EnableType::High));
 
                     let src_is_low =
-                        matches!((src, reset_type), (Evaluated::Reset, ResetType::AsyncLow))
-                            | matches!((src, reset_type), (Evaluated::Reset, ResetType::SyncLow))
-                            | matches!(src, Evaluated::ResetAsyncLow)
-                            | matches!(src, Evaluated::ResetSyncLow);
+                        matches!((src, enable_type), (Evaluated::Enable, EnableType::Low))
+                            | matches!((src, enable_type), (Evaluated::Enable, EnableType::Low));
 
                     let dst_is_high = matches!(
-                        (dst, reset_type),
-                        (CastingType::Reset(_), ResetType::AsyncHigh)
+                        (dst, enable_type),
+                        (CastingType::Enable(_), EnableType::High)
                     ) | matches!(
-                        (dst, reset_type),
-                        (CastingType::Reset(_), ResetType::SyncHigh)
-                    ) | matches!(dst, CastingType::ResetAsyncHigh(_))
-                        | matches!(dst, CastingType::ResetSyncHigh(_));
+                        (dst, enable_type),
+                        (CastingType::Enable(_), EnableType::High)
+                    ) | matches!(dst, CastingType::EnableHigh(_));
 
                     let dst_is_low = matches!(
-                        (dst, reset_type),
-                        (CastingType::Reset(_), ResetType::AsyncLow)
+                        (dst, enable_type),
+                        (CastingType::Enable(_), EnableType::Low)
                     ) | matches!(
-                        (dst, reset_type),
-                        (CastingType::Reset(_), ResetType::SyncLow)
-                    ) | matches!(dst, CastingType::ResetAsyncLow(_))
-                        | matches!(dst, CastingType::ResetSyncLow(_));
+                        (dst, enable_type),
+                        (CastingType::Enable(_), EnableType::Low)
+                    ) | matches!(dst, CastingType::EnableLow(_));
 
                     if (src_is_high && dst_is_low) || (src_is_low && dst_is_high) {
                         self.str("~")
@@ -1554,8 +1543,8 @@ impl VerylaWalker for Emitter {
                 }
             }
         }
-        self.expression12(&arg.expression12);
-        if let Some(x) = &arg.expression11_opt {
+        self.expression13(&arg.expression13);
+        if let Some(x) = &arg.expression12_opt {
             match x.casting_type.as_ref() {
                 CastingType::U32(_)
                 | CastingType::U64(_)
@@ -1888,7 +1877,8 @@ impl VerylaWalker for Emitter {
                 self.tri(&x.tri);
                 self.space(1);
             }
-            TypeModifier::Signed(_) => self.signed = true,
+            TypeModifier::OpenCollector(_) => self.open_collector = true,
+            TypeModifier::OpenDrain(_) => self.open_drain = true,
         }
     }
 
@@ -1897,9 +1887,13 @@ impl VerylaWalker for Emitter {
         match arg.factor_type_group.as_ref() {
             FactorTypeGroup::VariableTypeFactorTypeOpt(x) => {
                 self.variable_type(&x.variable_type);
-                if self.signed {
+                if self.open_collector {
                     self.space(1);
-                    self.str("signed");
+                    self.str("opencollector");
+                }
+                else if self.open_drain {
+                    self.space(1);
+                    self.str("opendrain");
                 }
                 if self.in_scalar_type {
                     self.align_finish(align_kind::TYPE);
@@ -1946,9 +1940,13 @@ impl VerylaWalker for Emitter {
         match &*arg.scalar_type_group {
             ScalarTypeGroup::UserDefinedTypeScalarTypeOpt(x) => {
                 self.user_defined_type(&x.user_defined_type);
-                if self.signed {
+                if self.open_collector {
                     self.space(1);
-                    self.str("signed");
+                    self.str("opencollector");
+                }
+                else if self.open_drain {
+                    self.space(1);
+                    self.str("opendrain");
                 }
                 self.align_finish(align_kind::TYPE);
                 self.align_start(align_kind::WIDTH);
@@ -1962,7 +1960,8 @@ impl VerylaWalker for Emitter {
             }
             ScalarTypeGroup::FactorType(x) => self.factor_type(&x.factor_type),
         }
-        self.signed = false;
+        self.open_collector = false;
+        self.open_drain = false;
         self.in_scalar_type = false;
         self.align_finish(align_kind::WIDTH);
     }
@@ -2117,27 +2116,27 @@ impl VerylaWalker for Emitter {
         }
     }
 
-    /// Semantic action for non-terminal 'IfResetStatement'
-    fn if_reset_statement(&mut self, arg: &IfResetStatement) {
+    /// Semantic action for non-terminal 'IfEnableStatement'
+    fn if_enable_statement(&mut self, arg: &IfEnableStatement) {
         let (prefix, force_last_item_default) =
-            self.cond_type_prefix(&arg.if_reset.if_reset_token.token);
+            self.cond_type_prefix(&arg.if_enable.if_enable_token.token);
         self.token(
-            &arg.if_reset
-                .if_reset_token
+            &arg.if_enable
+                .if_enable_token
                 .replace("if")
                 .append(&prefix, &None),
         );
         self.space(1);
         self.str("(");
-        let reset_signal = self.reset_signal.clone().unwrap();
-        self.str(&reset_signal);
+        let enable_signal = self.enable_signal.clone().unwrap();
+        self.str(&enable_signal);
         self.str(")");
         self.space(1);
         self.statement_block(&arg.statement_block);
-        let len = arg.if_reset_statement_list.len();
-        for (i, x) in arg.if_reset_statement_list.iter().enumerate() {
+        let len = arg.if_enable_statement_list.len();
+        for (i, x) in arg.if_enable_statement_list.iter().enumerate() {
             let force_default =
-                force_last_item_default & (i == (len - 1)) & arg.if_reset_statement_opt.is_none();
+                force_last_item_default & (i == (len - 1)) & arg.if_enable_statement_opt.is_none();
             if force_default {
                 self.space(1);
                 self.str("else");
@@ -2155,7 +2154,7 @@ impl VerylaWalker for Emitter {
             }
             self.statement_block(&x.statement_block);
         }
-        if let Some(ref x) = arg.if_reset_statement_opt {
+        if let Some(ref x) = arg.if_enable_statement_opt {
             self.space(1);
             self.r#else(&x.r#else);
             self.space(1);
@@ -2532,10 +2531,10 @@ impl VerylaWalker for Emitter {
         }
     }
 
-    /// Semantic action for non-terminal 'SequenceReset'
-    fn sequence_reset(&mut self, arg: &SequenceReset) {
+    /// Semantic action for non-terminal 'SequenceEnable'
+    fn sequence_enable(&mut self, arg: &SequenceEnable) {
         if let Ok(found) = symbol_table::resolve(arg.hierarchical_identifier.as_ref()) {
-            let (reset_kind, prefix, suffix) = match found.found.kind {
+            let (enable_kind, prefix, suffix) = match found.found.kind {
                 SymbolKind::Port(x) => (
                     x.r#type.clone().unwrap().kind,
                     x.prefix.clone(),
@@ -2544,29 +2543,25 @@ impl VerylaWalker for Emitter {
                 SymbolKind::Variable(x) => (x.r#type.kind, x.prefix.clone(), x.suffix.clone()),
                 _ => unreachable!(),
             };
-            let reset_type = match reset_kind {
-                TypeKind::ResetAsyncHigh => ResetType::AsyncHigh,
-                TypeKind::ResetAsyncLow => ResetType::AsyncLow,
-                TypeKind::ResetSyncHigh => ResetType::SyncHigh,
-                TypeKind::ResetSyncLow => ResetType::SyncLow,
-                TypeKind::Reset => self.build_opt.reset_type,
+            let enable_type = match enable_kind {
+                TypeKind::EnableHigh => EnableType::High,
+                TypeKind::EnableLow => EnableType::Low,
+                TypeKind::Enable => self.build_opt.enable_type,
                 _ => unreachable!(),
             };
-            let prefix_op = match reset_type {
-                ResetType::AsyncHigh => {
+            let prefix_op = match enable_type {
+                EnableType::High => {
                     self.str("posedge");
                     self.space(1);
                     self.hierarchical_identifier(&arg.hierarchical_identifier);
                     ""
                 }
-                ResetType::AsyncLow => {
+                EnableType::Low => {
                     self.str("negedge");
                     self.space(1);
                     self.hierarchical_identifier(&arg.hierarchical_identifier);
                     "!"
                 }
-                ResetType::SyncHigh => "",
-                ResetType::SyncLow => "!",
             };
 
             let mut stringifier = Stringifier::new();
@@ -2575,7 +2570,7 @@ impl VerylaWalker for Emitter {
                 &prefix,
                 &suffix,
             );
-            self.reset_signal = Some(format!("{}{}", prefix_op, stringifier.as_str()));
+            self.enable_signal = Some(format!("{}{}", prefix_op, stringifier.as_str()));
         } else {
             unreachable!()
         }
@@ -3374,7 +3369,7 @@ impl VerylaWalker for Emitter {
         let symbol = symbol_table::resolve(arg.identifier.as_ref()).unwrap();
         if let SymbolKind::Module(ref x) = symbol.found.kind {
             self.default_power = x.default_power;
-            self.default_reset = x.default_reset;
+            self.default_enable = x.default_enable;
         }
 
         let maps = symbol.found.generic_maps();
@@ -3428,7 +3423,7 @@ impl VerylaWalker for Emitter {
         }
 
         self.default_power = None;
-        self.default_reset = None;
+        self.default_enable = None;
     }
 
     /// Semantic action for non-terminal 'ModuleGroup'

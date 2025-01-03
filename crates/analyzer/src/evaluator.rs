@@ -9,11 +9,9 @@ pub enum Evaluated {
     Power,
     PowerPosedge,
     PowerNegedge,
-    Reset,
-    ResetAsyncHigh,
-    ResetAsyncLow,
-    ResetSyncHigh,
-    ResetSyncLow,
+    Enable,
+    EnableHigh,
+    EnableLow,
     Unknown,
     UnknownStatic, // A temporary enum value to indicate that a value is knowable statically,
                    // even if, currently, the compiler doesn't know what its value is
@@ -31,14 +29,12 @@ impl Evaluated {
         )
     }
 
-    pub fn is_reset(&self) -> bool {
+    pub fn is_enable(&self) -> bool {
         matches!(
             self,
-            Evaluated::Reset
-                | Evaluated::ResetAsyncHigh
-                | Evaluated::ResetAsyncLow
-                | Evaluated::ResetSyncHigh
-                | Evaluated::ResetSyncLow
+            Evaluated::Enable
+                | Evaluated::EnableHigh
+                | Evaluated::EnableLow
         )
     }
 
@@ -590,10 +586,7 @@ impl Evaluator {
     fn expression09(&mut self, arg: &Expression09) -> Evaluated {
         let mut ret = self.expression10(&arg.expression10);
         for x in &arg.expression09_list {
-            let operator = match &*x.expression09_list_group {
-                Expression09ListGroup::Operator10(x) => x.operator10.operator10_token.to_string(),
-                Expression09ListGroup::Star(x) => x.star.star_token.to_string(),
-            };
+            let operator = x.operator10.operator10_token.to_string();
             let operand = self.expression10(&x.expression10);
             ret = self.binary_operator(&operator, ret, operand);
         }
@@ -603,7 +596,10 @@ impl Evaluator {
     fn expression10(&mut self, arg: &Expression10) -> Evaluated {
         let mut ret = self.expression11(&arg.expression11);
         for x in &arg.expression10_list {
-            let operator = x.operator11.operator11_token.to_string();
+            let operator = match &*x.expression10_list_group {
+                Expression10ListGroup::Operator11(x) => x.operator11.operator11_token.to_string(),
+                Expression10ListGroup::Star(x) => x.star.star_token.to_string(),
+            };
             let operand = self.expression11(&x.expression11);
             ret = self.binary_operator(&operator, ret, operand);
         }
@@ -611,17 +607,25 @@ impl Evaluator {
     }
 
     fn expression11(&mut self, arg: &Expression11) -> Evaluated {
-        let ret = self.expression12(&arg.expression12);
-        if let Some(x) = &arg.expression11_opt {
+        let mut ret = self.expression12(&arg.expression12);
+        for x in &arg.expression11_list {
+            let operator = x.operator12.operator12_token.to_string();
+            let operand = self.expression12(&x.expression12);
+            ret = self.binary_operator(&operator, ret, operand);
+        }
+        ret
+    }
+
+    fn expression12(&mut self, arg: &Expression12) -> Evaluated {
+        let ret = self.expression13(&arg.expression13);
+        if let Some(x) = &arg.expression12_opt {
             match x.casting_type.as_ref() {
                 CastingType::Power(_) => Evaluated::Power,
                 CastingType::PowerPosedge(_) => Evaluated::PowerPosedge,
                 CastingType::PowerNegedge(_) => Evaluated::PowerNegedge,
-                CastingType::Reset(_) => Evaluated::Reset,
-                CastingType::ResetAsyncHigh(_) => Evaluated::ResetAsyncHigh,
-                CastingType::ResetAsyncLow(_) => Evaluated::ResetAsyncLow,
-                CastingType::ResetSyncHigh(_) => Evaluated::ResetSyncHigh,
-                CastingType::ResetSyncLow(_) => Evaluated::ResetSyncLow,
+                CastingType::Enable(_) => Evaluated::Enable,
+                CastingType::EnableHigh(_) => Evaluated::EnableHigh,
+                CastingType::EnableLow(_) => Evaluated::EnableLow,
                 _ => ret,
             }
         } else {
@@ -629,17 +633,17 @@ impl Evaluator {
         }
     }
 
-    pub fn expression12(&mut self, arg: &Expression12) -> Evaluated {
+    pub fn expression13(&mut self, arg: &Expression13) -> Evaluated {
         let mut ret = self.factor(&arg.factor);
-        for x in arg.expression12_list.iter().rev() {
-            let operator = match &*x.expression12_list_group {
-                Expression12ListGroup::UnaryOperator(x) => {
+        for x in arg.expression13_list.iter().rev() {
+            let operator = match &*x.expression13_list_group {
+                Expression13ListGroup::UnaryOperator(x) => {
                     x.unary_operator.unary_operator_token.to_string()
                 }
-                Expression12ListGroup::Operator03(x) => x.operator03.operator03_token.to_string(),
-                Expression12ListGroup::Operator04(x) => x.operator04.operator04_token.to_string(),
-                Expression12ListGroup::Operator05(x) => x.operator05.operator05_token.to_string(),
-                Expression12ListGroup::Operator09(x) => x.operator09.operator09_token.to_string(),
+                Expression13ListGroup::Operator03(x) => x.operator03.operator03_token.to_string(),
+                Expression13ListGroup::Operator04(x) => x.operator04.operator04_token.to_string(),
+                Expression13ListGroup::Operator05(x) => x.operator05.operator05_token.to_string(),
+                Expression13ListGroup::Operator10(x) => x.operator10.operator10_token.to_string(),
             };
             ret = self.unary_operator(&operator, ret);
         }

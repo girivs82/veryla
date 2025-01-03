@@ -211,12 +211,17 @@ fn map_assignable_factor(arg: &Expression) -> Option<VarRefPath> {
     }
 
     let exp = &*exp.expression11;
-    if exp.expression11_opt.is_some() {
+    if !exp.expression11_list.is_empty() {
         return None;
     }
 
     let exp = &*exp.expression12;
-    if !exp.expression12_list.is_empty() {
+    if exp.expression12_opt.is_some() {
+        return None;
+    }
+
+    let exp = &*exp.expression13;
+    if !exp.expression13_list.is_empty() {
         return None;
     }
 
@@ -316,7 +321,7 @@ impl VerylaGrammarTrait for CheckVarRef<'_> {
                     } else if let Some(path) = map_assignable_factor(&arg.expression) {
                         self.assign_position.push(AssignPositionType::Statement {
                             token: function_call.token,
-                            resettable: false,
+                            enabletable: false,
                         });
                         self.add_assign(&path);
                         self.in_expression.push(false);
@@ -366,7 +371,7 @@ impl VerylaGrammarTrait for CheckVarRef<'_> {
             if let Ok(path) = VarRefPath::try_from(arg.identifier.as_ref()) {
                 self.assign_position.push(AssignPositionType::Statement {
                     token: arg.equ.equ_token.token,
-                    resettable: false,
+                    enabletable: false,
                 });
                 self.add_assign(&path);
             }
@@ -400,7 +405,7 @@ impl VerylaGrammarTrait for CheckVarRef<'_> {
                             if can_assign(&full_path) {
                                 self.assign_position.push(AssignPositionType::Statement {
                                     token,
-                                    resettable: true,
+                                    enabletable: true,
                                 });
                                 self.add_assign(&path);
                             } else {
@@ -449,7 +454,7 @@ impl VerylaGrammarTrait for CheckVarRef<'_> {
                         token: arg.r#if.if_token.token,
                         branches,
                         has_default,
-                        allow_missing_reset_statement: false,
+                        allow_missing_enable_statement: false,
                         r#type: AssignStatementBranchType::If,
                     });
                 self.assign_position
@@ -468,32 +473,32 @@ impl VerylaGrammarTrait for CheckVarRef<'_> {
         Ok(())
     }
 
-    fn if_reset_statement(&mut self, arg: &IfResetStatement) -> Result<(), ParolError> {
+    fn if_enable_statement(&mut self, arg: &IfEnableStatement) -> Result<(), ParolError> {
         match self.point {
             HandlerPoint::Before => {
                 self.branch_index = 0;
                 let branches =
-                    1 + arg.if_reset_statement_list.len() + arg.if_reset_statement_opt.iter().len();
-                let has_explicit_default = arg.if_reset_statement_opt.is_some();
-                let has_cond_type = has_cond_type(&arg.if_reset.if_reset_token.token);
+                    1 + arg.if_enable_statement_list.len() + arg.if_enable_statement_opt.iter().len();
+                let has_explicit_default = arg.if_enable_statement_opt.is_some();
+                let has_cond_type = has_cond_type(&arg.if_enable.if_enable_token.token);
                 let has_default = has_explicit_default | has_cond_type;
-                let allow_missing_reset_statement = attribute_table::contains(
-                    &arg.if_reset.if_reset_token.token,
-                    Attr::Allow(AllowItem::MissingResetStatement),
+                let allow_missing_enable_statement = attribute_table::contains(
+                    &arg.if_enable.if_enable_token.token,
+                    Attr::Allow(AllowItem::MissingEnableStatement),
                 );
                 self.assign_position
                     .push(AssignPositionType::StatementBranch {
-                        token: arg.if_reset.if_reset_token.token,
+                        token: arg.if_enable.if_enable_token.token,
                         branches,
                         has_default,
-                        allow_missing_reset_statement,
-                        r#type: AssignStatementBranchType::IfReset,
+                        allow_missing_enable_statement,
+                        r#type: AssignStatementBranchType::IfEnable,
                     });
                 self.assign_position
                     .push(AssignPositionType::StatementBranchItem {
-                        token: arg.if_reset.if_reset_token.token,
+                        token: arg.if_enable.if_enable_token.token,
                         index: self.branch_index,
-                        r#type: AssignStatementBranchItemType::IfReset,
+                        r#type: AssignStatementBranchItemType::IfEnable,
                     });
                 self.branch_index += 1;
             }
@@ -510,7 +515,7 @@ impl VerylaGrammarTrait for CheckVarRef<'_> {
             if let Ok(path) = VarRefPath::try_from(arg.identifier.as_ref()) {
                 self.assign_position.push(AssignPositionType::Statement {
                     token: arg.r#for.for_token.token,
-                    resettable: false,
+                    enabletable: false,
                 });
                 self.add_assign(&path);
             }
@@ -536,7 +541,7 @@ impl VerylaGrammarTrait for CheckVarRef<'_> {
                         token: arg.case.case_token.token,
                         branches,
                         has_default,
-                        allow_missing_reset_statement: false,
+                        allow_missing_enable_statement: false,
                         r#type: AssignStatementBranchType::Case,
                     });
             }
@@ -705,11 +710,11 @@ impl VerylaGrammarTrait for CheckVarRef<'_> {
                                     self.add_assign(&path);
                                 }
 
-                                // Check assignment of power/reset type
-                                let (is_power, is_reset) =
+                                // Check assignment of power/enable type
+                                let (is_power, is_enable) =
                                     if let Some(port) = ports.get(&token.text) {
                                         if let Some(x) = &port.r#type {
-                                            (x.kind.is_power(), x.kind.is_reset())
+                                            (x.kind.is_power(), x.kind.is_enable())
                                         } else {
                                             (false, false)
                                         }
@@ -727,31 +732,31 @@ impl VerylaGrammarTrait for CheckVarRef<'_> {
                                     ));
                                 }
 
-                                if is_reset && !symbol.kind.is_reset() {
+                                if is_enable && !symbol.kind.is_enable() {
                                     self.errors.push(AnalyzerError::mismatch_type(
                                         &token.text.to_string(),
-                                        "reset type",
-                                        "non-reset type",
+                                        "enable type",
+                                        "non-enable type",
                                         self.text,
                                         &token.into(),
                                     ));
                                 }
 
-                                // Check implicit reset to SV instance
-                                let is_implicit_reset = match &symbol.kind {
+                                // Check implicit enable to SV instance
+                                let is_implicit_enable = match &symbol.kind {
                                     SymbolKind::Port(x) => {
                                         if let Some(x) = &x.r#type {
-                                            x.kind == TypeKind::Reset
+                                            x.kind == TypeKind::Enable
                                         } else {
                                             false
                                         }
                                     }
-                                    SymbolKind::Variable(x) => x.r#type.kind == TypeKind::Reset,
+                                    SymbolKind::Variable(x) => x.r#type.kind == TypeKind::Enable,
                                     _ => false,
                                 };
 
-                                if sv_instance && is_implicit_reset {
-                                    self.errors.push(AnalyzerError::sv_with_implicit_reset(
+                                if sv_instance && is_implicit_enable {
+                                    self.errors.push(AnalyzerError::sv_with_implicit_enable(
                                         self.text,
                                         &token.into(),
                                     ));
@@ -815,7 +820,7 @@ impl VerylaGrammarTrait for CheckVarRef<'_> {
             if let Ok(path) = VarRefPath::try_from(arg.identifier.as_ref()) {
                 self.assign_position.push(AssignPositionType::Statement {
                     token: arg.r#for.for_token.token,
-                    resettable: false,
+                    enabletable: false,
                 });
                 self.add_assign(&path);
             }

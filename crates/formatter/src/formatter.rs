@@ -286,7 +286,7 @@ impl Formatter {
         }
     }
 
-    fn align_reset(&mut self) {
+    fn align_enable(&mut self) {
         if self.mode == Mode::Align {
             self.aligner.finish_group();
         }
@@ -428,10 +428,7 @@ impl VerylaWalker for Formatter {
         self.expression10(&arg.expression10);
         for x in &arg.expression09_list {
             self.space(1);
-            match &*x.expression09_list_group {
-                Expression09ListGroup::Operator10(x) => self.operator10(&x.operator10),
-                Expression09ListGroup::Star(x) => self.star(&x.star),
-            }
+            self.operator10(&x.operator10);
             self.space(1);
             self.expression10(&x.expression10);
         }
@@ -443,7 +440,10 @@ impl VerylaWalker for Formatter {
         self.expression11(&arg.expression11);
         for x in &arg.expression10_list {
             self.space(1);
-            self.operator11(&x.operator11);
+            match &*x.expression10_list_group {
+                Expression10ListGroup::Operator11(x) => self.operator11(&x.operator11),
+                Expression10ListGroup::Star(x) => self.star(&x.star),
+            }
             self.space(1);
             self.expression11(&x.expression11);
         }
@@ -453,7 +453,19 @@ impl VerylaWalker for Formatter {
     #[inline(never)]
     fn expression11(&mut self, arg: &Expression11) {
         self.expression12(&arg.expression12);
-        if let Some(x) = &arg.expression11_opt {
+        for x in &arg.expression11_list {
+            self.space(1);
+            self.operator12(&x.operator12);
+            self.space(1);
+            self.expression12(&x.expression12);
+        }
+    }
+
+    /// Semantic action for non-terminal 'Expression12'
+    #[inline(never)]
+    fn expression12(&mut self, arg: &Expression12) {
+        self.expression13(&arg.expression13);
+        if let Some(x) = &arg.expression12_opt {
             self.space(1);
             self.r#as(&x.r#as);
             self.space(1);
@@ -918,12 +930,12 @@ impl VerylaWalker for Formatter {
         }
     }
 
-    /// Semantic action for non-terminal 'IfResetStatement'
-    fn if_reset_statement(&mut self, arg: &IfResetStatement) {
-        self.if_reset(&arg.if_reset);
+    /// Semantic action for non-terminal 'IfEnableStatement'
+    fn if_enable_statement(&mut self, arg: &IfEnableStatement) {
+        self.if_enable(&arg.if_enable);
         self.space(1);
         self.statement_block(&arg.statement_block);
-        for x in &arg.if_reset_statement_list {
+        for x in &arg.if_enable_statement_list {
             self.space(1);
             self.r#else(&x.r#else);
             self.space(1);
@@ -933,7 +945,7 @@ impl VerylaWalker for Formatter {
             self.space(1);
             self.statement_block(&x.statement_block);
         }
-        if let Some(ref x) = arg.if_reset_statement_opt {
+        if let Some(ref x) = arg.if_enable_statement_opt {
             self.space(1);
             self.r#else(&x.r#else);
             self.space(1);
@@ -1183,7 +1195,7 @@ impl VerylaWalker for Formatter {
         if let Some(ref x) = arg.sequence_event_list_opt {
             self.comma(&x.comma);
             self.space(1);
-            self.sequence_reset(&x.sequence_reset);
+            self.sequence_enable(&x.sequence_enable);
         }
         self.r_paren(&arg.r_paren);
         self.space(1);
@@ -1194,8 +1206,8 @@ impl VerylaWalker for Formatter {
         self.hierarchical_identifier(&arg.hierarchical_identifier);
     }
 
-    /// Semantic action for non-terminal 'SequenceReset'
-    fn sequence_reset(&mut self, arg: &SequenceReset) {
+    /// Semantic action for non-terminal 'SequenceEnable'
+    fn sequence_enable(&mut self, arg: &SequenceEnable) {
         self.hierarchical_identifier(&arg.hierarchical_identifier);
     }
 
@@ -1850,12 +1862,12 @@ impl VerylaWalker for Formatter {
             self.space(1);
         }
         if let Some(ref x) = arg.function_declaration_opt1 {
-            self.align_reset();
+            self.align_enable();
             self.minus_g_t(&x.minus_g_t);
             self.space(1);
             self.scalar_type(&x.scalar_type);
             self.space(1);
-            self.align_reset();
+            self.align_enable();
         }
         self.statement_block(&arg.statement_block);
     }

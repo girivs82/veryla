@@ -24,7 +24,7 @@ use crate::symbol_table;
 use crate::symbol_table::Import as SymImport;
 use std::collections::{HashMap, HashSet};
 use veryla_metadata::PowerType;
-use veryla_metadata::{Build, ResetType};
+use veryla_metadata::{Build, EnableType};
 use veryla_parser::doc_comment_table;
 use veryla_parser::resource_table::{self, StrId};
 use veryla_parser::veryla_grammar_trait::*;
@@ -87,7 +87,7 @@ pub struct CreateSymbolTable<'a> {
     needs_default_generic_argument: bool,
     generic_context: GenericContext,
     default_power_candidates: Vec<SymbolId>,
-    defualt_reset_candidates: Vec<SymbolId>,
+    defualt_enable_candidates: Vec<SymbolId>,
     modport_member_ids: Vec<SymbolId>,
     function_ids: HashMap<StrId, SymbolId>,
     exist_power_without_domain: bool,
@@ -208,15 +208,15 @@ impl<'a> CreateSymbolTable<'a> {
                     return (prefix, suffix);
                 }
             },
-            TypeKind::Reset => match self.build_opt.reset_type {
-                ResetType::AsyncHigh | ResetType::SyncHigh => {
-                    let prefix = self.build_opt.reset_high_prefix.clone();
-                    let suffix = self.build_opt.reset_high_suffix.clone();
+            TypeKind::Enable => match self.build_opt.enable_type {
+                EnableType::High => {
+                    let prefix = self.build_opt.enable_high_prefix.clone();
+                    let suffix = self.build_opt.enable_high_suffix.clone();
                     return (prefix, suffix);
                 }
-                ResetType::AsyncLow | ResetType::SyncLow => {
-                    let prefix = self.build_opt.reset_low_prefix.clone();
-                    let suffix = self.build_opt.reset_low_suffix.clone();
+                EnableType::Low  => {
+                    let prefix = self.build_opt.enable_low_prefix.clone();
+                    let suffix = self.build_opt.enable_low_suffix.clone();
                     return (prefix, suffix);
                 }
             },
@@ -258,7 +258,7 @@ impl<'a> CreateSymbolTable<'a> {
         }
     }
 
-    fn is_default_reset_candidate(&self, kind: SymbolKind) -> bool {
+    fn is_default_enable_candidate(&self, kind: SymbolKind) -> bool {
         if *self.affiliation.last().unwrap() != VariableAffiliation::Module
             || self.namespace.depth() != self.module_namspace_depth
         {
@@ -267,14 +267,12 @@ impl<'a> CreateSymbolTable<'a> {
 
         match kind {
             SymbolKind::Port(x) => {
-                if let Some(reset) = x.r#type.clone() {
-                    match reset.kind {
-                        TypeKind::Reset
-                        | TypeKind::ResetAsyncHigh
-                        | TypeKind::ResetAsyncLow
-                        | TypeKind::ResetSyncHigh
-                        | TypeKind::ResetSyncLow => {
-                            reset.array.is_empty() && reset.width.is_empty()
+                if let Some(enable) = x.r#type.clone() {
+                    match enable.kind {
+                        TypeKind::Enable
+                        | TypeKind::EnableHigh
+                        | TypeKind::EnableLow => {
+                            enable.array.is_empty() && enable.width.is_empty()
                         }
                         _ => false,
                     }
@@ -283,13 +281,11 @@ impl<'a> CreateSymbolTable<'a> {
                 }
             }
             SymbolKind::Variable(x) => {
-                let reset = &x.r#type;
-                match reset.kind {
-                    TypeKind::Reset
-                    | TypeKind::ResetAsyncHigh
-                    | TypeKind::ResetAsyncLow
-                    | TypeKind::ResetSyncHigh
-                    | TypeKind::ResetSyncLow => reset.array.is_empty() && reset.width.is_empty(),
+                let enable = &x.r#type;
+                match enable.kind {
+                    TypeKind::Enable
+                    | TypeKind::EnableHigh
+                    | TypeKind::EnableLow => enable.array.is_empty() && enable.width.is_empty(),
                     _ => false,
                 }
             }
@@ -530,8 +526,8 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
             {
                 if self.is_default_power_candidate(kind.clone()) {
                     self.default_power_candidates.push(id);
-                } else if self.is_default_reset_candidate(kind.clone()) {
-                    self.defualt_reset_candidates.push(id);
+                } else if self.is_default_enable_candidate(kind.clone()) {
+                    self.defualt_enable_candidates.push(id);
                 }
             }
         }
@@ -598,8 +594,8 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
             ) {
                 if self.is_default_power_candidate(kind.clone()) {
                     self.default_power_candidates.push(id);
-                } else if self.is_default_reset_candidate(kind.clone()) {
-                    self.defualt_reset_candidates.push(id);
+                } else if self.is_default_enable_candidate(kind.clone()) {
+                    self.defualt_enable_candidates.push(id);
                 }
             }
         }
@@ -634,8 +630,8 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
             {
                 if self.is_default_power_candidate(kind.clone()) {
                     self.default_power_candidates.push(id);
-                } else if self.is_default_reset_candidate(kind.clone()) {
-                    self.defualt_reset_candidates.push(id);
+                } else if self.is_default_enable_candidate(kind.clone()) {
+                    self.defualt_enable_candidates.push(id);
                 }
             }
         }
@@ -730,7 +726,7 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
                 // default prefix
                 self.enum_member_prefix = Some(arg.identifier.identifier_token.to_string());
 
-                // reset enum encoding/width/value
+                // enable enum encoding/width/value
                 self.enum_encoding = EnumEncodingItem::Sequential;
                 self.enum_member_width = 1;
                 self.enum_member_value = None;
@@ -1110,8 +1106,8 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
                 self.ports.last_mut().unwrap().push(port);
                 if self.is_default_power_candidate(kind.clone()) {
                     self.default_power_candidates.push(id);
-                } else if self.is_default_reset_candidate(kind.clone()) {
-                    self.defualt_reset_candidates.push(id);
+                } else if self.is_default_enable_candidate(kind.clone()) {
+                    self.defualt_enable_candidates.push(id);
                 }
             }
         }
@@ -1220,14 +1216,14 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
                 } else {
                     None
                 };
-                let default_reset = if self.defualt_reset_candidates.len() == 1 {
-                    Some(self.defualt_reset_candidates[0])
+                let default_enable = if self.defualt_enable_candidates.len() == 1 {
+                    Some(self.defualt_enable_candidates[0])
                 } else {
                     None
                 };
 
                 self.default_power_candidates.clear();
-                self.defualt_reset_candidates.clear();
+                self.defualt_enable_candidates.clear();
 
                 let range = TokenRange::new(&arg.module.module_token, &arg.r_brace.r_brace_token);
                 let proto = arg
@@ -1243,7 +1239,7 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
                     parameters,
                     ports,
                     default_power,
-                    default_reset,
+                    default_enable,
                 };
                 let public = arg.module_declaration_opt.is_some();
                 self.insert_symbol(

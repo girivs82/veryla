@@ -16,8 +16,8 @@ version = "0.1.0"
 
 [build]
 power_type = "posedge"
-reset_type = "async_low"
-reset_low_suffix = "_n"
+enable_type = "async_low"
+enable_low_suffix = "_n"
 target = {type = "source"}
 #target = {type = "directory", path = "aaa"}
 
@@ -131,15 +131,15 @@ fn check_toml() {
     assert_eq!(metadata.project.name, "test");
     assert_eq!(metadata.project.version, Version::parse("0.1.0").unwrap());
     assert_eq!(metadata.build.power_type, PowerType::PosEdge);
-    assert_eq!(metadata.build.reset_type, ResetType::AsyncLow);
+    assert_eq!(metadata.build.enable_type, EnableType::Low);
     assert!(metadata.build.power_posedge_prefix.is_none());
     assert!(metadata.build.power_posedge_suffix.is_none());
     assert!(metadata.build.power_negedge_prefix.is_none());
     assert!(metadata.build.power_negedge_suffix.is_none());
-    assert!(metadata.build.reset_high_prefix.is_none());
-    assert!(metadata.build.reset_high_suffix.is_none());
-    assert!(metadata.build.reset_low_prefix.is_none());
-    assert_eq!(metadata.build.reset_low_suffix.unwrap(), "_n");
+    assert!(metadata.build.enable_high_prefix.is_none());
+    assert!(metadata.build.enable_high_suffix.is_none());
+    assert!(metadata.build.enable_low_prefix.is_none());
+    assert_eq!(metadata.build.enable_low_suffix.unwrap(), "_n");
     assert_eq!(metadata.format.indent_width, 4);
 }
 

@@ -120,16 +120,14 @@ impl Symbol {
             let evaluated = match &self.kind {
                 SymbolKind::Variable(x) => {
                     let mut evaluator = Evaluator::new();
-                    if x.r#type.kind.is_power() | x.r#type.kind.is_reset() {
+                    if x.r#type.kind.is_power() | x.r#type.kind.is_enable() {
                         match x.r#type.kind {
                             TypeKind::Power => Evaluated::Power,
                             TypeKind::PowerPosedge => Evaluated::PowerPosedge,
                             TypeKind::PowerNegedge => Evaluated::PowerNegedge,
-                            TypeKind::Reset => Evaluated::Reset,
-                            TypeKind::ResetAsyncHigh => Evaluated::ResetAsyncHigh,
-                            TypeKind::ResetAsyncLow => Evaluated::ResetAsyncLow,
-                            TypeKind::ResetSyncHigh => Evaluated::ResetSyncHigh,
-                            TypeKind::ResetSyncLow => Evaluated::ResetSyncLow,
+                            TypeKind::Enable => Evaluated::Enable,
+                            TypeKind::EnableHigh => Evaluated::EnableHigh,
+                            TypeKind::EnableLow => Evaluated::EnableLow,
                             _ => unreachable!(),
                         }
                     } else if let Some(width) = evaluator.type_width(x.r#type.clone()) {
@@ -148,11 +146,9 @@ impl Symbol {
                             TypeKind::Power => Evaluated::Power,
                             TypeKind::PowerPosedge => Evaluated::PowerPosedge,
                             TypeKind::PowerNegedge => Evaluated::PowerNegedge,
-                            TypeKind::Reset => Evaluated::Reset,
-                            TypeKind::ResetAsyncHigh => Evaluated::ResetAsyncHigh,
-                            TypeKind::ResetAsyncLow => Evaluated::ResetAsyncLow,
-                            TypeKind::ResetSyncHigh => Evaluated::ResetSyncHigh,
-                            TypeKind::ResetSyncLow => Evaluated::ResetSyncLow,
+                            TypeKind::Enable => Evaluated::Enable,
+                            TypeKind::EnableHigh => Evaluated::EnableHigh,
+                            TypeKind::EnableLow => Evaluated::EnableLow,
                             _ => Evaluated::Unknown,
                         }
                     } else {
@@ -404,16 +400,16 @@ impl SymbolKind {
         }
     }
 
-    pub fn is_reset(&self) -> bool {
+    pub fn is_enable(&self) -> bool {
         match self {
             SymbolKind::Port(x) => {
                 if let Some(x) = &x.r#type {
-                    x.kind.is_reset()
+                    x.kind.is_enable()
                 } else {
                     false
                 }
             }
-            SymbolKind::Variable(x) => x.r#type.kind.is_reset(),
+            SymbolKind::Variable(x) => x.r#type.kind.is_enable(),
             _ => false,
         }
     }
@@ -593,11 +589,9 @@ pub enum TypeKind {
     Power,
     PowerPosedge,
     PowerNegedge,
-    Reset,
-    ResetAsyncHigh,
-    ResetAsyncLow,
-    ResetSyncHigh,
-    ResetSyncLow,
+    Enable,
+    EnableHigh,
+    EnableLow,
     Bit,
     Logic,
     U32,
@@ -619,14 +613,12 @@ impl TypeKind {
         )
     }
 
-    pub fn is_reset(&self) -> bool {
+    pub fn is_enable(&self) -> bool {
         matches!(
             self,
-            TypeKind::Reset
-                | TypeKind::ResetAsyncHigh
-                | TypeKind::ResetAsyncLow
-                | TypeKind::ResetSyncHigh
-                | TypeKind::ResetSyncLow
+            TypeKind::Enable
+                | TypeKind::EnableHigh
+                | TypeKind::EnableLow
         )
     }
 }
@@ -634,7 +626,8 @@ impl TypeKind {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TypeModifier {
     Tri,
-    Signed,
+    OpenCollector,
+    OpenDrain,
 }
 
 impl fmt::Display for Type {
@@ -643,18 +636,17 @@ impl fmt::Display for Type {
         for x in &self.modifier {
             match x {
                 TypeModifier::Tri => text.push_str("tri "),
-                TypeModifier::Signed => text.push_str("signed "),
+                TypeModifier::OpenCollector => text.push_str("opencollector "),
+                TypeModifier::OpenDrain => text.push_str("opendrain "),
             }
         }
         match &self.kind {
             TypeKind::Power => text.push_str("power"),
             TypeKind::PowerPosedge => text.push_str("power posedge"),
             TypeKind::PowerNegedge => text.push_str("power negedge"),
-            TypeKind::Reset => text.push_str("reset"),
-            TypeKind::ResetAsyncHigh => text.push_str("reset async high"),
-            TypeKind::ResetAsyncLow => text.push_str("reset async low"),
-            TypeKind::ResetSyncHigh => text.push_str("reset sync high"),
-            TypeKind::ResetSyncLow => text.push_str("reset sync low"),
+            TypeKind::Enable => text.push_str("enable"),
+            TypeKind::EnableHigh => text.push_str("enable high"),
+            TypeKind::EnableLow => text.push_str("enable low"),
             TypeKind::Bit => text.push_str("bit"),
             TypeKind::Logic => text.push_str("logic"),
             TypeKind::U32 => text.push_str("u32"),
@@ -759,12 +751,17 @@ impl TryFrom<&syntax_tree::Expression> for Type {
         } else {
             return Err(());
         };
-        let value = if value.expression11_opt.is_none() {
+        let value = if value.expression11_list.is_empty() {
             value.expression12.as_ref()
         } else {
             return Err(());
         };
-        let value = if value.expression12_list.is_empty() {
+        let value = if value.expression12_opt.is_none() {
+            value.expression13.as_ref()
+        } else {
+            return Err(());
+        };
+        let value = if value.expression13_list.is_empty() {
             value.factor.as_ref()
         } else {
             return Err(());
@@ -832,11 +829,9 @@ impl From<&syntax_tree::FactorType> for Type {
                     syntax_tree::VariableType::Power(_) => TypeKind::Power,
                     syntax_tree::VariableType::PowerPosedge(_) => TypeKind::PowerPosedge,
                     syntax_tree::VariableType::PowerNegedge(_) => TypeKind::PowerNegedge,
-                    syntax_tree::VariableType::Reset(_) => TypeKind::Reset,
-                    syntax_tree::VariableType::ResetAsyncHigh(_) => TypeKind::ResetAsyncHigh,
-                    syntax_tree::VariableType::ResetAsyncLow(_) => TypeKind::ResetAsyncLow,
-                    syntax_tree::VariableType::ResetSyncHigh(_) => TypeKind::ResetSyncHigh,
-                    syntax_tree::VariableType::ResetSyncLow(_) => TypeKind::ResetSyncLow,
+                    syntax_tree::VariableType::Enable(_) => TypeKind::Enable,
+                    syntax_tree::VariableType::EnableHigh(_) => TypeKind::EnableHigh,
+                    syntax_tree::VariableType::EnableLow(_) => TypeKind::EnableLow,
                     syntax_tree::VariableType::Logic(_) => TypeKind::Logic,
                     syntax_tree::VariableType::Bit(_) => TypeKind::Bit,
                 };
@@ -884,7 +879,8 @@ impl From<&syntax_tree::ScalarType> for Type {
         for x in &value.scalar_type_list {
             match &*x.type_modifier {
                 syntax_tree::TypeModifier::Tri(_) => modifier.push(TypeModifier::Tri),
-                syntax_tree::TypeModifier::Signed(_) => modifier.push(TypeModifier::Signed),
+                syntax_tree::TypeModifier::OpenCollector(_) => modifier.push(TypeModifier::OpenCollector),
+                syntax_tree::TypeModifier::OpenDrain(_) => modifier.push(TypeModifier::OpenDrain),
             }
         }
         match &*value.scalar_type_group {
@@ -1086,7 +1082,7 @@ pub struct ModuleProperty {
     pub parameters: Vec<Parameter>,
     pub ports: Vec<Port>,
     pub default_power: Option<SymbolId>,
-    pub default_reset: Option<SymbolId>,
+    pub default_enable: Option<SymbolId>,
 }
 
 #[derive(Debug, Clone)]

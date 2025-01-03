@@ -1,6 +1,6 @@
 pub mod check_attribute;
 pub mod check_power_domain;
-pub mod check_power_reset;
+pub mod check_power_enable;
 pub mod check_embed_include;
 pub mod check_enum;
 pub mod check_expression;
@@ -20,7 +20,7 @@ pub mod create_reference;
 pub mod create_symbol_table;
 use check_attribute::*;
 use check_power_domain::*;
-use check_power_reset::*;
+use check_power_enable::*;
 use check_embed_include::*;
 use check_enum::*;
 use check_expression::*;
@@ -102,7 +102,7 @@ pub struct Pass2Handlers<'a> {
     check_function: CheckFunction<'a>,
     check_msb_lsb: CheckMsbLsb<'a>,
     check_var_ref: CheckVarRef<'a>,
-    check_power_reset: CheckPowerReset<'a>,
+    check_power_reset: CheckPowerEnable<'a>,
     create_reference: CreateReference<'a>,
     check_expression: CheckExpression<'a>,
     check_power_domain: CheckPowerDomain<'a>,
@@ -119,7 +119,7 @@ impl<'a> Pass2Handlers<'a> {
             check_function: CheckFunction::new(text),
             check_msb_lsb: CheckMsbLsb::new(text),
             check_var_ref: CheckVarRef::new(text),
-            check_power_reset: CheckPowerReset::new(text),
+            check_power_reset: CheckPowerEnable::new(text),
             create_reference: CreateReference::new(text),
             check_expression: CheckExpression::new(text),
             check_power_domain: CheckPowerDomain::new(text),

@@ -59,21 +59,21 @@ impl VerylaGrammarTrait for CheckStatement<'_> {
         Ok(())
     }
 
-    fn if_reset_statement(&mut self, arg: &IfResetStatement) -> Result<(), ParolError> {
+    fn if_enable_statement(&mut self, arg: &IfEnableStatement) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             if !self.in_sequence {
                 self.errors.push(AnalyzerError::invalid_statement(
-                    "if_reset",
+                    "if_enable",
                     self.text,
-                    &arg.if_reset.if_reset_token.token.into(),
+                    &arg.if_enable.if_enable_token.token.into(),
                 ));
             }
 
             if self.in_sequence && self.statement_depth_in_sequence != 1 {
                 self.errors.push(AnalyzerError::invalid_statement(
-                    "if_reset",
+                    "if_enable",
                     self.text,
-                    &arg.if_reset.if_reset_token.token.into(),
+                    &arg.if_enable.if_enable_token.token.into(),
                 ));
             }
         }

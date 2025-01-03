@@ -161,6 +161,13 @@ pub trait VerylaWalker {
         after!(self, operator11, arg);
     }
 
+    /// Semantic action for non-terminal 'Operator12'
+    fn operator12(&mut self, arg: &Operator12) {
+        before!(self, operator12, arg);
+        self.veryla_token(&arg.operator12_token);
+        after!(self, operator12, arg);
+    }
+
     /// Semantic action for non-terminal 'UnaryOperator'
     fn unary_operator(&mut self, arg: &UnaryOperator) {
         before!(self, unary_operator, arg);
@@ -497,11 +504,11 @@ pub trait VerylaWalker {
         after!(self, r#if, arg);
     }
 
-    /// Semantic action for non-terminal 'IfReset'
-    fn if_reset(&mut self, arg: &IfReset) {
-        before!(self, if_reset, arg);
-        self.veryla_token(&arg.if_reset_token);
-        after!(self, if_reset, arg);
+    /// Semantic action for non-terminal 'IfEnable'
+    fn if_enable(&mut self, arg: &IfEnable) {
+        before!(self, if_enable, arg);
+        self.veryla_token(&arg.if_enable_token);
+        after!(self, if_enable, arg);
     }
 
     /// Semantic action for non-terminal 'Import'
@@ -665,39 +672,25 @@ pub trait VerylaWalker {
         after!(self, repeat, arg);
     }
 
-    /// Semantic action for non-terminal 'Reset'
-    fn reset(&mut self, arg: &Reset) {
-        before!(self, reset, arg);
-        self.veryla_token(&arg.reset_token);
-        after!(self, reset, arg);
+    /// Semantic action for non-terminal 'Enable'
+    fn enable(&mut self, arg: &Enable) {
+        before!(self, enable, arg);
+        self.veryla_token(&arg.enable_token);
+        after!(self, enable, arg);
     }
 
-    /// Semantic action for non-terminal 'ResetAsyncHigh'
-    fn reset_async_high(&mut self, arg: &ResetAsyncHigh) {
-        before!(self, reset_async_high, arg);
-        self.veryla_token(&arg.reset_async_high_token);
-        after!(self, reset_async_high, arg);
+    /// Semantic action for non-terminal 'EnableHigh'
+    fn enable_high(&mut self, arg: &EnableHigh) {
+        before!(self, enable_high, arg);
+        self.veryla_token(&arg.enable_high_token);
+        after!(self, enable_high, arg);
     }
 
-    /// Semantic action for non-terminal 'ResetAsyncLow'
-    fn reset_async_low(&mut self, arg: &ResetAsyncLow) {
-        before!(self, reset_async_low, arg);
-        self.veryla_token(&arg.reset_async_low_token);
-        after!(self, reset_async_low, arg);
-    }
-
-    /// Semantic action for non-terminal 'ResetSyncHigh'
-    fn reset_sync_high(&mut self, arg: &ResetSyncHigh) {
-        before!(self, reset_sync_high, arg);
-        self.veryla_token(&arg.reset_sync_high_token);
-        after!(self, reset_sync_high, arg);
-    }
-
-    /// Semantic action for non-terminal 'ResetSyncLow'
-    fn reset_sync_low(&mut self, arg: &ResetSyncLow) {
-        before!(self, reset_sync_low, arg);
-        self.veryla_token(&arg.reset_sync_low_token);
-        after!(self, reset_sync_low, arg);
+    /// Semantic action for non-terminal 'EnableLow'
+    fn enable_low(&mut self, arg: &EnableLow) {
+        before!(self, enable_low, arg);
+        self.veryla_token(&arg.enable_low_token);
+        after!(self, enable_low, arg);
     }
 
     /// Semantic action for non-terminal 'Return'
@@ -714,11 +707,18 @@ pub trait VerylaWalker {
         after!(self, r#break, arg);
     }
 
-    /// Semantic action for non-terminal 'Signed'
-    fn signed(&mut self, arg: &Signed) {
-        before!(self, signed, arg);
-        self.veryla_token(&arg.signed_token);
-        after!(self, signed, arg);
+    /// Semantic action for non-terminal 'OpenCollector'
+    fn open_collector(&mut self, arg: &OpenCollector) {
+        before!(self, open_collector, arg);
+        self.veryla_token(&arg.open_collector_token);
+        after!(self, open_collector, arg);
+    }
+
+    /// Semantic action for non-terminal 'OpenCollector'
+    fn open_drain(&mut self, arg: &OpenDrain) {
+        before!(self, open_drain, arg);
+        self.veryla_token(&arg.open_drain_token);
+        after!(self, open_drain, arg);
     }
 
     /// Semantic action for non-terminal 'Step'
@@ -989,6 +989,7 @@ pub trait VerylaWalker {
         after!(self, expression06, arg);
     }
 
+
     /// Semantic action for non-terminal 'Expression07'
     fn expression07(&mut self, arg: &Expression07) {
         before!(self, expression07, arg);
@@ -1000,7 +1001,7 @@ pub trait VerylaWalker {
         after!(self, expression07, arg);
     }
 
-    /// Semantic action for non-terminal 'Expression08'
+    /// Semantic action for non-terminal 'Expression07'
     fn expression08(&mut self, arg: &Expression08) {
         before!(self, expression08, arg);
         self.expression09(&arg.expression09);
@@ -1011,56 +1012,67 @@ pub trait VerylaWalker {
         after!(self, expression08, arg);
     }
 
-    /// Semantic action for non-terminal 'Expression09'
+    /// Semantic action for non-terminal 'Expression08'
     fn expression09(&mut self, arg: &Expression09) {
         before!(self, expression09, arg);
         self.expression10(&arg.expression10);
         for x in &arg.expression09_list {
-            match &*x.expression09_list_group {
-                Expression09ListGroup::Operator10(x) => self.operator10(&x.operator10),
-                Expression09ListGroup::Star(x) => self.star(&x.star),
-            }
+            self.operator10(&x.operator10);
             self.expression10(&x.expression10);
         }
         after!(self, expression09, arg);
     }
 
-    /// Semantic action for non-terminal 'Expression10'
+    /// Semantic action for non-terminal 'Expression09'
     fn expression10(&mut self, arg: &Expression10) {
         before!(self, expression10, arg);
         self.expression11(&arg.expression11);
         for x in &arg.expression10_list {
-            self.operator11(&x.operator11);
+            match &*x.expression10_list_group {
+                Expression10ListGroup::Operator11(x) => self.operator11(&x.operator11),
+                Expression10ListGroup::Star(x) => self.star(&x.star),
+            }
             self.expression11(&x.expression11);
         }
         after!(self, expression10, arg);
     }
 
-    /// Semantic action for non-terminal 'Expression11'
+    /// Semantic action for non-terminal 'Expression10'
     fn expression11(&mut self, arg: &Expression11) {
         before!(self, expression11, arg);
         self.expression12(&arg.expression12);
-        if let Some(x) = &arg.expression11_opt {
-            self.r#as(&x.r#as);
-            self.casting_type(&x.casting_type);
+        for x in &arg.expression11_list {
+            self.operator12(&x.operator12);
+            self.expression12(&x.expression12);
         }
         after!(self, expression11, arg);
     }
 
-    /// Semantic action for non-terminal 'Expression12'
+    /// Semantic action for non-terminal 'Expression11'
     fn expression12(&mut self, arg: &Expression12) {
         before!(self, expression12, arg);
-        for x in &arg.expression12_list {
-            match &*x.expression12_list_group {
-                Expression12ListGroup::UnaryOperator(x) => self.unary_operator(&x.unary_operator),
-                Expression12ListGroup::Operator03(x) => self.operator03(&x.operator03),
-                Expression12ListGroup::Operator04(x) => self.operator04(&x.operator04),
-                Expression12ListGroup::Operator05(x) => self.operator05(&x.operator05),
-                Expression12ListGroup::Operator09(x) => self.operator09(&x.operator09),
+        self.expression13(&arg.expression13);
+        if let Some(x) = &arg.expression12_opt {
+            self.r#as(&x.r#as);
+            self.casting_type(&x.casting_type);
+        }
+        after!(self, expression12, arg);
+    }
+
+    /// Semantic action for non-terminal 'Expression12'
+    fn expression13(&mut self, arg: &Expression13) {
+        before!(self, expression13, arg);
+        for x in &arg.expression13_list {
+            match &*x.expression13_list_group {
+                Expression13ListGroup::UnaryOperator(x) => self.unary_operator(&x.unary_operator),
+                Expression13ListGroup::Operator03(x) => self.operator03(&x.operator03),
+                Expression13ListGroup::Operator04(x) => self.operator04(&x.operator04),
+                Expression13ListGroup::Operator05(x) => self.operator05(&x.operator05),
+                Expression13ListGroup::Operator10(x) => self.operator10(&x.operator10),
             }
         }
         self.factor(&arg.factor);
-        after!(self, expression12, arg);
+        after!(self, expression13, arg);
     }
 
     /// Semantic action for non-terminal 'Factor'
@@ -1438,11 +1450,9 @@ pub trait VerylaWalker {
             VariableType::Power(x) => self.power(&x.power),
             VariableType::PowerPosedge(x) => self.power_posedge(&x.power_posedge),
             VariableType::PowerNegedge(x) => self.power_negedge(&x.power_negedge),
-            VariableType::Reset(x) => self.reset(&x.reset),
-            VariableType::ResetAsyncHigh(x) => self.reset_async_high(&x.reset_async_high),
-            VariableType::ResetAsyncLow(x) => self.reset_async_low(&x.reset_async_low),
-            VariableType::ResetSyncHigh(x) => self.reset_sync_high(&x.reset_sync_high),
-            VariableType::ResetSyncLow(x) => self.reset_sync_low(&x.reset_sync_low),
+            VariableType::Enable(x) => self.enable(&x.enable),
+            VariableType::EnableHigh(x) => self.enable_high(&x.enable_high),
+            VariableType::EnableLow(x) => self.enable_low(&x.enable_low),
             VariableType::Logic(x) => self.logic(&x.logic),
             VariableType::Bit(x) => self.bit(&x.bit),
         };
@@ -1461,7 +1471,8 @@ pub trait VerylaWalker {
         before!(self, type_modifier, arg);
         match arg {
             TypeModifier::Tri(x) => self.tri(&x.tri),
-            TypeModifier::Signed(x) => self.signed(&x.signed),
+            TypeModifier::OpenCollector(x) => self.open_collector(&x.open_collector),
+            TypeModifier::OpenDrain(x) => self.open_drain(&x.open_drain),
         }
         after!(self, type_modifier, arg);
     }
@@ -1524,11 +1535,9 @@ pub trait VerylaWalker {
             CastingType::Power(x) => self.power(&x.power),
             CastingType::PowerPosedge(x) => self.power_posedge(&x.power_posedge),
             CastingType::PowerNegedge(x) => self.power_negedge(&x.power_negedge),
-            CastingType::Reset(x) => self.reset(&x.reset),
-            CastingType::ResetAsyncHigh(x) => self.reset_async_high(&x.reset_async_high),
-            CastingType::ResetAsyncLow(x) => self.reset_async_low(&x.reset_async_low),
-            CastingType::ResetSyncHigh(x) => self.reset_sync_high(&x.reset_sync_high),
-            CastingType::ResetSyncLow(x) => self.reset_sync_low(&x.reset_sync_low),
+            CastingType::Enable(x) => self.enable(&x.enable),
+            CastingType::EnableHigh(x) => self.enable_high(&x.enable_high),
+            CastingType::EnableLow(x) => self.enable_low(&x.enable_low),
             CastingType::UserDefinedType(x) => self.user_defined_type(&x.user_defined_type),
             CastingType::Based(x) => self.based(&x.based),
             CastingType::BaseLess(x) => self.base_less(&x.base_less),
@@ -1593,7 +1602,7 @@ pub trait VerylaWalker {
         match arg {
             Statement::IdentifierStatement(x) => self.identifier_statement(&x.identifier_statement),
             Statement::IfStatement(x) => self.if_statement(&x.if_statement),
-            Statement::IfResetStatement(x) => self.if_reset_statement(&x.if_reset_statement),
+            Statement::IfEnableStatement(x) => self.if_enable_statement(&x.if_enable_statement),
             Statement::ReturnStatement(x) => self.return_statement(&x.return_statement),
             Statement::BreakStatement(x) => self.break_statement(&x.break_statement),
             Statement::ForStatement(x) => self.for_statement(&x.for_statement),
@@ -1668,21 +1677,21 @@ pub trait VerylaWalker {
     }
 
     /// Semantic action for non-terminal 'IfResetStatement'
-    fn if_reset_statement(&mut self, arg: &IfResetStatement) {
-        before!(self, if_reset_statement, arg);
-        self.if_reset(&arg.if_reset);
+    fn if_enable_statement(&mut self, arg: &IfEnableStatement) {
+        before!(self, if_enable_statement, arg);
+        self.if_enable(&arg.if_enable);
         self.statement_block(&arg.statement_block);
-        for x in &arg.if_reset_statement_list {
+        for x in &arg.if_enable_statement_list {
             self.r#else(&x.r#else);
             self.r#if(&x.r#if);
             self.expression(&x.expression);
             self.statement_block(&x.statement_block);
         }
-        if let Some(ref x) = arg.if_reset_statement_opt {
+        if let Some(ref x) = arg.if_enable_statement_opt {
             self.r#else(&x.r#else);
             self.statement_block(&x.statement_block);
         }
-        after!(self, if_reset_statement, arg);
+        after!(self, if_enable_statement, arg);
     }
 
     /// Semantic action for non-terminal 'ReturnStatement'
@@ -1915,7 +1924,7 @@ pub trait VerylaWalker {
         self.sequence_power(&arg.sequence_power);
         if let Some(ref x) = arg.sequence_event_list_opt {
             self.comma(&x.comma);
-            self.sequence_reset(&x.sequence_reset);
+            self.sequence_enable(&x.sequence_enable);
         }
         self.r_paren(&arg.r_paren);
         after!(self, sequence_event_list, arg);
@@ -1929,10 +1938,10 @@ pub trait VerylaWalker {
     }
 
     /// Semantic action for non-terminal 'SequenceReset'
-    fn sequence_reset(&mut self, arg: &SequenceReset) {
-        before!(self, sequence_reset, arg);
+    fn sequence_enable(&mut self, arg: &SequenceEnable) {
+        before!(self, sequence_enable, arg);
         self.hierarchical_identifier(&arg.hierarchical_identifier);
-        after!(self, sequence_reset, arg);
+        after!(self, sequence_enable, arg);
     }
 
     /// Semantic action for non-terminal 'AlwaysCombDeclaration'

@@ -1,7 +1,7 @@
 use crate::Emitter;
 use std::path::PathBuf;
 use veryla_analyzer::Analyzer;
-use veryla_metadata::{PowerType, Metadata, ResetType};
+use veryla_metadata::{PowerType, Metadata, EnableType};
 use veryla_parser::Parser;
 
 #[track_caller]
@@ -24,10 +24,10 @@ fn emit(metadata: &Metadata, code: &str) -> String {
 }
 
 #[test]
-fn prefix_suffix_power_posedge_reset_high() {
+fn prefix_suffix_power_posedge_enable_high() {
     let code = r#"module ModuleA (
     pwr: input power,
-    rst: input reset,
+    rst: input enable,
 ) {
     inst u: ModuleB (
         pwr,
@@ -39,7 +39,7 @@ fn prefix_suffix_power_posedge_reset_high() {
 
     var _c: logic;
     always_ff {
-        if_reset {
+        if_enable {
             _c = 0;
         } else {
             _c = 1;
@@ -49,7 +49,7 @@ fn prefix_suffix_power_posedge_reset_high() {
 
 module ModuleB (
     pwr: input power,
-    rst: input reset,
+    rst: input enable,
 ) {}
 "#;
 
@@ -89,11 +89,11 @@ endmodule
         toml::from_str(&Metadata::create_default_toml("prj").unwrap()).unwrap();
 
     metadata.build.power_type = PowerType::PosEdge;
-    metadata.build.reset_type = ResetType::AsyncHigh;
+    metadata.build.enable_type = EnableType::High;
     metadata.build.power_posedge_prefix = Some("pwr_pos_".to_string());
     metadata.build.power_posedge_suffix = Some("_pwr_pos".to_string());
-    metadata.build.reset_high_prefix = Some("rst_high_".to_string());
-    metadata.build.reset_high_suffix = Some("_rst_high".to_string());
+    metadata.build.enable_high_prefix = Some("en_high_".to_string());
+    metadata.build.enable_high_suffix = Some("_en_high".to_string());
 
     let ret = if cfg!(windows) {
         emit(&metadata, code).replace("\r\n", "\n")
@@ -105,10 +105,10 @@ endmodule
 }
 
 #[test]
-fn prefix_suffix_power_negedge_reset_low() {
+fn prefix_suffix_power_negedge_enable_low() {
     let code = r#"module ModuleA (
     pwr: input power,
-    rst: input reset,
+    rst: input enable,
 ) {
     inst u: ModuleB (
         pwr,
@@ -120,7 +120,7 @@ fn prefix_suffix_power_negedge_reset_low() {
 
     var _c: logic;
     always_ff {
-        if_reset {
+        if_enable {
             _c = 0;
         } else {
             _c = 1;
@@ -130,7 +130,7 @@ fn prefix_suffix_power_negedge_reset_low() {
 
 module ModuleB (
     pwr: input power,
-    rst: input reset,
+    rst: input enable,
 ) {}
 "#;
 
@@ -170,11 +170,11 @@ endmodule
         toml::from_str(&Metadata::create_default_toml("prj").unwrap()).unwrap();
 
     metadata.build.power_type = PowerType::NegEdge;
-    metadata.build.reset_type = ResetType::SyncLow;
+    metadata.build.enable_type = EnableType::Low;
     metadata.build.power_negedge_prefix = Some("pwr_neg_".to_string());
     metadata.build.power_negedge_suffix = Some("_pwr_neg".to_string());
-    metadata.build.reset_low_prefix = Some("rst_low_".to_string());
-    metadata.build.reset_low_suffix = Some("_rst_low".to_string());
+    metadata.build.enable_low_prefix = Some("en_low_".to_string());
+    metadata.build.enable_low_suffix = Some("_en_low".to_string());
 
     let ret = if cfg!(windows) {
         emit(&metadata, code).replace("\r\n", "\n")
@@ -379,16 +379,15 @@ endmodule
 }
 
 #[test]
-fn async_reset_cast() {
+fn enable_cast() {
     let code = r#"module ModuleA {
-    var a: reset;
-    var b: reset_async_high;
-    var c: reset_async_low;
+    var a: enable_high;
+    var b: enable_low;;
 
-    let d: reset_async_high = a as reset_async_high;
-    let e: reset_async_low  = a as reset_async_low ;
-    let f: reset            = b as reset           ;
-    let g: reset            = c as reset           ;
+    let d: enable_high = a as enable_high;
+    let e: enable_low  = a as enable_low ;
+    let f: enable            = b as enable           ;
+    let g: enable            = c as enable           ;
 }
 "#;
 
@@ -412,7 +411,7 @@ endmodule
     let mut metadata: Metadata =
         toml::from_str(&Metadata::create_default_toml("prj").unwrap()).unwrap();
 
-    metadata.build.reset_type = ResetType::AsyncHigh;
+    metadata.build.enable_type = EnableType::High;
 
     let ret = if cfg!(windows) {
         emit(&metadata, code).replace("\r\n", "\n")
@@ -423,56 +422,12 @@ endmodule
     assert_eq!(ret, expect);
 }
 
-#[test]
-fn sync_reset_cast() {
-    let code = r#"module ModuleA {
-    var a: reset;
-    var b: reset_sync_high;
-    var c: reset_sync_low;
-
-    let d: reset_sync_high = a as reset_sync_high;
-    let e: reset_sync_low  = a as reset_sync_low ;
-    let f: reset           = b as reset          ;
-    let g: reset           = c as reset          ;
-}
-"#;
-
-    let expect = r#"module prj_ModuleA;
-    logic a;
-    logic b;
-    logic c;
-
-    logic d;
-    always_comb d = ~a;
-    logic e;
-    always_comb e = a;
-    logic f;
-    always_comb f = ~b;
-    logic g;
-    always_comb g = c;
-endmodule
-//# sourceMappingURL=test.sv.map
-"#;
-
-    let mut metadata: Metadata =
-        toml::from_str(&Metadata::create_default_toml("prj").unwrap()).unwrap();
-
-    metadata.build.reset_type = ResetType::SyncLow;
-
-    let ret = if cfg!(windows) {
-        emit(&metadata, code).replace("\r\n", "\n")
-    } else {
-        emit(&metadata, code)
-    };
-
-    assert_eq!(ret, expect);
-}
 
 #[test]
 fn emit_cond_type() {
     let code = r#"module ModuleA (
     i_pwr: input power,
-    i_rst: input reset,
+    i_rst: input enable,
 ) {
     let x: logic = 1;
     var a: logic;
@@ -526,7 +481,7 @@ fn emit_cond_type() {
 
     always_ff {
         #[cond_type(unique)]
-        if_reset {
+        if_enable {
             g = 1;
         } else if x == 1 {
             g = 1;
@@ -534,7 +489,7 @@ fn emit_cond_type() {
     }
     always_ff {
         #[cond_type(unique0)]
-        if_reset {
+        if_enable {
             h = 1;
         } else if x == 1 {
             h = 1;
@@ -542,7 +497,7 @@ fn emit_cond_type() {
     }
     always_ff {
         #[cond_type(priority)]
-        if_reset {
+        if_enable {
             i = 1;
         } else if x == 1 {
             i = 1;

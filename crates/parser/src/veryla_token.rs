@@ -256,14 +256,14 @@ impl From<&SequenceDeclaration> for TokenRange {
     }
 }
 
-impl From<&Expression12ListGroup> for TokenRange {
-    fn from(value: &Expression12ListGroup) -> Self {
+impl From<&Expression13ListGroup> for TokenRange {
+    fn from(value: &Expression13ListGroup) -> Self {
         let beg = match value {
-            Expression12ListGroup::UnaryOperator(x) => x.unary_operator.unary_operator_token.token,
-            Expression12ListGroup::Operator09(x) => x.operator09.operator09_token.token,
-            Expression12ListGroup::Operator05(x) => x.operator05.operator05_token.token,
-            Expression12ListGroup::Operator04(x) => x.operator04.operator04_token.token,
-            Expression12ListGroup::Operator03(x) => x.operator03.operator03_token.token,
+            Expression13ListGroup::UnaryOperator(x) => x.unary_operator.unary_operator_token.token,
+            Expression13ListGroup::Operator10(x) => x.operator10.operator10_token.token,
+            Expression13ListGroup::Operator05(x) => x.operator05.operator05_token.token,
+            Expression13ListGroup::Operator04(x) => x.operator04.operator04_token.token,
+            Expression13ListGroup::Operator03(x) => x.operator03.operator03_token.token,
         };
         let end = beg;
         TokenRange { beg, end }
@@ -420,10 +420,10 @@ impl From<&Factor> for TokenRange {
     }
 }
 
-impl From<&Expression11> for TokenRange {
-    fn from(value: &Expression11) -> Self {
-        let beg: TokenRange = value.expression12.as_ref().into();
-        let end = if let Some(ref x) = value.expression11_opt {
+impl From<&Expression12> for TokenRange {
+    fn from(value: &Expression12) -> Self {
+        let beg: TokenRange = value.expression13.as_ref().into();
+        let end = if let Some(ref x) = value.expression12_opt {
             let end: TokenRange = x.casting_type.as_ref().into();
             end.end
         } else {
@@ -434,14 +434,14 @@ impl From<&Expression11> for TokenRange {
     }
 }
 
-impl From<&Expression12> for TokenRange {
-    fn from(value: &Expression12) -> Self {
+impl From<&Expression13> for TokenRange {
+    fn from(value: &Expression13) -> Self {
         let end: TokenRange = value.factor.as_ref().into();
-        let beg = if value.expression12_list.is_empty() {
+        let beg = if value.expression13_list.is_empty() {
             end.beg
         } else {
-            let first = value.expression12_list.first().unwrap();
-            let t: TokenRange = first.expression12_list_group.as_ref().into();
+            let first = value.expression13_list.first().unwrap();
+            let t: TokenRange = first.expression13_list_group.as_ref().into();
             t.beg
         };
         let end = end.end;
@@ -468,6 +468,7 @@ macro_rules! expression_token_range {
     };
 }
 
+expression_token_range!(Expression11, expression12, expression11_list, expression12);
 expression_token_range!(Expression10, expression11, expression10_list, expression11);
 expression_token_range!(Expression09, expression10, expression09_list, expression10);
 expression_token_range!(Expression08, expression09, expression08_list, expression09);
@@ -514,28 +515,18 @@ impl From<&VariableType> for TokenRange {
                 let end = beg;
                 TokenRange { beg, end }
             }
-            VariableType::Reset(x) => {
-                let beg = x.reset.reset_token.token;
+            VariableType::Enable(x) => {
+                let beg = x.enable.enable_token.token;
                 let end = beg;
                 TokenRange { beg, end }
             }
-            VariableType::ResetAsyncHigh(x) => {
-                let beg = x.reset_async_high.reset_async_high_token.token;
+            VariableType::EnableHigh(x) => {
+                let beg = x.enable_high.enable_high_token.token;
                 let end = beg;
                 TokenRange { beg, end }
             }
-            VariableType::ResetAsyncLow(x) => {
-                let beg = x.reset_async_low.reset_async_low_token.token;
-                let end = beg;
-                TokenRange { beg, end }
-            }
-            VariableType::ResetSyncHigh(x) => {
-                let beg = x.reset_sync_high.reset_sync_high_token.token;
-                let end = beg;
-                TokenRange { beg, end }
-            }
-            VariableType::ResetSyncLow(x) => {
-                let beg = x.reset_sync_low.reset_sync_low_token.token;
+            VariableType::EnableLow(x) => {
+                let beg = x.enable_low.enable_low_token.token;
                 let end = beg;
                 TokenRange { beg, end }
             }
@@ -584,7 +575,8 @@ impl From<&ScalarType> for TokenRange {
         if let Some(x) = value.scalar_type_list.first() {
             range.beg = match &*x.type_modifier {
                 TypeModifier::Tri(x) => x.tri.tri_token.token,
-                TypeModifier::Signed(x) => x.r#signed.signed_token.token,
+                TypeModifier::OpenCollector(x) => x.r#open_collector.open_collector_token.token,
+                TypeModifier::OpenDrain(x) => x.r#open_drain.open_drain_token.token,
             };
         }
 
@@ -652,28 +644,18 @@ impl From<&CastingType> for TokenRange {
                 let end = beg;
                 TokenRange { beg, end }
             }
-            CastingType::Reset(x) => {
-                let beg = x.reset.reset_token.token;
+            CastingType::Enable(x) => {
+                let beg = x.enable.enable_token.token;
                 let end = beg;
                 TokenRange { beg, end }
             }
-            CastingType::ResetAsyncHigh(x) => {
-                let beg = x.reset_async_high.reset_async_high_token.token;
+            CastingType::EnableHigh(x) => {
+                let beg = x.enable_high.enable_high_token.token;
                 let end = beg;
                 TokenRange { beg, end }
             }
-            CastingType::ResetAsyncLow(x) => {
-                let beg = x.reset_async_low.reset_async_low_token.token;
-                let end = beg;
-                TokenRange { beg, end }
-            }
-            CastingType::ResetSyncHigh(x) => {
-                let beg = x.reset_sync_high.reset_sync_high_token.token;
-                let end = beg;
-                TokenRange { beg, end }
-            }
-            CastingType::ResetSyncLow(x) => {
-                let beg = x.reset_sync_low.reset_sync_low_token.token;
+            CastingType::EnableLow(x) => {
+                let beg = x.enable_low.enable_low_token.token;
                 let end = beg;
                 TokenRange { beg, end }
             }
@@ -927,6 +909,7 @@ token_with_comments!(Operator08);
 token_with_comments!(Operator09);
 token_with_comments!(Operator10);
 token_with_comments!(Operator11);
+token_with_comments!(Operator12);
 token_with_comments!(UnaryOperator);
 
 token_with_comments!(AlwaysComb);
@@ -953,7 +936,7 @@ token_with_comments!(Function);
 token_with_comments!(I32);
 token_with_comments!(I64);
 token_with_comments!(If);
-token_with_comments!(IfReset);
+token_with_comments!(IfEnable);
 token_with_comments!(Import);
 token_with_comments!(Include);
 token_with_comments!(Initial);
@@ -977,13 +960,12 @@ token_with_comments!(Proto);
 token_with_comments!(Pub);
 token_with_comments!(Ref);
 token_with_comments!(Repeat);
-token_with_comments!(Reset);
-token_with_comments!(ResetAsyncHigh);
-token_with_comments!(ResetAsyncLow);
-token_with_comments!(ResetSyncHigh);
-token_with_comments!(ResetSyncLow);
+token_with_comments!(Enable);
+token_with_comments!(EnableHigh);
+token_with_comments!(EnableLow);
 token_with_comments!(Return);
-token_with_comments!(Signed);
+token_with_comments!(OpenCollector);
+token_with_comments!(OpenDrain);
 token_with_comments!(Step);
 token_with_comments!(String);
 token_with_comments!(Struct);

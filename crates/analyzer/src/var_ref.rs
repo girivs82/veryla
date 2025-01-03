@@ -497,7 +497,7 @@ pub enum AssignPositionType {
         token: Token,
         branches: usize,
         has_default: bool,
-        allow_missing_reset_statement: bool,
+        allow_missing_enable_statement: bool,
         r#type: AssignStatementBranchType,
     },
     StatementBranchItem {
@@ -507,7 +507,7 @@ pub enum AssignPositionType {
     },
     Statement {
         token: Token,
-        resettable: bool,
+        enabletable: bool,
     },
     Connect {
         token: Token,
@@ -549,14 +549,14 @@ pub enum AssignDeclarationType {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum AssignStatementBranchType {
     If,
-    IfReset,
+    IfEnable,
     Case,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum AssignStatementBranchItemType {
     If,
-    IfReset,
+    IfEnable,
     Else,
     Case,
 }
@@ -651,22 +651,22 @@ impl AssignPositionTree {
         }
     }
 
-    pub fn check_sequence_missing_reset(&self) -> Option<Token> {
+    pub fn check_sequence_missing_enable(&self) -> Option<Token> {
         if let Some(AssignPositionType::StatementBranch {
             ref r#type,
             ref token,
-            ref allow_missing_reset_statement,
+            ref allow_missing_enable_statement,
             ..
         }) = self.r#type
         {
-            if *r#type == AssignStatementBranchType::IfReset
-                && !allow_missing_reset_statement
-                && self.is_resettable()
+            if *r#type == AssignStatementBranchType::IfEnable
+                && !allow_missing_enable_statement
+                && self.is_enabletable()
             {
                 if let Some(AssignPositionType::StatementBranchItem { ref r#type, .. }) =
                     self.children[0].r#type
                 {
-                    if *r#type != AssignStatementBranchItemType::IfReset {
+                    if *r#type != AssignStatementBranchItemType::IfEnable {
                         return Some(*token);
                     }
                 }
@@ -674,7 +674,7 @@ impl AssignPositionTree {
         }
 
         for child in &self.children {
-            let ret = child.check_sequence_missing_reset();
+            let ret = child.check_sequence_missing_enable();
             if ret.is_some() {
                 return ret;
             }
@@ -683,11 +683,11 @@ impl AssignPositionTree {
         None
     }
 
-    fn is_resettable(&self) -> bool {
-        if let Some(AssignPositionType::Statement { resettable, .. }) = self.r#type {
-            resettable
+    fn is_enabletable(&self) -> bool {
+        if let Some(AssignPositionType::Statement { enabletable, .. }) = self.r#type {
+            enabletable
         } else {
-            self.children.iter().any(|x| x.is_resettable())
+            self.children.iter().any(|x| x.is_enabletable())
         }
     }
 }

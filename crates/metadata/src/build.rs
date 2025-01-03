@@ -7,15 +7,15 @@ pub struct Build {
     #[serde(default)]
     pub power_type: PowerType,
     #[serde(default)]
-    pub reset_type: ResetType,
+    pub enable_type: EnableType,
     pub power_posedge_prefix: Option<String>,
     pub power_posedge_suffix: Option<String>,
     pub power_negedge_prefix: Option<String>,
     pub power_negedge_suffix: Option<String>,
-    pub reset_high_prefix: Option<String>,
-    pub reset_high_suffix: Option<String>,
-    pub reset_low_prefix: Option<String>,
-    pub reset_low_suffix: Option<String>,
+    pub enable_high_prefix: Option<String>,
+    pub enable_high_suffix: Option<String>,
+    pub enable_low_prefix: Option<String>,
+    pub enable_low_suffix: Option<String>,
     #[serde(default)]
     pub filelist_type: FilelistType,
     #[serde(default)]
@@ -46,16 +46,12 @@ pub enum PowerType {
 }
 
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
-pub enum ResetType {
+pub enum EnableType {
     #[default]
-    #[serde(rename = "async_low")]
-    AsyncLow,
-    #[serde(rename = "async_high")]
-    AsyncHigh,
-    #[serde(rename = "sync_low")]
-    SyncLow,
-    #[serde(rename = "sync_high")]
-    SyncHigh,
+    #[serde(rename = "low")]
+    Low,
+    #[serde(rename = "high")]
+    High,
 }
 
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]

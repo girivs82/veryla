@@ -8,8 +8,8 @@ repository  = "https://github.com/girivs82/veryla"
 
 [build]
 power_type       = "posedge"
-reset_type       = "async_low"
-reset_low_suffix = "_n"
+enable_type       = "low"
+enable_low_suffix = "_n"
 filelist_type    = "absolute"
 target           = {type = "directory", path = "testcases/sv"}
 sourcemap_target = {type = "directory", path = "testcases/map"}

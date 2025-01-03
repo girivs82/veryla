@@ -29,15 +29,16 @@ BasedTerm             : <INITIAL, Generic       >/(?:[0-9]+(?:_[0-9]+)*)?'s?[bod
 AllBitTerm            : <INITIAL, Generic       >/(?:[0-9]+(?:_[0-9]+)*)?'[01xzXZ]/                                                    : Token;
 BaseLessTerm          : <INITIAL, Generic       >/[0-9]+(?:_[0-9]+)*/                                                                  : Token;
 MinusColonTerm        : <INITIAL                >'-:'                                                                                  : Token;
+Operator06Term        : <INITIAL                >"\|=>"                                                                                : Token;
 MinusGTTerm           : <INITIAL                >'->'                                                                                  : Token;
 PlusColonTerm         : <INITIAL                >'+:'                                                                                  : Token;
 AssignmentOperatorTerm: <INITIAL                >"\+=|-=|\*=|/=|%=|&=|\|=|\^=|<<=|>>=|<<<=|>>>="                                       : Token;
-Operator11Term        : <INITIAL                >"\*\*"                                                                                : Token;
-Operator10Term        : <INITIAL                >"/|%"                                                                                 : Token;
-Operator09Term        : <INITIAL                >"\+|-"                                                                                : Token;
-Operator08Term        : <INITIAL                >"<<<|>>>|<<|>>"                                                                       : Token;
-Operator07Term        : <INITIAL                >"<=|>=|<:|>:"                                                                         : Token;
-Operator06Term        : <INITIAL                >"===|==\?|!==|!=\?|==|!="                                                             : Token;
+Operator12Term        : <INITIAL                >"\*\*"                                                                                : Token;
+Operator11Term        : <INITIAL                >"/|%"                                                                                 : Token;
+Operator10Term        : <INITIAL                >"\+|-"                                                                                : Token;
+Operator09Term        : <INITIAL                >"<<<|>>>|<<|>>"                                                                       : Token;
+Operator08Term        : <INITIAL                >"<=|>=|<:|>:"                                                                         : Token;
+Operator07Term        : <INITIAL                >"===|==\?|!==|!=\?|==|!="                                                             : Token;
 Operator02Term        : <INITIAL                >"&&"                                                                                  : Token;
 Operator01Term        : <INITIAL                >"\|\|"                                                                                : Token;
 Operator05Term        : <INITIAL                >"&"                                                                                   : Token;
@@ -66,18 +67,17 @@ RParenTerm            : <INITIAL, Generic       >')'                            
 SemicolonTerm         : <INITIAL, Generic       >';'                                                                                   : Token;
 StarTerm              : <INITIAL, Generic       >'*'                                                                                   : Token;
 AlwaysCombTerm        : <INITIAL, Generic       >/(?-u:\b)always_comb(?-u:\b)/                                                         : Token;
-SequenceTerm          : <INITIAL, Generic       >/(?-u:\b)sequence(?-u:\b)/                                                            : Token;
 AssignTerm            : <INITIAL, Generic       >/(?-u:\b)assign(?-u:\b)/                                                              : Token;
 AsTerm                : <INITIAL, Generic       >/(?-u:\b)as(?-u:\b)/                                                                  : Token;
 BitTerm               : <INITIAL, Generic       >/(?-u:\b)bit(?-u:\b)/                                                                 : Token;
 CaseTerm              : <INITIAL, Generic       >/(?-u:\b)case(?-u:\b)/                                                                : Token;
-PowerTerm             : <INITIAL, Generic       >/(?-u:\b)power(?-u:\b)/                                                               : Token;
-PowerPosedgeTerm      : <INITIAL, Generic       >/(?-u:\b)power_posedge(?-u:\b)/                                                       : Token;
-PowerNegedgeTerm      : <INITIAL, Generic       >/(?-u:\b)power_negedge(?-u:\b)/                                                       : Token;
 ConstTerm             : <INITIAL, Generic       >/(?-u:\b)const(?-u:\b)/                                                               : Token;
 DefaultTerm           : <INITIAL, Generic       >/(?-u:\b)default(?-u:\b)/                                                             : Token;
 ElseTerm              : <INITIAL, Generic       >/(?-u:\b)else(?-u:\b)/                                                                : Token;
 EmbedTerm             : <INITIAL, Generic       >/(?-u:\b)embed(?-u:\b)/                                                               : Token;
+EnableTerm            : <INITIAL, Generic       >/(?-u:\b)enable(?-u:\b)/                                                              : Token;
+EnableHighTerm        : <INITIAL, Generic       >/(?-u:\b)enable_high(?-u:\b)/                                                         : Token;
+EnableLowTerm         : <INITIAL, Generic       >/(?-u:\b)enable_low(?-u:\b)/                                                          : Token;
 EnumTerm              : <INITIAL, Generic       >/(?-u:\b)enum(?-u:\b)/                                                                : Token;
 ExportTerm            : <INITIAL, Generic       >/(?-u:\b)export(?-u:\b)/                                                              : Token;
 F32Term               : <INITIAL, Generic       >/(?-u:\b)f32(?-u:\b)/                                                                 : Token;
@@ -87,7 +87,7 @@ ForTerm               : <INITIAL, Generic       >/(?-u:\b)for(?-u:\b)/          
 FunctionTerm          : <INITIAL, Generic       >/(?-u:\b)function(?-u:\b)/                                                            : Token;
 I32Term               : <INITIAL, Generic       >/(?-u:\b)i32(?-u:\b)/                                                                 : Token;
 I64Term               : <INITIAL, Generic       >/(?-u:\b)i64(?-u:\b)/                                                                 : Token;
-IfResetTerm           : <INITIAL, Generic       >/(?-u:\b)if_reset(?-u:\b)/                                                            : Token;
+IfEnableTerm           : <INITIAL, Generic       >/(?-u:\b)if_enable(?-u:\b)/                                                          : Token;
 IfTerm                : <INITIAL, Generic       >/(?-u:\b)if(?-u:\b)/                                                                  : Token;
 ImportTerm            : <INITIAL, Generic       >/(?-u:\b)import(?-u:\b)/                                                              : Token;
 IncludeTerm           : <INITIAL, Generic       >/(?-u:\b)include(?-u:\b)/                                                             : Token;
@@ -104,22 +104,22 @@ LsbTerm               : <INITIAL, Generic       >/(?-u:\b)lsb(?-u:\b)/          
 ModportTerm           : <INITIAL, Generic       >/(?-u:\b)modport(?-u:\b)/                                                             : Token;
 ModuleTerm            : <INITIAL, Generic       >/(?-u:\b)module(?-u:\b)/                                                              : Token;
 MsbTerm               : <INITIAL, Generic       >/(?-u:\b)msb(?-u:\b)/                                                                 : Token;
+OpenCollectorTerm     : <INITIAL, Generic       >/(?-u:\b)opencollector(?-u:\b)/                                                       : Token;
+OpenDrainTerm         : <INITIAL, Generic       >/(?-u:\b)opendrain(?-u:\b)/                                                           : Token;
 OutputTerm            : <INITIAL, Generic       >/(?-u:\b)output(?-u:\b)/                                                              : Token;
 OutsideTerm           : <INITIAL, Generic       >/(?-u:\b)outside(?-u:\b)/                                                             : Token;
 PackageTerm           : <INITIAL, Generic       >/(?-u:\b)package(?-u:\b)/                                                             : Token;
 ParamTerm             : <INITIAL, Generic       >/(?-u:\b)param(?-u:\b)/                                                               : Token;
+PowerTerm             : <INITIAL, Generic       >/(?-u:\b)power(?-u:\b)/                                                               : Token;
+PowerPosedgeTerm      : <INITIAL, Generic       >/(?-u:\b)power_posedge(?-u:\b)/                                                       : Token;
+PowerNegedgeTerm      : <INITIAL, Generic       >/(?-u:\b)power_negedge(?-u:\b)/                                                       : Token;
 ProtoTerm             : <INITIAL, Generic       >/(?-u:\b)proto(?-u:\b)/                                                               : Token;
 PubTerm               : <INITIAL, Generic       >/(?-u:\b)pub(?-u:\b)/                                                                 : Token;
 RefTerm               : <INITIAL, Generic       >/(?-u:\b)ref(?-u:\b)/                                                                 : Token;
 RepeatTerm            : <INITIAL, Generic       >/(?-u:\b)repeat(?-u:\b)/                                                              : Token;
-ResetTerm             : <INITIAL, Generic       >/(?-u:\b)reset(?-u:\b)/                                                               : Token;
-ResetAsyncHighTerm    : <INITIAL, Generic       >/(?-u:\b)reset_async_high(?-u:\b)/                                                    : Token;
-ResetAsyncLowTerm     : <INITIAL, Generic       >/(?-u:\b)reset_async_low(?-u:\b)/                                                     : Token;
-ResetSyncHighTerm     : <INITIAL, Generic       >/(?-u:\b)reset_sync_high(?-u:\b)/                                                     : Token;
-ResetSyncLowTerm      : <INITIAL, Generic       >/(?-u:\b)reset_sync_low(?-u:\b)/                                                      : Token;
 ReturnTerm            : <INITIAL, Generic       >/(?-u:\b)return(?-u:\b)/                                                              : Token;
 BreakTerm             : <INITIAL, Generic       >/(?-u:\b)break(?-u:\b)/                                                               : Token;
-SignedTerm            : <INITIAL, Generic       >/(?-u:\b)signed(?-u:\b)/                                                              : Token;
+SequenceTerm          : <INITIAL, Generic       >/(?-u:\b)sequence(?-u:\b)/                                                            : Token;
 StepTerm              : <INITIAL, Generic       >/(?-u:\b)step(?-u:\b)/                                                                : Token;
 StringTerm            : <INITIAL, Generic       >/(?-u:\b)string(?-u:\b)/                                                              : Token;
 StructTerm            : <INITIAL, Generic       >/(?-u:\b)struct(?-u:\b)/                                                              : Token;
@@ -163,6 +163,7 @@ Operator08Token        : Operator08Term        : Token Comments;
 Operator09Token        : Operator09Term        : Token Comments;
 Operator10Token        : Operator10Term        : Token Comments;
 Operator11Token        : Operator11Term        : Token Comments;
+Operator12Token        : Operator12Term        : Token Comments;
 UnaryOperatorToken     : UnaryOperatorTerm     : Token Comments;
 
 BackQuoteToken       : BackQuoteTerm       : Token Comments;
@@ -203,6 +204,9 @@ ConstToken         : ConstTerm         : Token Comments;
 DefaultToken       : DefaultTerm       : Token Comments;
 ElseToken          : ElseTerm          : Token Comments;
 EmbedToken         : EmbedTerm         : Token Comments;
+EnableToken        : EnableTerm        : Token Comments;
+EnableHighToken    : EnableHighTerm    : Token Comments;
+EnableLowToken     : EnableLowTerm     : Token Comments;
 EnumToken          : EnumTerm          : Token Comments;
 ExportToken        : ExportTerm        : Token Comments;
 F32Token           : F32Term           : Token Comments;
@@ -212,7 +216,7 @@ ForToken           : ForTerm           : Token Comments;
 FunctionToken      : FunctionTerm      : Token Comments;
 I32Token           : I32Term           : Token Comments;
 I64Token           : I64Term           : Token Comments;
-IfResetToken       : IfResetTerm       : Token Comments;
+IfEnableToken      : IfEnableTerm      : Token Comments;
 IfToken            : IfTerm            : Token Comments;
 ImportToken        : ImportTerm        : Token Comments;
 IncludeToken       : IncludeTerm       : Token Comments;
@@ -229,6 +233,8 @@ LsbToken           : LsbTerm           : Token Comments;
 ModportToken       : ModportTerm       : Token Comments;
 ModuleToken        : ModuleTerm        : Token Comments;
 MsbToken           : MsbTerm           : Token Comments;
+OpenCollectorToken : OpenCollectorTerm : Token Comments;
+OpenDrainToken     : OpenDrainTerm     : Token Comments;
 OutputToken        : OutputTerm        : Token Comments;
 OutsideToken       : OutsideTerm       : Token Comments;
 PackageToken       : PackageTerm       : Token Comments;
@@ -237,14 +243,8 @@ ProtoToken         : ProtoTerm         : Token Comments;
 PubToken           : PubTerm           : Token Comments;
 RefToken           : RefTerm           : Token Comments;
 RepeatToken        : RepeatTerm        : Token Comments;
-ResetToken         : ResetTerm         : Token Comments;
-ResetAsyncHighToken: ResetAsyncHighTerm: Token Comments;
-ResetAsyncLowToken : ResetAsyncLowTerm : Token Comments;
-ResetSyncHighToken : ResetSyncHighTerm : Token Comments;
-ResetSyncLowToken  : ResetSyncLowTerm  : Token Comments;
 ReturnToken        : ReturnTerm        : Token Comments;
 BreakToken         : BreakTerm         : Token Comments;
-SignedToken        : SignedTerm        : Token Comments;
 StepToken          : StepTerm          : Token Comments;
 StringToken        : StringTerm        : Token Comments;
 StructToken        : StructTerm        : Token Comments;
@@ -290,6 +290,7 @@ Operator08        : Operator08Token        : VerylaToken;
 Operator09        : Operator09Token        : VerylaToken;
 Operator10        : Operator10Token        : VerylaToken;
 Operator11        : Operator11Token        : VerylaToken;
+Operator12        : Operator12Token        : VerylaToken;
 UnaryOperator     : UnaryOperatorToken     : VerylaToken;
 
 // Symbol
@@ -318,6 +319,10 @@ RParen          : RParenToken          : VerylaToken;
 Semicolon       : SemicolonToken       : VerylaToken;
 Star            : StarToken            : VerylaToken;
 
+// Keyword Modifier
+OpenCollector : OpenCollectorToken     : VerylaToken;
+OpenDrain     : OpenDrainToken         : VerylaToken;
+
 // Keyword
 AlwaysComb    : AlwaysCombToken    : VerylaToken;
 Sequence      : SequenceToken      : VerylaToken;
@@ -343,7 +348,7 @@ Function      : FunctionToken      : VerylaToken;
 I32           : I32Token           : VerylaToken;
 I64           : I64Token           : VerylaToken;
 If            : IfToken            : VerylaToken;
-IfReset       : IfResetToken       : VerylaToken;
+IfEnable      : IfEnableToken      : VerylaToken;
 Import        : ImportToken        : VerylaToken;
 In            : InToken            : VerylaToken;
 Include       : IncludeToken       : VerylaToken;
@@ -367,13 +372,10 @@ Proto         : ProtoToken         : VerylaToken;
 Pub           : PubToken           : VerylaToken;
 Ref           : RefToken           : VerylaToken;
 Repeat        : RepeatToken        : VerylaToken;
-Reset         : ResetToken         : VerylaToken;
-ResetAsyncHigh: ResetAsyncHighToken: VerylaToken;
-ResetAsyncLow : ResetAsyncLowToken : VerylaToken;
-ResetSyncHigh : ResetSyncHighToken : VerylaToken;
-ResetSyncLow  : ResetSyncLowToken  : VerylaToken;
+Enable        : EnableToken        : VerylaToken;
+EnableHigh    : EnableHighToken    : VerylaToken;
+EnableLow     : EnableLowToken     : VerylaToken;
 Return        : ReturnToken        : VerylaToken;
-Signed        : SignedToken        : VerylaToken;
 Step          : StepToken          : VerylaToken;
 Strin         : StringToken        : VerylaToken; // avoid to conflict with Rust's String struct
 Struct        : StructToken        : VerylaToken;
@@ -431,10 +433,11 @@ Expression05: Expression06 { Operator06 Expression06 };
 Expression06: Expression07 { Operator07 Expression07 };
 Expression07: Expression08 { Operator08 Expression08 };
 Expression08: Expression09 { Operator09 Expression09 };
-Expression09: Expression10 { ( Operator10 | Star ) Expression10 };
-Expression10: Expression11 { Operator11 Expression11 };
-Expression11: Expression12 [ As CastingType ];
-Expression12: { ( UnaryOperator | Operator09 | Operator05 | Operator03 | Operator04 ) } Factor;
+Expression09: Expression10 { Operator10 Expression10 };
+Expression10: Expression11 { ( Operator11 | Star ) Expression11 };
+Expression11: Expression12 { Operator12 Expression12 };
+Expression12: Expression13 [ As CastingType ];
+Expression13: { ( UnaryOperator | Operator10 | Operator05 | Operator03 | Operator04 ) } Factor;
 
 Factor: Number
       | IdentifierFactor
@@ -515,17 +518,16 @@ FixedType: U32 | U64 | I32 | I64 | F32 | F64 | Strin;
 VariableType: Power
             | PowerPosedge
             | PowerNegedge
-            | Reset
-            | ResetAsyncHigh
-            | ResetAsyncLow
-            | ResetSyncHigh
-            | ResetSyncLow
+            | Enable
+            | EnableHigh
+            | EnableLow
             | Logic
             | Bit;
 
 UserDefinedType: ScopedIdentifier;
 
-TypeModifier: Tri | Signed;
+TypeModifier: Tri | OpenCollector | OpenDrain;
+
 
 FactorType: ( VariableType [ Width ] | FixedType );
 
@@ -542,11 +544,9 @@ CastingType: U32
            | Power
            | PowerPosedge
            | PowerNegedge
-           | Reset
-           | ResetAsyncHigh
-           | ResetAsyncLow
-           | ResetSyncHigh
-           | ResetSyncLow
+           | Enable
+           | EnableHigh
+           | EnableLow
            | UserDefinedType
            | Based
            | BaseLess
@@ -570,7 +570,7 @@ StatementBlockItem: VarDeclaration | LetStatement | Statement;
 
 Statement: IdentifierStatement
          | IfStatement
-         | IfResetStatement
+         | IfEnableStatement
          | ReturnStatement
          | BreakStatement
          | ForStatement
@@ -586,7 +586,7 @@ Assignment: ( Equ | AssignmentOperator ) Expression;
 
 IfStatement: If Expression StatementBlock { Else If Expression StatementBlock } [ Else StatementBlock ];
 
-IfResetStatement: IfReset StatementBlock { Else If Expression StatementBlock } [ Else StatementBlock ];
+IfEnableStatement: IfEnable StatementBlock { Else If Expression StatementBlock } [ Else StatementBlock ];
 
 ReturnStatement: Return Expression Semicolon;
 
@@ -632,11 +632,11 @@ TypeDefDeclaration: Type Identifier Equ ArrayType Semicolon;
 
 SequenceDeclaration: Sequence [ SequenceEventList ] StatementBlock;
 
-SequenceEventList: LParen SequencePower [ Comma SequenceReset ] RParen;
+SequenceEventList: LParen SequencePower [ Comma SequenceEnable ] RParen;
 
 SequencePower: HierarchicalIdentifier;
 
-SequenceReset: HierarchicalIdentifier;
+SequenceEnable: HierarchicalIdentifier;
 
 AlwaysCombDeclaration: AlwaysComb StatementBlock;
 

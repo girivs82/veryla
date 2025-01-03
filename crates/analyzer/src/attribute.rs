@@ -86,7 +86,7 @@ struct Pattern {
     pub sv: StrId,
     pub allow: StrId,
     pub missing_port: StrId,
-    pub missing_reset_statement: StrId,
+    pub missing_enable_statement: StrId,
     pub unused_variable: StrId,
     pub enum_encoding: StrId,
     pub sequential: StrId,
@@ -109,7 +109,7 @@ impl Pattern {
             sv: resource_table::insert_str("sv"),
             allow: resource_table::insert_str("allow"),
             missing_port: resource_table::insert_str("missing_port"),
-            missing_reset_statement: resource_table::insert_str("missing_reset_statement"),
+            missing_enable_statement: resource_table::insert_str("missing_enable_statement"),
             unused_variable: resource_table::insert_str("unused_variable"),
             enum_encoding: resource_table::insert_str("enum_encoding"),
             sequential: resource_table::insert_str("sequential"),
@@ -161,8 +161,8 @@ impl TryFrom<&veryla_parser::veryla_grammar_trait::Attribute> for Attribute {
                 if let Some(arg) = arg {
                     match arg.text {
                         x if x == pat.missing_port => Ok(Attribute::Allow(AllowItem::MissingPort)),
-                        x if x == pat.missing_reset_statement => {
-                            Ok(Attribute::Allow(AllowItem::MissingResetStatement))
+                        x if x == pat.missing_enable_statement => {
+                            Ok(Attribute::Allow(AllowItem::MissingEnableStatement))
                         }
                         x if x == pat.unused_variable => {
                             Ok(Attribute::Allow(AllowItem::UnusedVariable))
@@ -233,7 +233,7 @@ impl TryFrom<&veryla_parser::veryla_grammar_trait::Attribute> for Attribute {
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum AllowItem {
     MissingPort,
-    MissingResetStatement,
+    MissingEnableStatement,
     UnusedVariable,
 }
 
@@ -241,7 +241,7 @@ impl fmt::Display for AllowItem {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let text = match self {
             AllowItem::MissingPort => "missing_port",
-            AllowItem::MissingResetStatement => "missing_reset_statement",
+            AllowItem::MissingEnableStatement => "missing_enable_statement",
             AllowItem::UnusedVariable => "unused_variable",
         };
         text.fmt(f)

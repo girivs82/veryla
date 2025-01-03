@@ -12,7 +12,7 @@ mod publish;
 mod test;
 #[cfg(test)]
 mod tests;
-pub use build::{Build, BuiltinType, PowerType, FilelistType, ResetType, SourceMapTarget, Target};
+pub use build::{Build, BuiltinType, PowerType, FilelistType, EnableType, SourceMapTarget, Target};
 pub use doc::Doc;
 pub use format::Format;
 pub use lint::{Case, Lint};
