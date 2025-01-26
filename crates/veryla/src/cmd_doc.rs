@@ -47,8 +47,8 @@ impl CmdDoc {
             analyzer.analyze_pass3(&path.prj, input, &path.src, &parser.veryla);
         }
 
-        let mut modules = BTreeMap::new();
-        let mut proto_modules = BTreeMap::new();
+        let mut entitys = BTreeMap::new();
+        let mut proto_entitys = BTreeMap::new();
         let mut interfaces = BTreeMap::new();
         let mut packages = BTreeMap::new();
 
@@ -58,23 +58,23 @@ impl CmdDoc {
             let symbol = symbol.clone();
             if format!("{}", symbol.namespace) == metadata.project.name && symbol.public {
                 match &symbol.kind {
-                    SymbolKind::Module(x) => {
+                    SymbolKind::Entity(x) => {
                         let html_name = fmt_generic_parameters(&text, &x.generic_parameters);
                         let item = TopLevelItem {
                             file_name,
                             html_name,
                             symbol,
                         };
-                        modules.insert(text, item);
+                        entitys.insert(text, item);
                     }
-                    SymbolKind::ProtoModule(_) => {
+                    SymbolKind::ProtoEntity(_) => {
                         let html_name = file_name.clone();
                         let item = TopLevelItem {
                             file_name,
                             html_name,
                             symbol,
                         };
-                        proto_modules.insert(text, item);
+                        proto_entitys.insert(text, item);
                     }
                     SymbolKind::Interface(x) => {
                         let html_name = fmt_generic_parameters(&text, &x.generic_parameters);
@@ -99,12 +99,12 @@ impl CmdDoc {
             }
         }
 
-        let modules: Vec<_> = modules.into_values().collect();
-        let proto_modules: Vec<_> = proto_modules.into_values().collect();
+        let entitys: Vec<_> = entitys.into_values().collect();
+        let proto_entitys: Vec<_> = proto_entitys.into_values().collect();
         let interfaces: Vec<_> = interfaces.into_values().collect();
         let packages: Vec<_> = packages.into_values().collect();
 
-        let builder = DocBuilder::new(metadata, modules, proto_modules, interfaces, packages)?;
+        let builder = DocBuilder::new(metadata, entitys, proto_entitys, interfaces, packages)?;
         builder.build()?;
 
         Ok(true)

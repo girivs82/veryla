@@ -11,6 +11,7 @@ use veryla_parser::veryla_grammar_trait as syntax_tree;
 use veryla_parser::veryla_token::{Token, TokenRange, VerylaToken};
 use veryla_parser::veryla_walker::VerylaWalker;
 use veryla_parser::Stringifier;
+use veryla_parser::veryla_grammar_trait::EntityType;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct SymbolId(pub usize);
@@ -185,7 +186,7 @@ impl Symbol {
 
         let prefix = if matches!(
             self.kind,
-            SymbolKind::Module(_) | SymbolKind::Interface(_) | SymbolKind::Package(_)
+            SymbolKind::Entity(_) | SymbolKind::Interface(_) | SymbolKind::Package(_)
         ) {
             format!("{}_", self.namespace)
         } else {
@@ -251,7 +252,7 @@ impl Symbol {
                 .iter()
                 .map(|x| get_generic_parameter(*x))
                 .collect(),
-            SymbolKind::Module(x) => x
+            SymbolKind::Entity(x) => x
                 .generic_parameters
                 .iter()
                 .map(|x| get_generic_parameter(*x))
@@ -287,7 +288,7 @@ impl Symbol {
     pub fn generic_references(&self) -> Vec<GenericSymbolPath> {
         match &self.kind {
             SymbolKind::Function(x) => x.generic_references.clone(),
-            SymbolKind::Module(x) => x.generic_references.clone(),
+            SymbolKind::Entity(x) => x.generic_references.clone(),
             SymbolKind::Interface(x) => x.generic_references.clone(),
             SymbolKind::Package(x) => x.generic_references.clone(),
             SymbolKind::Struct(x) => x.generic_references.clone(),
@@ -301,8 +302,8 @@ impl Symbol {
 pub enum SymbolKind {
     Port(PortProperty),
     Variable(VariableProperty),
-    Module(ModuleProperty),
-    ProtoModule(ProtoModuleProperty),
+    Entity(EntityProperty),
+    ProtoEntity(ProtoEntityProperty),
     Interface(InterfaceProperty),
     Function(FunctionProperty),
     Parameter(ParameterProperty),
@@ -339,8 +340,8 @@ impl SymbolKind {
                 _ => format!("{} port", x.direction),
             },
             SymbolKind::Variable(_) => "variable".to_string(),
-            SymbolKind::Module(_) => "module".to_string(),
-            SymbolKind::ProtoModule(_) => "proto module".to_string(),
+            SymbolKind::Entity(_) => "entity".to_string(),
+            SymbolKind::ProtoEntity(_) => "proto entity".to_string(),
             SymbolKind::Interface(_) => "interface".to_string(),
             SymbolKind::Function(_) => "function".to_string(),
             SymbolKind::Parameter(_) => "parameter".to_string(),
@@ -376,7 +377,7 @@ impl SymbolKind {
 
     pub fn is_generic(&self) -> bool {
         match self {
-            SymbolKind::Module(x) => !x.generic_parameters.is_empty(),
+            SymbolKind::Entity(x) => !x.generic_parameters.is_empty(),
             SymbolKind::Interface(x) => !x.generic_parameters.is_empty(),
             SymbolKind::Function(x) => !x.generic_parameters.is_empty(),
             SymbolKind::Package(x) => !x.generic_parameters.is_empty(),
@@ -416,7 +417,7 @@ impl SymbolKind {
 
     pub fn proto(&self) -> Option<SymbolPath> {
         match self {
-            SymbolKind::Module(x) => x.proto.clone(),
+            SymbolKind::Entity(x) => x.proto.clone(),
             SymbolKind::GenericParameter(x) => match x.bound {
                 GenericBoundKind::Proto(ref x) => Some(x.clone()),
                 _ => None,
@@ -439,17 +440,17 @@ impl fmt::Display for SymbolKind {
             SymbolKind::Variable(x) => {
                 format!("variable ({})", x.r#type)
             }
-            SymbolKind::Module(x) => {
+            SymbolKind::Entity(x) => {
                 format!(
-                    "module ({} generic, {} params, {} ports)",
+                    "entity ({} generic, {} params, {} ports)",
                     x.generic_parameters.len(),
                     x.parameters.len(),
                     x.ports.len()
                 )
             }
-            SymbolKind::ProtoModule(x) => {
+            SymbolKind::ProtoEntity(x) => {
                 format!(
-                    "proto module ({} params, {} ports)",
+                    "proto entity ({} params, {} ports)",
                     x.parameters.len(),
                     x.ports.len()
                 )
@@ -592,6 +593,7 @@ pub enum TypeKind {
     Enable,
     EnableHigh,
     EnableLow,
+    Analog,
     Bit,
     Logic,
     U32,
@@ -647,6 +649,7 @@ impl fmt::Display for Type {
             TypeKind::Enable => text.push_str("enable"),
             TypeKind::EnableHigh => text.push_str("enable high"),
             TypeKind::EnableLow => text.push_str("enable low"),
+            TypeKind::Analog => text.push_str("analog"),
             TypeKind::Bit => text.push_str("bit"),
             TypeKind::Logic => text.push_str("logic"),
             TypeKind::U32 => text.push_str("u32"),
@@ -833,6 +836,7 @@ impl From<&syntax_tree::FactorType> for Type {
                     syntax_tree::VariableType::EnableHigh(_) => TypeKind::EnableHigh,
                     syntax_tree::VariableType::EnableLow(_) => TypeKind::EnableLow,
                     syntax_tree::VariableType::Logic(_) => TypeKind::Logic,
+                    syntax_tree::VariableType::Analog(_) => TypeKind::Analog,
                     syntax_tree::VariableType::Bit(_) => TypeKind::Bit,
                 };
                 let mut width = Vec::new();
@@ -990,8 +994,8 @@ pub struct VariableProperty {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VariableAffiliation {
-    Module,
-    Intarface,
+    Entity,
+    Interface,
     Package,
     StatementBlock,
     Function,
@@ -1074,7 +1078,8 @@ impl Parameter {
 }
 
 #[derive(Debug, Clone)]
-pub struct ModuleProperty {
+pub struct EntityProperty {
+    pub entity_type: EntityType,
     pub range: TokenRange,
     pub proto: Option<SymbolPath>,
     pub generic_parameters: Vec<SymbolId>,
@@ -1086,7 +1091,8 @@ pub struct ModuleProperty {
 }
 
 #[derive(Debug, Clone)]
-pub struct ProtoModuleProperty {
+pub struct ProtoEntityProperty {
+    pub entity_type: EntityType,
     pub range: TokenRange,
     pub parameters: Vec<Parameter>,
     pub ports: Vec<Port>,
@@ -1101,8 +1107,8 @@ pub enum ProtoIncompatible {
     IncompatiblePort(StrId),
 }
 
-impl ProtoModuleProperty {
-    pub fn check_compat(&self, p: &ModuleProperty) -> Vec<ProtoIncompatible> {
+impl ProtoEntityProperty {
+    pub fn check_compat(&self, p: &EntityProperty) -> Vec<ProtoIncompatible> {
         let mut ret = Vec::new();
 
         let actual_params: HashMap<_, _> = p

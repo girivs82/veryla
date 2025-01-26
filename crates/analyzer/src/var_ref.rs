@@ -56,7 +56,7 @@ pub enum VarRefType {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum VarRefAffiliation {
-    Module { token: Token },
+    Entity { token: Token },
     Interface { token: Token },
     AlwaysComb { token: Token },
     AlwaysFF { token: Token },
@@ -66,7 +66,7 @@ pub enum VarRefAffiliation {
 impl VarRefAffiliation {
     pub fn token(&self) -> &Token {
         match self {
-            VarRefAffiliation::Module { token } => token,
+            VarRefAffiliation::Entity { token } => token,
             VarRefAffiliation::Interface { token } => token,
             VarRefAffiliation::AlwaysComb { token } => token,
             VarRefAffiliation::AlwaysFF { token } => token,

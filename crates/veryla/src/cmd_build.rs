@@ -242,7 +242,7 @@ impl CmdBuild {
         for symbol in sorted_symbols {
             if matches!(
                 symbol.kind,
-                SymbolKind::Module(_) | SymbolKind::Interface(_) | SymbolKind::Package(_)
+                SymbolKind::Entity(_) | SymbolKind::Interface(_) | SymbolKind::Package(_)
             ) {
                 if let TokenSource::File(x) = symbol.token.source {
                     let path = PathBuf::from(format!("{}", x));

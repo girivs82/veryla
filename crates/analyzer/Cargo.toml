@@ -1,6 +1,6 @@
 [package]
 name                  = "veryla-analyzer"
-version               = "0.13.3"
+version               = "0.1.0"
 authors.workspace     = true
 repository.workspace  = true
 keywords.workspace    = true
@@ -16,8 +16,8 @@ edition               = "2021"
 itertools       = "0.14.0"
 strnum_bitwidth = {workspace = true}
 thiserror       = {workspace = true}
-veryla-metadata  = {version = "0.13.3", path = "../metadata"}
-veryla-parser    = {version = "0.13.3", path = "../parser"}
+veryla-metadata  = {version = "0.1.0", path = "../metadata"}
+veryla-parser    = {version = "0.1.0", path = "../parser"}
 daggy           = "0.8.0"
 bimap           = "0.6.3"
 

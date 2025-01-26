@@ -20,7 +20,7 @@ pub struct CreateReference<'a> {
     text: &'a str,
     point: HandlerPoint,
     inst_ports: Vec<Port>,
-    inst_sv_module: bool,
+    inst_sv_entity: bool,
     is_anonymous_identifier: bool,
     port_direction: Option<Direction>,
     dag_scope_parent: Vec<u32>,
@@ -270,7 +270,7 @@ impl<'a> CreateReference<'a> {
 
     fn insert_dag_node(&mut self, symbol: &Symbol) -> Option<u32> {
         let is_dag_symbol = match symbol.kind {
-            SymbolKind::Module(_)
+            SymbolKind::Entity(_)
             | SymbolKind::Interface(_)
             | SymbolKind::Modport(_)
             | SymbolKind::Package(_)
@@ -493,10 +493,10 @@ impl VerylaGrammarTrait for CreateReference<'_> {
             HandlerPoint::Before => {
                 if let Ok(symbol) = symbol_table::resolve(arg.scoped_identifier.as_ref()) {
                     match symbol.found.kind {
-                        SymbolKind::Module(x) => self.inst_ports.extend(x.ports),
+                        SymbolKind::Entity(x) => self.inst_ports.extend(x.ports),
                         SymbolKind::GenericParameter(x) => {
                             if let GenericBoundKind::Proto(ref prot) = x.bound {
-                                if let SymbolKind::ProtoModule(prot) =
+                                if let SymbolKind::ProtoEntity(prot) =
                                     symbol_table::resolve((prot, &symbol.found.namespace))
                                         .unwrap()
                                         .found
@@ -506,14 +506,14 @@ impl VerylaGrammarTrait for CreateReference<'_> {
                                 }
                             }
                         }
-                        SymbolKind::SystemVerilog => self.inst_sv_module = true,
+                        SymbolKind::SystemVerilog => self.inst_sv_entity = true,
                         _ => {}
                     }
                 }
             }
             HandlerPoint::After => {
                 self.inst_ports.clear();
-                self.inst_sv_module = false;
+                self.inst_sv_entity = false;
             }
         }
         Ok(())
@@ -533,8 +533,8 @@ impl VerylaGrammarTrait for CreateReference<'_> {
                             self.is_anonymous_identifier = port.direction == Direction::Output
                                 && is_anonymous_expression(&x.expression);
                         }
-                    } else if self.inst_sv_module {
-                        // For SV module, any ports can be connected with anonymous identifier
+                    } else if self.inst_sv_entity {
+                        // For SV entity, any ports can be connected with anonymous identifier
                         self.is_anonymous_identifier = is_anonymous_expression(&x.expression);
                     }
                 } else {
@@ -621,11 +621,11 @@ impl VerylaGrammarTrait for CreateReference<'_> {
         Ok(())
     }
 
-    fn module_declaration(&mut self, arg: &ModuleDeclaration) -> Result<(), ParolError> {
+    fn entity_declaration(&mut self, arg: &EntityDeclaration) -> Result<(), ParolError> {
         match self.point {
             HandlerPoint::Before => {
                 let symbol = symbol_table::resolve(arg.identifier.as_ref()).unwrap();
-                self.insert_scope_declaration_dag_node(&symbol.found, Context::Module);
+                self.insert_scope_declaration_dag_node(&symbol.found, Context::Entity);
             }
             HandlerPoint::After => self.pop_scope_dag(),
         }

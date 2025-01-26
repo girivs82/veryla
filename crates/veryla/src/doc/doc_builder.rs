@@ -21,13 +21,13 @@ const SUMMARY_TMPL: &str = r###"
 
 ---
 
-- [Modules](modules.md)
-  {{#each modules}}
+- [Entitys](entitys.md)
+  {{#each entitys}}
   - [{{this.0}}]({{this.1}}.md)
   {{/each}}
 
-- [Module Prototypes](proto_modules.md)
-  {{#each proto_modules}}
+- [Entity Prototypes](proto_entitys.md)
+  {{#each proto_entitys}}
   - [{{this.0}}]({{this.1}}.md)
   {{/each}}
 
@@ -46,8 +46,8 @@ const SUMMARY_TMPL: &str = r###"
 struct SummaryData {
     name: String,
     version: String,
-    modules: Vec<(String, String)>,
-    proto_modules: Vec<(String, String)>,
+    entitys: Vec<(String, String)>,
+    proto_entitys: Vec<(String, String)>,
     interfaces: Vec<(String, String)>,
     packages: Vec<(String, String)>,
 }
@@ -79,8 +79,8 @@ const INDEX_TMPL: &str = r###"
 </table>
 
 {{{{raw}}}}
-{{#include modules.md}}
-{{#include proto_modules.md}}
+{{#include entitys.md}}
+{{#include proto_entitys.md}}
 {{#include interfaces.md}}
 {{#include packages.md}}
 {{{{/raw}}}}
@@ -201,7 +201,7 @@ const MODULE_TMPL: &str = r#"
 "#;
 
 #[derive(Serialize)]
-struct ModuleData {
+struct EntityData {
     name: String,
     description: String,
     generic_parameters: Vec<GenericParameterData>,
@@ -292,7 +292,7 @@ const PROTO_MODULE_TMPL: &str = r#"
 "#;
 
 #[derive(Serialize)]
-struct ProtoModuleData {
+struct ProtoEntityData {
     name: String,
     description: String,
     parameters: Vec<ParameterData>,
@@ -350,8 +350,8 @@ pub struct DocBuilder {
     root_dir: PathBuf,
     src_dir: PathBuf,
     theme_dir: PathBuf,
-    modules: Vec<TopLevelItem>,
-    proto_modules: Vec<TopLevelItem>,
+    entitys: Vec<TopLevelItem>,
+    proto_entitys: Vec<TopLevelItem>,
     interfaces: Vec<TopLevelItem>,
     packages: Vec<TopLevelItem>,
 }
@@ -366,8 +366,8 @@ pub struct TopLevelItem {
 impl DocBuilder {
     pub fn new(
         metadata: &Metadata,
-        modules: Vec<TopLevelItem>,
-        proto_modules: Vec<TopLevelItem>,
+        entitys: Vec<TopLevelItem>,
+        proto_entitys: Vec<TopLevelItem>,
         interfaces: Vec<TopLevelItem>,
         packages: Vec<TopLevelItem>,
     ) -> Result<Self> {
@@ -384,8 +384,8 @@ impl DocBuilder {
             root_dir,
             src_dir,
             theme_dir,
-            modules,
-            proto_modules,
+            entitys,
+            proto_entitys,
             interfaces,
             packages,
         })
@@ -396,19 +396,19 @@ impl DocBuilder {
 
         self.build_component("SUMMARY.md", self.build_summary())?;
         self.build_component("index.md", self.build_index())?;
-        self.build_component("modules.md", self.build_modules())?;
-        self.build_component("proto_modules.md", self.build_proto_modules())?;
+        self.build_component("entitys.md", self.build_entitys())?;
+        self.build_component("proto_entitys.md", self.build_proto_entitys())?;
         self.build_component("interfaces.md", self.build_interfaces())?;
         self.build_component("packages.md", self.build_packages())?;
 
-        for x in &self.modules {
+        for x in &self.entitys {
             let file = format!("{}.md", x.file_name);
-            self.build_component(&file, self.build_module(&x.html_name, &x.symbol))?;
+            self.build_component(&file, self.build_entity(&x.html_name, &x.symbol))?;
         }
 
-        for x in &self.proto_modules {
+        for x in &self.proto_entitys {
             let file = format!("{}.md", x.file_name);
-            self.build_component(&file, self.build_proto_module(&x.html_name, &x.symbol))?;
+            self.build_component(&file, self.build_proto_entity(&x.html_name, &x.symbol))?;
         }
 
         for x in &self.interfaces {
@@ -501,14 +501,14 @@ impl DocBuilder {
     }
 
     fn build_summary(&self) -> String {
-        let modules: Vec<_> = self
-            .modules
+        let entitys: Vec<_> = self
+            .entitys
             .iter()
             .cloned()
             .map(|x| (x.html_name, x.file_name))
             .collect();
-        let proto_modules: Vec<_> = self
-            .proto_modules
+        let proto_entitys: Vec<_> = self
+            .proto_entitys
             .iter()
             .cloned()
             .map(|x| (x.html_name, x.file_name))
@@ -528,8 +528,8 @@ impl DocBuilder {
         let data = SummaryData {
             name: self.metadata.project.name.clone(),
             version: format!("{}", self.metadata.project.version),
-            modules,
-            proto_modules,
+            entitys,
+            proto_entitys,
             interfaces,
             packages,
         };
@@ -553,9 +553,9 @@ impl DocBuilder {
         handlebars.render_template(INDEX_TMPL, &data).unwrap()
     }
 
-    fn build_modules(&self) -> String {
+    fn build_entitys(&self) -> String {
         let items: Vec<_> = self
-            .modules
+            .entitys
             .iter()
             .map(|x| ListItem {
                 file_name: x.file_name.clone(),
@@ -565,7 +565,7 @@ impl DocBuilder {
             .collect();
 
         let data = ListData {
-            name: "Modules".to_string(),
+            name: "Entitys".to_string(),
             items,
         };
 
@@ -574,9 +574,9 @@ impl DocBuilder {
         handlebars.render_template(LIST_TMPL, &data).unwrap()
     }
 
-    fn build_proto_modules(&self) -> String {
+    fn build_proto_entitys(&self) -> String {
         let items: Vec<_> = self
-            .proto_modules
+            .proto_entitys
             .iter()
             .map(|x| ListItem {
                 file_name: x.file_name.clone(),
@@ -586,7 +586,7 @@ impl DocBuilder {
             .collect();
 
         let data = ListData {
-            name: "Module Prototypes".to_string(),
+            name: "Entity Prototypes".to_string(),
             items,
         };
 
@@ -637,8 +637,8 @@ impl DocBuilder {
         handlebars.render_template(LIST_TMPL, &data).unwrap()
     }
 
-    fn build_module(&self, name: &str, symbol: &Symbol) -> String {
-        if let SymbolKind::Module(property) = &symbol.kind {
+    fn build_entity(&self, name: &str, symbol: &Symbol) -> String {
+        if let SymbolKind::Entity(property) = &symbol.kind {
             let generic_parameters: Vec<_> = property
                 .generic_parameters
                 .iter()
@@ -699,7 +699,7 @@ impl DocBuilder {
                 })
                 .collect();
 
-            let data = ModuleData {
+            let data = EntityData {
                 name: name.to_string(),
                 description: symbol.doc_comment.format(false),
                 generic_parameters,
@@ -716,8 +716,8 @@ impl DocBuilder {
         }
     }
 
-    fn build_proto_module(&self, name: &str, symbol: &Symbol) -> String {
-        if let SymbolKind::ProtoModule(property) = &symbol.kind {
+    fn build_proto_entity(&self, name: &str, symbol: &Symbol) -> String {
+        if let SymbolKind::ProtoEntity(property) = &symbol.kind {
             let parameters: Vec<_> = property
                 .parameters
                 .iter()
@@ -762,7 +762,7 @@ impl DocBuilder {
                 })
                 .collect();
 
-            let data = ProtoModuleData {
+            let data = ProtoEntityData {
                 name: name.to_string(),
                 description: symbol.doc_comment.format(false),
                 parameters,

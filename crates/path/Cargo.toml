@@ -1,6 +1,6 @@
 [package]
 name                  = "veryla-path"
-version               = "0.13.3"
+version               = "0.1.0"
 authors.workspace     = true
 repository.workspace  = true
 keywords.workspace    = true

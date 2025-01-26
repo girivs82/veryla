@@ -332,8 +332,8 @@ impl Server {
                 let kind = match symbol.kind {
                     VerylaSymbolKind::Port(_) => SymbolKind::VARIABLE,
                     VerylaSymbolKind::Variable(_) => SymbolKind::VARIABLE,
-                    VerylaSymbolKind::Module(_) => SymbolKind::MODULE,
-                    VerylaSymbolKind::ProtoModule(_) => SymbolKind::MODULE,
+                    VerylaSymbolKind::Entity(_) => SymbolKind::MODULE,
+                    VerylaSymbolKind::ProtoEntity(_) => SymbolKind::MODULE,
                     VerylaSymbolKind::Interface(_) => SymbolKind::INTERFACE,
                     VerylaSymbolKind::Function(_) => SymbolKind::FUNCTION,
                     VerylaSymbolKind::Parameter(_) => SymbolKind::CONSTANT,
@@ -963,7 +963,7 @@ fn completion_symbol(
                 format!("{}::", symbol.namespace.paths[0])
             };
             let (new_text, kind) = match symbol.kind {
-                VerylaSymbolKind::Module(ref x) => {
+                VerylaSymbolKind::Entity(ref x) => {
                     let mut ports = String::new();
                     for port in &x.ports {
                         ports.push_str(&format!("{}, ", port.name()));
@@ -1030,7 +1030,7 @@ fn current_namespace(url: &Url, line: usize, column: usize) -> Option<Namespace>
     let mut ret_func = None;
     for symbol in symbol_table::get_all() {
         match symbol.kind {
-            VerylaSymbolKind::Module(x) => {
+            VerylaSymbolKind::Entity(x) => {
                 if x.range.include(url, line as u32, column as u32) {
                     let mut namespace = symbol.namespace;
                     namespace.push(symbol.token.text);

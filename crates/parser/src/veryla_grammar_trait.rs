@@ -119,7 +119,7 @@ list_group_to_item!(PortDeclaration);
 list_to_item!(WithGenericParameter);
 list_to_item!(WithGenericArgument);
 list_to_item!(Attribute);
-group_to_item!(Module);
+group_to_item!(Entity);
 group_to_item!(Interface);
 group_to_item!(Generate);
 group_to_item!(Package);

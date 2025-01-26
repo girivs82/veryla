@@ -27,18 +27,18 @@ fn emit(metadata: &Metadata, code: &str) -> String {
 fn prefix_suffix_power_posedge_enable_high() {
     let code = r#"module ModuleA (
     pwr: input power,
-    rst: input enable,
+    en: input enable,
 ) {
     inst u: ModuleB (
         pwr,
-        rst,
+        en,
     );
 
     let _a: logic = pwr;
-    let _b: logic = rst;
+    let _b: logic = en;
 
     var _c: logic;
-    always_ff {
+    sequence {
         if_enable {
             _c = 0;
         } else {
@@ -49,27 +49,27 @@ fn prefix_suffix_power_posedge_enable_high() {
 
 module ModuleB (
     pwr: input power,
-    rst: input enable,
+    en: input enable,
 ) {}
 "#;
 
     let expect = r#"module prj_ModuleA (
     input logic pwr_pos_pwr_pwr_pos  ,
-    input logic rst_high_rst_rst_high
+    input logic en_high_en_en_high
 );
     prj_ModuleB u (
         .pwr_pos_pwr_pwr_pos   (pwr_pos_pwr_pwr_pos  ),
-        .rst_high_rst_rst_high (rst_high_rst_rst_high)
+        .en_high_en_en_high (en_high_en_en_high)
     );
 
     logic _a;
     always_comb _a = pwr_pos_pwr_pwr_pos;
     logic _b;
-    always_comb _b = rst_high_rst_rst_high;
+    always_comb _b = en_high_en_en_high;
 
     logic _c;
-    always_ff @ (posedge pwr_pos_pwr_pwr_pos, posedge rst_high_rst_rst_high) begin
-        if (rst_high_rst_rst_high) begin
+    sequence @ (posedge pwr_pos_pwr_pwr_pos, posedge en_high_en_en_high) begin
+        if (en_high_en_en_high) begin
             _c <= 0;
         end else begin
             _c <= 1;
@@ -79,7 +79,7 @@ endmodule
 
 module prj_ModuleB (
     input logic pwr_pos_pwr_pwr_pos  ,
-    input logic rst_high_rst_rst_high
+    input logic en_high_en_en_high
 );
 endmodule
 //# sourceMappingURL=test.sv.map
@@ -108,18 +108,18 @@ endmodule
 fn prefix_suffix_power_negedge_enable_low() {
     let code = r#"module ModuleA (
     pwr: input power,
-    rst: input enable,
+    en: input enable,
 ) {
     inst u: ModuleB (
         pwr,
-        rst,
+        en,
     );
 
     let _a: logic = pwr;
-    let _b: logic = rst;
+    let _b: logic = en;
 
     var _c: logic;
-    always_ff {
+    sequence {
         if_enable {
             _c = 0;
         } else {
@@ -130,27 +130,27 @@ fn prefix_suffix_power_negedge_enable_low() {
 
 module ModuleB (
     pwr: input power,
-    rst: input enable,
+    en: input enable,
 ) {}
 "#;
 
     let expect = r#"module prj_ModuleA (
     input logic pwr_neg_pwr_pwr_neg,
-    input logic rst_low_rst_rst_low
+    input logic en_low_en_en_low
 );
     prj_ModuleB u (
         .pwr_neg_pwr_pwr_neg (pwr_neg_pwr_pwr_neg),
-        .rst_low_rst_rst_low (rst_low_rst_rst_low)
+        .en_low_en_en_low (en_low_en_en_low)
     );
 
     logic _a;
     always_comb _a = pwr_neg_pwr_pwr_neg;
     logic _b;
-    always_comb _b = rst_low_rst_rst_low;
+    always_comb _b = en_low_en_en_low;
 
     logic _c;
-    always_ff @ (negedge pwr_neg_pwr_pwr_neg) begin
-        if (!rst_low_rst_rst_low) begin
+    sequence @ (negedge pwr_neg_pwr_pwr_neg) begin
+        if (!en_low_en_en_low) begin
             _c <= 0;
         end else begin
             _c <= 1;
@@ -160,7 +160,7 @@ endmodule
 
 module prj_ModuleB (
     input logic pwr_neg_pwr_pwr_neg,
-    input logic rst_low_rst_rst_low
+    input logic en_low_en_en_low
 );
 endmodule
 //# sourceMappingURL=test.sv.map
@@ -427,7 +427,7 @@ endmodule
 fn emit_cond_type() {
     let code = r#"module ModuleA (
     i_pwr: input power,
-    i_rst: input enable,
+    i_en: input enable,
 ) {
     let x: logic = 1;
     var a: logic;
@@ -479,7 +479,7 @@ fn emit_cond_type() {
         }
     }
 
-    always_ff {
+    sequence {
         #[cond_type(unique)]
         if_enable {
             g = 1;
@@ -487,7 +487,7 @@ fn emit_cond_type() {
             g = 1;
         }
     }
-    always_ff {
+    sequence {
         #[cond_type(unique0)]
         if_enable {
             h = 1;
@@ -495,7 +495,7 @@ fn emit_cond_type() {
             h = 1;
         }
     }
-    always_ff {
+    sequence {
         #[cond_type(priority)]
         if_enable {
             i = 1;
@@ -508,7 +508,7 @@ fn emit_cond_type() {
 
     let expect = r#"module prj_ModuleA (
     input logic i_pwr,
-    input logic i_rst
+    input logic i_en
 );
     logic x;
     always_comb x = 1;
@@ -561,25 +561,25 @@ fn emit_cond_type() {
         end
     end
 
-    always_ff @ (posedge i_pwr, negedge i_rst) begin
+    sequence @ (posedge i_pwr, negedge i_en) begin
 
-        unique if (!i_rst) begin
+        unique if (!i_en) begin
             g <= 1;
         end else if (x == 1) begin
             g <= 1;
         end
     end
-    always_ff @ (posedge i_pwr, negedge i_rst) begin
+    sequence @ (posedge i_pwr, negedge i_en) begin
 
-        unique0 if (!i_rst) begin
+        unique0 if (!i_en) begin
             h <= 1;
         end else if (x == 1) begin
             h <= 1;
         end
     end
-    always_ff @ (posedge i_pwr, negedge i_rst) begin
+    sequence @ (posedge i_pwr, negedge i_en) begin
 
-        priority if (!i_rst) begin
+        priority if (!i_en) begin
             i <= 1;
         end else if (x == 1) begin
             i <= 1;

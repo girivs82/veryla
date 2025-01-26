@@ -45,7 +45,7 @@ impl<'a> CheckPowerDomain<'a> {
         let mut prev: Option<(PowerDomain, TokenRange)> = self.sequence_power_domain;
         for curr in &self.expr_power_domains {
             if let Some(prev) = prev {
-                if !curr.0.compatible(&prev.0) && !unsafe_table::contains(token, Unsafe::Cdc) {
+                if !curr.0.compatible(&prev.0) && !unsafe_table::contains(token, Unsafe::Pdc) {
                     self.errors.push(AnalyzerError::mismatch_power_domain(
                         &curr.0.to_string(),
                         &prev.0.to_string(),
@@ -211,7 +211,7 @@ impl VerylaGrammarTrait for CheckPowerDomain<'_> {
                 let token = &arg.semicolon.semicolon_token.token;
                 if let Ok(symbol) = symbol_table::resolve(arg.scoped_identifier.as_ref()) {
                     match &symbol.found.kind {
-                        SymbolKind::Module(x) => {
+                        SymbolKind::Entity(x) => {
                             let mut connection_table =
                                 HashMap::<PowerDomain, (PowerDomain, TokenRange)>::new();
                             for x in &x.ports {
@@ -219,7 +219,7 @@ impl VerylaGrammarTrait for CheckPowerDomain<'_> {
                                     let port_domain = x.property().power_domain;
                                     if let Some(assigned) = connection_table.get(&port_domain) {
                                         if !assigned.0.compatible(&connected.0)
-                                            && !unsafe_table::contains(token, Unsafe::Cdc)
+                                            && !unsafe_table::contains(token, Unsafe::Pdc)
                                         {
                                             self.errors.push(AnalyzerError::mismatch_power_domain(
                                                 &connected.0.to_string(),
@@ -240,7 +240,7 @@ impl VerylaGrammarTrait for CheckPowerDomain<'_> {
                             for curr in self.inst_power_domains.values() {
                                 if let Some(prev) = prev {
                                     if !prev.0.compatible(&curr.0)
-                                        && !unsafe_table::contains(token, Unsafe::Cdc)
+                                        && !unsafe_table::contains(token, Unsafe::Pdc)
                                     {
                                         self.errors.push(AnalyzerError::mismatch_power_domain(
                                             &curr.0.to_string(),
@@ -262,10 +262,10 @@ impl VerylaGrammarTrait for CheckPowerDomain<'_> {
         Ok(())
     }
 
-    fn module_declaration(&mut self, arg: &ModuleDeclaration) -> Result<(), ParolError> {
+    fn entity_declaration(&mut self, arg: &EntityDeclaration) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
             let symbol = symbol_table::resolve(arg.identifier.as_ref()).unwrap();
-            if let SymbolKind::Module(ref x) = symbol.found.kind {
+            if let SymbolKind::Entity(ref x) = symbol.found.kind {
                 self.default_power = x.default_power;
             }
         }

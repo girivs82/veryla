@@ -2332,12 +2332,12 @@ impl VerylaWalker for Emitter {
                         self.newline();
                         let mut wavedump = format!(
                             r##"    `ifdef __veryla_wavedump_{}_{}__
-        module __veryla_wavedump;
+        entity __veryla_wavedump;
             initial begin
                 $dumpfile("{}.vcd");
                 $dumpvars();
             end
-        endmodule
+        endentity
     `endif
 "##,
                             self.project_name.unwrap(),
@@ -2869,11 +2869,11 @@ impl VerylaWalker for Emitter {
             (Vec::new(), Vec::new())
         } else if let (Ok(symbol), _) = self.resolve_symbol_with_generics(&arg.scoped_identifier) {
             match symbol.found.kind {
-                SymbolKind::Module(ref x) => (x.ports.clone(), Vec::new()),
+                SymbolKind::Entity(ref x) => (x.ports.clone(), Vec::new()),
                 SymbolKind::GenericInstance(ref x) => {
                     let base = symbol_table::get(x.base).unwrap();
                     match base.kind {
-                        SymbolKind::Module(ref base) => {
+                        SymbolKind::Entity(ref base) => {
                             (base.ports.clone(), symbol.found.generic_maps())
                         }
                         _ => (Vec::new(), Vec::new()),
@@ -3364,10 +3364,10 @@ impl VerylaWalker for Emitter {
         }
     }
 
-    /// Semantic action for non-terminal 'ModuleDeclaration'
-    fn module_declaration(&mut self, arg: &ModuleDeclaration) {
+    /// Semantic action for non-terminal 'EntityDeclaration'
+    fn entity_declaration(&mut self, arg: &EntityDeclaration) {
         let symbol = symbol_table::resolve(arg.identifier.as_ref()).unwrap();
-        if let SymbolKind::Module(ref x) = symbol.found.kind {
+        if let SymbolKind::Entity(ref x) = symbol.found.kind {
             self.default_power = x.default_power;
             self.default_enable = x.default_enable;
         }
@@ -3379,7 +3379,7 @@ impl VerylaWalker for Emitter {
             }
             self.push_generic_map(map.clone());
 
-            self.module(&arg.module);
+            self.entity(&arg.entity);
             self.space(1);
             if map.generic() {
                 self.str(&map.name.clone());
@@ -3403,21 +3403,21 @@ impl VerylaWalker for Emitter {
             if !file_scope_import.is_empty() {
                 self.newline_pop();
             }
-            if let Some(ref x) = arg.module_declaration_opt2 {
+            if let Some(ref x) = arg.entity_declaration_opt2 {
                 self.space(1);
                 self.with_parameter(&x.with_parameter);
             }
-            if let Some(ref x) = arg.module_declaration_opt3 {
+            if let Some(ref x) = arg.entity_declaration_opt3 {
                 self.space(1);
                 self.port_declaration(&x.port_declaration);
             }
             self.token_will_push(&arg.l_brace.l_brace_token.replace(";"));
-            for (i, x) in arg.module_declaration_list.iter().enumerate() {
+            for (i, x) in arg.entity_declaration_list.iter().enumerate() {
                 self.newline_list(i);
-                self.module_group(&x.module_group);
+                self.entity_group(&x.entity_group);
             }
-            self.newline_list_post(arg.module_declaration_list.is_empty());
-            self.token(&arg.r_brace.r_brace_token.replace("endmodule"));
+            self.newline_list_post(arg.entity_declaration_list.is_empty());
+            self.token(&arg.r_brace.r_brace_token.replace("endentity"));
 
             self.pop_generic_map();
         }
@@ -3426,23 +3426,23 @@ impl VerylaWalker for Emitter {
         self.default_enable = None;
     }
 
-    /// Semantic action for non-terminal 'ModuleGroup'
-    fn module_group(&mut self, arg: &ModuleGroup) {
-        for x in &arg.module_group_list {
+    /// Semantic action for non-terminal 'EntityGroup'
+    fn entity_group(&mut self, arg: &EntityGroup) {
+        for x in &arg.entity_group_list {
             self.attribute(&x.attribute);
         }
-        match &*arg.module_group_group {
-            ModuleGroupGroup::LBraceModuleGroupGroupListRBrace(x) => {
-                for (i, x) in x.module_group_group_list.iter().enumerate() {
+        match &*arg.entity_group_group {
+            EntityGroupGroup::LBraceEntityGroupGroupListRBrace(x) => {
+                for (i, x) in x.entity_group_group_list.iter().enumerate() {
                     if i != 0 {
                         self.newline();
                     }
-                    self.module_group(&x.module_group);
+                    self.entity_group(&x.entity_group);
                 }
             }
-            ModuleGroupGroup::ModuleItem(x) => self.module_item(&x.module_item),
+            EntityGroupGroup::EntityItem(x) => self.entity_item(&x.entity_item),
         }
-        for _ in &arg.module_group_list {
+        for _ in &arg.entity_group_list {
             self.attribute_end();
         }
     }
@@ -3761,7 +3761,7 @@ impl VerylaWalker for Emitter {
     /// Semantic action for non-terminal 'DescriptionItem'
     fn description_item(&mut self, arg: &DescriptionItem) {
         match arg {
-            DescriptionItem::ModuleDeclaration(x) => self.module_declaration(&x.module_declaration),
+            DescriptionItem::EntityDeclaration(x) => self.entity_declaration(&x.entity_declaration),
             DescriptionItem::InterfaceDeclaration(x) => {
                 self.interface_declaration(&x.interface_declaration)
             }
@@ -3769,7 +3769,7 @@ impl VerylaWalker for Emitter {
                 self.package_declaration(&x.package_declaration)
             }
             // proto is not emitted at SystemVerilog
-            DescriptionItem::ProtoModuleDeclaration(_) => (),
+            DescriptionItem::ProtoEntityDeclaration(_) => (),
             // file scope import is not emitted at SystemVerilog
             DescriptionItem::ImportDeclaration(_) => (),
             DescriptionItem::EmbedDeclaration(x) => self.embed_declaration(&x.embed_declaration),
@@ -3920,7 +3920,7 @@ pub fn symbol_string(token: &VerylaToken, symbol: &Symbol, context: &SymbolConte
     };
 
     match &symbol.kind {
-        SymbolKind::Module(_) | SymbolKind::Interface(_) | SymbolKind::Package(_) => {
+        SymbolKind::Entity(_) | SymbolKind::Interface(_) | SymbolKind::Package(_) => {
             ret.push_str(&namespace_string(&symbol.namespace, context));
             ret.push_str(&token_text);
         }
@@ -3965,14 +3965,14 @@ pub fn symbol_string(token: &VerylaToken, symbol: &Symbol, context: &SymbolConte
                 || base.imported.iter().any(|x| *x == namespace);
             let top_level = matches!(
                 base.kind,
-                SymbolKind::Module(_) | SymbolKind::Interface(_) | SymbolKind::Package(_)
+                SymbolKind::Entity(_) | SymbolKind::Interface(_) | SymbolKind::Package(_)
             );
             if !visible | top_level {
                 ret.push_str(&namespace_string(&base.namespace, context));
             }
             ret.push_str(&token_text);
         }
-        SymbolKind::GenericParameter(_) | SymbolKind::ProtoModule(_) => (),
+        SymbolKind::GenericParameter(_) | SymbolKind::ProtoEntity(_) => (),
         SymbolKind::Port(x) => {
             if let Some(ref x) = x.prefix {
                 ret.push_str(x);

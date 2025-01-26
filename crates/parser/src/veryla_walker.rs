@@ -588,6 +588,13 @@ pub trait VerylaWalker {
         after!(self, logic, arg);
     }
 
+    /// Semantic action for non-terminal 'Analog'
+    fn analog(&mut self, arg: &Analog) {
+        before!(self, analog, arg);
+        self.veryla_token(&arg.analog_token);
+        after!(self, analog, arg);
+    }
+
     /// Semantic action for non-terminal 'Lsb'
     fn lsb(&mut self, arg: &Lsb) {
         before!(self, lsb, arg);
@@ -602,11 +609,11 @@ pub trait VerylaWalker {
         after!(self, modport, arg);
     }
 
-    /// Semantic action for non-terminal 'Module'
-    fn module(&mut self, arg: &Module) {
-        before!(self, module, arg);
-        self.veryla_token(&arg.module_token);
-        after!(self, module, arg);
+    /// Semantic action for non-terminal 'Entity'
+    fn entity(&mut self, arg: &Entity) {
+        before!(self, entity, arg);
+        self.veryla_token(&arg.entity_token);
+        after!(self, entity, arg);
     }
 
     /// Semantic action for non-terminal 'Msb'
@@ -1454,6 +1461,7 @@ pub trait VerylaWalker {
             VariableType::EnableHigh(x) => self.enable_high(&x.enable_high),
             VariableType::EnableLow(x) => self.enable_low(&x.enable_low),
             VariableType::Logic(x) => self.logic(&x.logic),
+            VariableType::Analog(x) => self.analog(&x.analog),
             VariableType::Bit(x) => self.bit(&x.bit),
         };
         after!(self, variable_type, arg);
@@ -2607,61 +2615,61 @@ pub trait VerylaWalker {
         after!(self, unsafe_block, arg);
     }
 
-    /// Semantic action for non-terminal 'ModuleDeclaration'
-    fn module_declaration(&mut self, arg: &ModuleDeclaration) {
-        before!(self, module_declaration, arg);
-        if let Some(ref x) = arg.module_declaration_opt {
+    /// Semantic action for non-terminal 'EntityDeclaration'
+    fn entity_declaration(&mut self, arg: &EntityDeclaration) {
+        before!(self, entity_declaration, arg);
+        if let Some(ref x) = arg.entity_declaration_opt {
             self.r#pub(&x.r#pub);
         }
-        self.module(&arg.module);
+        self.entity(&arg.entity);
         self.identifier(&arg.identifier);
-        if let Some(ref x) = arg.module_declaration_opt0 {
+        if let Some(ref x) = arg.entity_declaration_opt0 {
             self.with_generic_parameter(&x.with_generic_parameter);
         }
-        if let Some(ref x) = arg.module_declaration_opt1 {
+        if let Some(ref x) = arg.entity_declaration_opt1 {
             self.r#for(&x.r#for);
             self.scoped_identifier(&x.scoped_identifier);
         }
-        if let Some(ref x) = arg.module_declaration_opt2 {
+        if let Some(ref x) = arg.entity_declaration_opt2 {
             self.with_parameter(&x.with_parameter);
         }
-        if let Some(ref x) = arg.module_declaration_opt3 {
+        if let Some(ref x) = arg.entity_declaration_opt3 {
             self.port_declaration(&x.port_declaration);
         }
         self.l_brace(&arg.l_brace);
-        for x in &arg.module_declaration_list {
-            self.module_group(&x.module_group);
+        for x in &arg.entity_declaration_list {
+            self.entity_group(&x.entity_group);
         }
         self.r_brace(&arg.r_brace);
-        after!(self, module_declaration, arg);
+        after!(self, entity_declaration, arg);
     }
 
-    /// Semantic action for non-terminal 'ModuleGroup'
-    fn module_group(&mut self, arg: &ModuleGroup) {
-        before!(self, module_group, arg);
-        for x in &arg.module_group_list {
+    /// Semantic action for non-terminal 'EntityGroup'
+    fn entity_group(&mut self, arg: &EntityGroup) {
+        before!(self, entity_group, arg);
+        for x in &arg.entity_group_list {
             self.attribute(&x.attribute);
         }
-        match &*arg.module_group_group {
-            ModuleGroupGroup::LBraceModuleGroupGroupListRBrace(x) => {
+        match &*arg.entity_group_group {
+            EntityGroupGroup::LBraceEntityGroupGroupListRBrace(x) => {
                 self.l_brace(&x.l_brace);
-                for x in &x.module_group_group_list {
-                    self.module_group(&x.module_group);
+                for x in &x.entity_group_group_list {
+                    self.entity_group(&x.entity_group);
                 }
                 self.r_brace(&x.r_brace);
             }
-            ModuleGroupGroup::ModuleItem(x) => {
-                self.module_item(&x.module_item);
+            EntityGroupGroup::EntityItem(x) => {
+                self.entity_item(&x.entity_item);
             }
         }
-        after!(self, module_group, arg);
+        after!(self, entity_group, arg);
     }
 
-    /// Semantic action for non-terminal 'ModuleItem'
-    fn module_item(&mut self, arg: &ModuleItem) {
-        before!(self, module_item, arg);
+    /// Semantic action for non-terminal 'EntityItem'
+    fn entity_item(&mut self, arg: &EntityItem) {
+        before!(self, entity_item, arg);
         self.generate_item(&arg.generate_item);
-        after!(self, module_item, arg);
+        after!(self, entity_item, arg);
     }
 
     /// Semantic action for non-terminal 'InterfaceDeclaration'
@@ -2910,22 +2918,22 @@ pub trait VerylaWalker {
         after!(self, package_item, arg);
     }
 
-    /// Semantic action for non-terminal 'ProtoModuleDeclaration'
-    fn proto_module_declaration(&mut self, arg: &ProtoModuleDeclaration) {
-        before!(self, proto_module_declaration, arg);
-        if let Some(ref x) = arg.proto_module_declaration_opt {
+    /// Semantic action for non-terminal 'ProtoEntityDeclaration'
+    fn proto_entity_declaration(&mut self, arg: &ProtoEntityDeclaration) {
+        before!(self, proto_entity_declaration, arg);
+        if let Some(ref x) = arg.proto_entity_declaration_opt {
             self.r#pub(&x.r#pub);
         }
-        self.module(&arg.module);
+        self.entity(&arg.entity);
         self.identifier(&arg.identifier);
-        if let Some(ref x) = arg.proto_module_declaration_opt0 {
+        if let Some(ref x) = arg.proto_entity_declaration_opt0 {
             self.with_parameter(&x.with_parameter);
         }
-        if let Some(ref x) = arg.proto_module_declaration_opt1 {
+        if let Some(ref x) = arg.proto_entity_declaration_opt1 {
             self.port_declaration(&x.port_declaration);
         }
         self.semicolon(&arg.semicolon);
-        after!(self, proto_module_declaration, arg);
+        after!(self, proto_entity_declaration, arg);
     }
 
     /// Semantic action for non-terminal 'EmbedDeclaration'
@@ -2983,15 +2991,15 @@ pub trait VerylaWalker {
     fn description_item(&mut self, arg: &DescriptionItem) {
         before!(self, description_item, arg);
         match arg {
-            DescriptionItem::ModuleDeclaration(x) => self.module_declaration(&x.module_declaration),
+            DescriptionItem::EntityDeclaration(x) => self.entity_declaration(&x.entity_declaration),
             DescriptionItem::InterfaceDeclaration(x) => {
                 self.interface_declaration(&x.interface_declaration)
             }
             DescriptionItem::PackageDeclaration(x) => {
                 self.package_declaration(&x.package_declaration)
             }
-            DescriptionItem::ProtoModuleDeclaration(x) => {
-                self.proto_module_declaration(&x.proto_module_declaration)
+            DescriptionItem::ProtoEntityDeclaration(x) => {
+                self.proto_entity_declaration(&x.proto_entity_declaration)
             }
             DescriptionItem::ImportDeclaration(x) => self.import_declaration(&x.import_declaration),
             DescriptionItem::EmbedDeclaration(x) => self.embed_declaration(&x.embed_declaration),

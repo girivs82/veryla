@@ -33,7 +33,7 @@ pub struct LintNaming {
     #[serde(default)]
     pub case_modport: Option<Case>,
     #[serde(default)]
-    pub case_module: Option<Case>,
+    pub case_entity: Option<Case>,
     #[serde(default)]
     pub case_package: Option<Case>,
     #[serde(default)]
@@ -77,7 +77,7 @@ pub struct LintNaming {
     #[serde(default)]
     pub prefix_modport: Option<String>,
     #[serde(default)]
-    pub prefix_module: Option<String>,
+    pub prefix_entity: Option<String>,
     #[serde(default)]
     pub prefix_package: Option<String>,
     #[serde(default)]
@@ -121,7 +121,7 @@ pub struct LintNaming {
     #[serde(default)]
     pub suffix_modport: Option<String>,
     #[serde(default)]
-    pub suffix_module: Option<String>,
+    pub suffix_entity: Option<String>,
     #[serde(default)]
     pub suffix_package: Option<String>,
     #[serde(default)]
@@ -165,7 +165,7 @@ pub struct LintNaming {
     #[serde(default, with = "serde_regex")]
     pub re_forbidden_modport: Option<Regex>,
     #[serde(default, with = "serde_regex")]
-    pub re_forbidden_module: Option<Regex>,
+    pub re_forbidden_entity: Option<Regex>,
     #[serde(default, with = "serde_regex")]
     pub re_forbidden_package: Option<Regex>,
     #[serde(default, with = "serde_regex")]
@@ -209,7 +209,7 @@ pub struct LintNaming {
     #[serde(default, with = "serde_regex")]
     pub re_required_modport: Option<Regex>,
     #[serde(default, with = "serde_regex")]
-    pub re_required_module: Option<Regex>,
+    pub re_required_entity: Option<Regex>,
     #[serde(default, with = "serde_regex")]
     pub re_required_package: Option<Regex>,
     #[serde(default, with = "serde_regex")]

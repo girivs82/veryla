@@ -23,11 +23,11 @@ fn analyze(code: &str) -> Vec<AnalyzerError> {
 #[test]
 fn power_check() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         pwr: input power
     ) {
         var a: logic;
-        always_ff (pwr) {
+        sequence (pwr) {
             a = 0;
         }
     }
@@ -37,17 +37,17 @@ fn power_check() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleB (
+    entity EntityB (
         pwr_a: input `_a power<2>,
         pwr_b: input `_b power[2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (pwr_a[POS]) {
+        sequence (pwr_a[POS]) {
             a = 0;
         }
-        always_ff (pwr_b[POS]) {
+        sequence (pwr_b[POS]) {
             b = 0;
         }
     }
@@ -57,17 +57,17 @@ fn power_check() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleC (
+    entity EntityC (
         pwr_a: input `_a power<2, 2>,
         pwr_b: input `_b power[2, 2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (pwr_a[POS][POS]) {
+        sequence (pwr_a[POS][POS]) {
             a = 0;
         }
-        always_ff (pwr_b[POS][POS]) {
+        sequence (pwr_b[POS][POS]) {
             b = 0;
         }
     }
@@ -77,11 +77,11 @@ fn power_check() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleD (
+    entity EntityD (
         pwr: input logic
     ) {
         var a: logic;
-        always_ff (pwr) {
+        sequence (pwr) {
             a = 0;
         }
     }
@@ -91,17 +91,17 @@ fn power_check() {
     assert!(matches!(errors[0], AnalyzerError::InvalidPower { .. }));
 
     let code = r#"
-    module ModuleE (
+    entity EntityE (
         pwr_a: input `_a power<2>,
         pwr_b: input `_b power[2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (pwr_a) {
+        sequence (pwr_a) {
             a = 0;
         }
-        always_ff (pwr_b[POS]) {
+        sequence (pwr_b[POS]) {
             b = 0;
         }
     }
@@ -111,17 +111,17 @@ fn power_check() {
     assert!(matches!(errors[0], AnalyzerError::InvalidPower { .. }));
 
     let code = r#"
-    module ModuleF (
+    entity EntityF (
         pwr_a: input `_a power<2>,
         pwr_b: input `_b power[2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (pwr_a[POS]) {
+        sequence (pwr_a[POS]) {
             a = 0;
         }
-        always_ff (pwr_b) {
+        sequence (pwr_b) {
             b = 0;
         }
     }
@@ -131,17 +131,17 @@ fn power_check() {
     assert!(matches!(errors[0], AnalyzerError::InvalidPower { .. }));
 
     let code = r#"
-    module ModuleG (
+    entity EntityG (
         pwr_a: input `_a power<2, 2>,
         pwr_b: input `_b power[2, 2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (pwr_a[POS]) {
+        sequence (pwr_a[POS]) {
             a = 0;
         }
-        always_ff (pwr_b[POS][POS]) {
+        sequence (pwr_b[POS][POS]) {
             b = 0;
         }
     }
@@ -151,17 +151,17 @@ fn power_check() {
     assert!(matches!(errors[0], AnalyzerError::InvalidPower { .. }));
 
     let code = r#"
-    module ModuleH (
+    entity EntityH (
         pwr_a: input `_a power<2, 2>,
         pwr_b: input `_b power[2, 2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (pwr_a[POS][POS]) {
+        sequence (pwr_a[POS][POS]) {
             a = 0;
         }
-        always_ff (pwr_b[POS]) {
+        sequence (pwr_b[POS]) {
             b = 0;
         }
     }
@@ -172,15 +172,15 @@ fn power_check() {
 }
 
 #[test]
-fn reset_check() {
+fn enable_check() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         pwr: input power,
-        rst: input reset
+        en: input enable
     ) {
         var a: logic;
-        always_ff (pwr, rst) {
-            if_reset {
+        sequence (pwr, en) {
+            if_enable {
                 a = 0;
             }
         }
@@ -191,22 +191,22 @@ fn reset_check() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleB (
+    entity EntityB (
         pwr_a: input `_a power,
-        rst_a: input `_a reset<2>,
+        rst_a: input `_a enable<2>,
         pwr_b: input `_b power,
-        rst_b: input `_b reset[2]
+        rst_b: input `_b enable[2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (pwr_a, rst_a[POS]) {
-            if_reset {
+        sequence (pwr_a, rst_a[POS]) {
+            if_enable {
                 a = 0;
             }
         }
-        always_ff (pwr_b, rst_b[POS]) {
-            if_reset {
+        sequence (pwr_b, rst_b[POS]) {
+            if_enable {
                 b = 0;
             }
         }
@@ -217,22 +217,22 @@ fn reset_check() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleC (
+    entity EntityC (
         pwr_a: input `_a power,
-        rst_a: input `_a reset<2, 2>,
+        rst_a: input `_a enable<2, 2>,
         pwr_b: input `_b power,
-        rst_b: input `_b reset[2, 2]
+        rst_b: input `_b enable[2, 2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (pwr_a, rst_a[POS][POS]) {
-            if_reset {
+        sequence (pwr_a, rst_a[POS][POS]) {
+            if_enable {
                 a = 0;
             }
         }
-        always_ff (pwr_b, rst_b[POS][POS]) {
-            if_reset {
+        sequence (pwr_b, rst_b[POS][POS]) {
+            if_enable {
                 b = 0;
             }
         }
@@ -243,13 +243,13 @@ fn reset_check() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleD (
+    entity EntityD (
         pwr: input power,
-        rst: input logic
+        en: input logic
     ) {
         var a: logic;
-        always_ff (pwr, rst) {
-            if_reset {
+        sequence (pwr, en) {
+            if_enable {
                 a = 0;
             }
         }
@@ -260,22 +260,22 @@ fn reset_check() {
     assert!(matches!(errors[0], AnalyzerError::InvalidReset { .. }));
 
     let code = r#"
-    module ModuleE (
+    entity EntityE (
         pwr_a: input `_a power,
-        rst_a: input `_a reset<2>,
+        rst_a: input `_a enable<2>,
         pwr_b: input `_b power,
-        rst_b: input `_b reset[2]
+        rst_b: input `_b enable[2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (pwr_a, rst_a) {
-            if_reset {
+        sequence (pwr_a, rst_a) {
+            if_enable {
                 a = 0;
             }
         }
-        always_ff (pwr_b, rst_b[POS]) {
-            if_reset {
+        sequence (pwr_b, rst_b[POS]) {
+            if_enable {
                 b = 0;
             }
         }
@@ -286,22 +286,22 @@ fn reset_check() {
     assert!(matches!(errors[0], AnalyzerError::InvalidReset { .. }));
 
     let code = r#"
-    module ModuleF (
+    entity EntityF (
         pwr_a: input `_a power,
-        rst_a: input `_a reset<2>,
+        rst_a: input `_a enable<2>,
         pwr_b: input `_b power,
-        rst_b: input `_b reset[2]
+        rst_b: input `_b enable[2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (pwr_a, rst_a[POS]) {
-            if_reset {
+        sequence (pwr_a, rst_a[POS]) {
+            if_enable {
                 a = 0;
             }
         }
-        always_ff (pwr_b, rst_b) {
-            if_reset {
+        sequence (pwr_b, rst_b) {
+            if_enable {
                 b = 0;
             }
         }
@@ -312,22 +312,22 @@ fn reset_check() {
     assert!(matches!(errors[0], AnalyzerError::InvalidReset { .. }));
 
     let code = r#"
-    module ModuleG (
+    entity EntityG (
         pwr_a: input `_a power,
-        rst_a: input `_a reset<2, 2>,
+        rst_a: input `_a enable<2, 2>,
         pwr_b: input `_b power,
-        rst_b: input `_b reset[2, 2]
+        rst_b: input `_b enable[2, 2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (pwr_a, rst_a[POS]) {
-            if_reset {
+        sequence (pwr_a, rst_a[POS]) {
+            if_enable {
                 a = 0;
             }
         }
-        always_ff (pwr_b, rst_b[POS][POS]) {
-            if_reset {
+        sequence (pwr_b, rst_b[POS][POS]) {
+            if_enable {
                 b = 0;
             }
         }
@@ -338,22 +338,22 @@ fn reset_check() {
     assert!(matches!(errors[0], AnalyzerError::InvalidReset { .. }));
 
     let code = r#"
-    module ModuleH (
+    entity EntityH (
         pwr_a: input `_a power,
-        rst_a: input `_a reset<2, 2>,
+        rst_a: input `_a enable<2, 2>,
         pwr_b: input `_b power,
-        rst_b: input `_b reset[2, 2]
+        rst_b: input `_b enable[2, 2]
     ) {
         const POS: u32 = 0;
         var a: `_a logic;
         var b: `_b logic;
-        always_ff (pwr_a, rst_a[POS][POS]) {
-            if_reset {
+        sequence (pwr_a, rst_a[POS][POS]) {
+            if_enable {
                 a = 0;
             }
         }
-        always_ff (pwr_b, rst_b[POS]) {
-            if_reset {
+        sequence (pwr_b, rst_b[POS]) {
+            if_enable {
                 b = 0;
             }
         }
@@ -367,15 +367,15 @@ fn reset_check() {
 #[test]
 fn power_connection_check() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         pwr: input logic
     ) {
-        inst u: ModuleB (
+        inst u: EntityB (
             pwr,
         );
     }
 
-    module ModuleB (
+    entity EntityB (
         pwr: input power
     ) {}
     "#;
@@ -385,18 +385,18 @@ fn power_connection_check() {
 }
 
 #[test]
-fn reset_connection_check() {
+fn enable_connection_check() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         pwr: input logic
     ) {
-        inst u: ModuleB (
+        inst u: EntityB (
             pwr,
         );
     }
 
-    module ModuleB (
-        pwr: input reset
+    entity EntityB (
+        pwr: input enable
     ) {}
     "#;
 
@@ -407,7 +407,7 @@ fn reset_connection_check() {
 #[test]
 fn cyclic_type_dependency() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         struct StructA {
             memberA: StructA,
         }
@@ -421,11 +421,11 @@ fn cyclic_type_dependency() {
     ));
 
     let code = r#"
-    module ModuleB {
-        inst u: ModuleC;
+    entity EntityB {
+        inst u: EntityC;
     }
-    module ModuleC {
-        inst u: ModuleB;
+    entity EntityC {
+        inst u: EntityB;
     }
     "#;
 
@@ -451,7 +451,7 @@ fn cyclic_type_dependency() {
 #[test]
 fn duplicated_identifier() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         const a: u32 = 1;
         const a: u32 = 1;
     }
@@ -467,7 +467,7 @@ fn duplicated_identifier() {
 #[test]
 fn multiple_assignment() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var a: logic;
 
         assign a = 1;
@@ -487,7 +487,7 @@ fn multiple_assignment() {
 #[test]
 fn invalid_allow() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         #[allow(dummy_name)]
         var a: logic;
     }
@@ -500,7 +500,7 @@ fn invalid_allow() {
 #[test]
 fn invalid_assignment() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         a: input logic,
     ) {
         assign a = 1;
@@ -511,7 +511,7 @@ fn invalid_assignment() {
     assert!(matches!(errors[0], AnalyzerError::InvalidAssignment { .. }));
 
     let code = r#"
-    module ModuleB (
+    entity EntityB (
         a: modport InterfaceA::x,
     ) {
         assign a.a = 1;
@@ -533,7 +533,7 @@ fn invalid_assignment() {
 #[test]
 fn invalid_direction() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         a: ref logic,
     ) {}
     "#;
@@ -542,7 +542,7 @@ fn invalid_direction() {
     assert!(matches!(errors[0], AnalyzerError::InvalidDirection { .. }));
 
     let code = r#"
-    module ModuleB (
+    entity EntityB (
         b: import logic,
     ) {}
     "#;
@@ -551,7 +551,7 @@ fn invalid_direction() {
     assert!(matches!(errors[0], AnalyzerError::InvalidDirection { .. }));
 
     let code = r#"
-    module ModuleC {
+    entity EntityC {
         function FuncC (
             c: import logic,
         ) {}
@@ -562,7 +562,7 @@ fn invalid_direction() {
     assert!(matches!(errors[0], AnalyzerError::InvalidDirection { .. }));
 
     let code = r#"
-    module ModuleD {
+    entity EntityD {
         function FuncD (
             D: modport logic,
         ) {}
@@ -600,7 +600,7 @@ fn invalid_direction() {
 #[test]
 fn invalid_import() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var a: logic;
         import a::*;
     }
@@ -613,7 +613,7 @@ fn invalid_import() {
 #[test]
 fn invalid_lsb() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var a: logic;
         assign a = lsb;
     }
@@ -626,7 +626,7 @@ fn invalid_lsb() {
 #[test]
 fn invalid_msb() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var a: logic;
         assign a = msb;
     }
@@ -639,7 +639,7 @@ fn invalid_msb() {
 #[test]
 fn invalid_number_character() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         let a: logic = 1'b3;
     }
     "#;
@@ -654,13 +654,13 @@ fn invalid_number_character() {
 #[test]
 fn invalid_statement() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         pwr: input logic,
-        rst: input logic,
+        en: input logic,
     ) {
-        always_ff (pwr, rst) {
-            if_reset {
-                if_reset {
+        sequence (pwr, en) {
+            if_enable {
+                if_enable {
                 }
             }
         }
@@ -732,7 +732,7 @@ fn invalid_modport_item() {
 #[test]
 fn invalid_port_default_value() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         a: output logic = 0,
     ){}
     "#;
@@ -744,7 +744,7 @@ fn invalid_port_default_value() {
     ));
 
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         a: inout tri logic = 0,
     ){}
     "#;
@@ -756,7 +756,7 @@ fn invalid_port_default_value() {
     ));
 
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         a: ref logic = 0,
     ){}
     "#;
@@ -768,7 +768,7 @@ fn invalid_port_default_value() {
     ));
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         function FuncA(
             a: output logic = _,
         ) {
@@ -787,7 +787,7 @@ fn invalid_port_default_value() {
 #[test]
 fn mismatch_function_arity() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         function FuncA (
             a: input logic,
         ) -> logic {}
@@ -809,7 +809,7 @@ fn mismatch_function_arity() {
         ) -> logic {}
     }
 
-    module ModuleB {
+    entity EntityB {
         inst instB: InterfaceB();
         let _b: logic = instB.FuncB(1, 2);
     }
@@ -832,7 +832,7 @@ fn mismatch_function_arity() {
         }
     }
 
-    module ModuleC (
+    entity EntityC (
         ifc: modport InterfaceC::mp,
     ) {
         let _c: logic = ifc.FuncC(1, 2);
@@ -849,7 +849,7 @@ fn mismatch_function_arity() {
 #[test]
 fn missing_default_generic_argument() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         function FuncA::<A: const> () -> logic<A> {}
         let _a: logic = FuncA::<1>();
 
@@ -874,7 +874,7 @@ fn missing_default_generic_argument() {
     assert!(errors.is_empty());
 
     let code = r#"
-        module ModuleB {
+        entity EntityB {
             function FuncA::<A: const = 1, B: const, C: const = 3> () -> logic<A + B + C> {}
             let _a: logic = FuncA::<1, 2, 3> ();
         }
@@ -887,7 +887,7 @@ fn missing_default_generic_argument() {
     ));
 
     let code = r#"
-        module ModuleC {
+        entity EntityC {
             function FuncA::<A: const = 1, B: const = 2, C: const> () -> logic<A + B + C> {}
             let _a: logic = FuncA::<1, 2, 3>();
         }
@@ -903,7 +903,7 @@ fn missing_default_generic_argument() {
 #[test]
 fn mismatch_generics_arity() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         function FuncA::<T: const> (
             a: input logic<T>,
         ) -> logic<T> {}
@@ -919,7 +919,7 @@ fn mismatch_generics_arity() {
     ));
 
     let code = r#"
-    module ModuleB {
+    entity EntityB {
         function FuncA::<T: const, U: const> (
             a: input logic<T>,
         ) -> logic<T> {}
@@ -940,7 +940,7 @@ fn mismatch_generics_arity() {
             c: logic<W>,
         }
     }
-    module ModuleC {
+    entity EntityC {
         var c: PackageC::<2>::StructC;
         assign c.c = 1;
     }
@@ -955,10 +955,10 @@ fn mismatch_generics_arity() {
             return 0;
         }
     }
-    module SubD::<W: const> {
+    entity SubD::<W: const> {
         let _d: logic<W> = PackageD::FuncD::<W>();
     }
-    module TopD {
+    entity TopD {
         inst u_subd_1: SubD::<1>();
         inst u_subd_2: SubD::<2>();
     }
@@ -971,7 +971,7 @@ fn mismatch_generics_arity() {
 #[test]
 fn mismatch_attribute_args() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         #[sv]
         const a: u32 = 1;
     }
@@ -987,7 +987,7 @@ fn mismatch_attribute_args() {
 #[test]
 fn mismatch_type() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         const a: u32 = 1;
         inst u: a;
     }
@@ -997,9 +997,9 @@ fn mismatch_type() {
     assert!(matches!(errors[0], AnalyzerError::MismatchType { .. }));
 
     let code = r#"
-    module ModuleB_0 {}
-    module ModuleB_1 {
-        inst u: ModuleB_0;
+    entity EntityB_0 {}
+    entity EntityB_1 {
+        inst u: EntityB_0;
         let _b: u = 1;
     }
     "#;
@@ -1008,7 +1008,7 @@ fn mismatch_type() {
     assert!(matches!(errors[0], AnalyzerError::MismatchType { .. }));
 
     let code = r#"
-    module ModuleC {
+    entity EntityC {
         function FuncC() -> logic {
             return 0;
         }
@@ -1020,9 +1020,9 @@ fn mismatch_type() {
     assert!(matches!(errors[0], AnalyzerError::MismatchType { .. }));
 
     let code = r#"
-    module ModuleD_0 {}
-    module ModuleD_1 {
-        let _d: ModuleD_0 = 0;
+    entity EntityD_0 {}
+    entity EntityD_1 {
+        let _d: EntityD_0 = 0;
     }
     "#;
 
@@ -1031,7 +1031,7 @@ fn mismatch_type() {
 
     let code = r#"
     interface InterfaceE {}
-    module ModuleE {
+    entity EntityE {
         let _e: InterfaceE = 0;
     }
     "#;
@@ -1041,7 +1041,7 @@ fn mismatch_type() {
 
     let code = r#"
     package PackageF {}
-    module ModuleF {
+    entity EntityF {
         let _f: PackageF = 0;
     }
     "#;
@@ -1050,7 +1050,7 @@ fn mismatch_type() {
     assert!(matches!(errors[0], AnalyzerError::MismatchType { .. }));
 
     let code = r#"
-    module ModuleG {
+    entity EntityG {
         function FuncG::<T: type> -> T {
             var g: T;
             g = 0;
@@ -1065,7 +1065,7 @@ fn mismatch_type() {
     assert!(matches!(errors[0], AnalyzerError::MismatchType { .. }));
 
     let code = r#"
-    module ModuleH {
+    entity EntityH {
         function FuncH::<T: type> -> T {
             var h: T;
             h = 0;
@@ -1083,7 +1083,7 @@ fn mismatch_type() {
     let code = r#"
     interface InterfaceI {}
 
-    module ModuleI (
+    entity EntityI (
         a: modport InterfaceI,
     ) {}
     "#;
@@ -1092,7 +1092,7 @@ fn mismatch_type() {
     assert!(matches!(errors[0], AnalyzerError::MismatchType { .. }));
 
     let code = r#"
-    module ModuleJ {
+    entity EntityJ {
         function FuncJ::<T: type> -> T {
             var g: T;
             g = 0;
@@ -1108,17 +1108,17 @@ fn mismatch_type() {
     assert!(matches!(errors[0], AnalyzerError::MismatchType { .. }));
 
     let code = r#"
-    proto module ProtoK0;
-    proto module ProtoK1;
+    proto entity ProtoK0;
+    proto entity ProtoK1;
 
-    module ModuleK0::<T: ProtoK0> {
+    entity EntityK0::<T: ProtoK0> {
         inst u: T;
     }
 
-    module ModuleK1 for ProtoK1 {}
+    entity EntityK1 for ProtoK1 {}
 
-    module ModuleK2 {
-        inst u: ModuleK0::<ModuleK1>();
+    entity EntityK2 {
+        inst u: EntityK0::<EntityK1>();
     }
     "#;
 
@@ -1136,9 +1136,9 @@ fn mismatch_type() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleM0 {}
+    entity EntityM0 {}
     interface InterfaceM1 {
-      inst u: ModuleM0();
+      inst u: EntityM0();
     }
     "#;
 
@@ -1152,7 +1152,7 @@ fn mismatch_type() {
             a: input,
         }
     }
-    module ModuleN1 (
+    entity EntityN1 (
         port_n1: input InterfaceN1::mp,
     ){}
     "#;
@@ -1167,7 +1167,7 @@ fn mismatch_type() {
             a: input,
         }
     }
-    module ModuleN2 (
+    entity EntityN2 (
         port_n2: input InterfaceN2::<2>::mp,
     ){}
     "#;
@@ -1179,7 +1179,7 @@ fn mismatch_type() {
     interface InterfaceN3 {
         var a: logic;
     }
-    module ModuleN3 (
+    entity EntityN3 (
         port_n3: input InterfaceN3,
     ){}
     "#;
@@ -1191,7 +1191,7 @@ fn mismatch_type() {
     interface InterfaceN4::<W: const> {
         var a: logic<W>;
     }
-    module ModuleN4 (
+    entity EntityN4 (
         port_n4: input InterfaceN4::<2>,
     ){}
     "#;
@@ -1203,7 +1203,7 @@ fn mismatch_type() {
     interface InterfaceO1 {
         var a: logic;
     }
-    module ModuleO1 (
+    entity EntityO1 (
         port_o1: modport InterfaceO1,
     ){}
     "#;
@@ -1215,7 +1215,7 @@ fn mismatch_type() {
     interface InterfaceO2::<W: const> {
         var a: logic<W>;
     }
-    module ModuleO2 (
+    entity EntityO2 (
         port_o2: modport InterfaceO2::<2>,
     ){}
     "#;
@@ -1224,7 +1224,7 @@ fn mismatch_type() {
     assert!(matches!(errors[0], AnalyzerError::MismatchType { .. }));
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         enum EnumA {
             B,
         }
@@ -1237,7 +1237,7 @@ fn mismatch_type() {
     assert!(matches!(errors[0], AnalyzerError::MismatchType { .. }));
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         enum EnumA {
             A,
             B,
@@ -1254,13 +1254,13 @@ fn mismatch_type() {
 }
 
 #[test]
-fn missing_if_reset() {
+fn missing_if_enable() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         pwr: input logic,
-        rst: input logic,
+        en: input logic,
     ) {
-        always_ff(pwr, rst) {
+        sequence(pwr, en) {
         }
     }
     "#;
@@ -1272,11 +1272,11 @@ fn missing_if_reset() {
 #[test]
 fn missing_port() {
     let code = r#"
-    module ModuleA {
-        inst u: ModuleB;
+    entity EntityA {
+        inst u: EntityB;
     }
 
-    module ModuleB (
+    entity EntityB (
         pwr: input logic,
     ) {}
     "#;
@@ -1285,11 +1285,11 @@ fn missing_port() {
     assert!(matches!(errors[0], AnalyzerError::MissingPort { .. }));
 
     let code = r#"
-    module ModuleA {
-        inst u: ModuleB;
+    entity EntityA {
+        inst u: EntityB;
     }
 
-    module ModuleB (
+    entity EntityB (
         i_a: input  logic = 0,
         o_b: output logic = _,
     ) {
@@ -1304,13 +1304,13 @@ fn missing_port() {
 #[test]
 fn missing_power_signal() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         pwr: input power
     ){
-        always_ff {}
-        always_ff (pwr) {}
+        sequence {}
+        sequence (pwr) {}
         for i in 0..1 : g {
-            always_ff {}
+            sequence {}
         }
     }
     "#;
@@ -1319,10 +1319,10 @@ fn missing_power_signal() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleB (
+    entity EntityB (
         pwr: input logic
     ){
-        always_ff {}
+        sequence {}
     }
     "#;
 
@@ -1333,11 +1333,11 @@ fn missing_power_signal() {
     ));
 
     let code = r#"
-    module ModuleC (
+    entity EntityC (
         pwr_0: input `_0 power,
         pwr_1: input `_1 power
     ){
-        always_ff {}
+        sequence {}
     }
     "#;
 
@@ -1348,10 +1348,10 @@ fn missing_power_signal() {
     ));
 
     let code = r#"
-    module ModuleD (
+    entity EntityD (
         pwr: input power<2>
     ){
-        always_ff {}
+        sequence {}
     }
     "#;
 
@@ -1362,10 +1362,10 @@ fn missing_power_signal() {
     ));
 
     let code = r#"
-    module ModuleE (){
+    entity EntityE (){
         for i in 0..1 : g {
             let _pwr: power = 0;
-            always_ff {}
+            sequence {}
         }
     }
     "#;
@@ -1378,27 +1378,27 @@ fn missing_power_signal() {
 }
 
 #[test]
-fn missing_reset_signal() {
+fn missing_enable_signal() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         pwr: input power,
-        rst: input reset
+        en: input enable
     ) {
-        always_ff {
-            if_reset {}
+        sequence {
+            if_enable {}
         }
-        always_ff (pwr) {
-            if_reset {}
+        sequence (pwr) {
+            if_enable {}
         }
-        always_ff (pwr, rst) {
-            if_reset {}
+        sequence (pwr, en) {
+            if_enable {}
         }
         for i in 0..1 : g {
-            always_ff {
-                if_reset {}
+            sequence {
+                if_enable {}
             }
-            always_ff (pwr) {
-                if_reset {}
+            sequence (pwr) {
+                if_enable {}
             }
         }
     }
@@ -1408,12 +1408,12 @@ fn missing_reset_signal() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleB (
+    entity EntityB (
         pwr: input power,
-        rst: input logic
+        en: input logic
     ) {
-        always_ff {
-            if_reset {}
+        sequence {
+            if_enable {}
         }
     }
     "#;
@@ -1425,12 +1425,12 @@ fn missing_reset_signal() {
     ));
 
     let code = r#"
-    module ModuleC (
+    entity EntityC (
         pwr: input power,
-        rst: input logic
+        en: input logic
     ) {
-        always_ff (pwr) {
-            if_reset {}
+        sequence (pwr) {
+            if_enable {}
         }
     }
     "#;
@@ -1442,13 +1442,13 @@ fn missing_reset_signal() {
     ));
 
     let code = r#"
-    module ModuleD (
+    entity EntityD (
         pwr:   input power,
-        rst_0: input reset,
-        rst_1: input reset
+        rst_0: input enable,
+        rst_1: input enable
     ) {
-        always_ff {
-            if_reset {}
+        sequence {
+            if_enable {}
         }
     }
     "#;
@@ -1460,12 +1460,12 @@ fn missing_reset_signal() {
     ));
 
     let code = r#"
-    module ModuleE (
+    entity EntityE (
         pwr: input power,
-        rst: input reset<2>
+        en: input enable<2>
     ) {
-        always_ff {
-            if_reset {}
+        sequence {
+            if_enable {}
         }
     }
     "#;
@@ -1477,13 +1477,13 @@ fn missing_reset_signal() {
     ));
 
     let code = r#"
-    module ModuleF (
+    entity EntityF (
         pwr: input power
     ) {
         for i in 0..1 : g {
-            let _rst: reset = 0;
-            always_ff {
-                if_reset {}
+            let _rst: enable = 0;
+            sequence {
+                if_enable {}
             }
         }
     }
@@ -1497,16 +1497,16 @@ fn missing_reset_signal() {
 }
 
 #[test]
-fn missing_reset_statement() {
+fn missing_enable_statement() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         pwr: input power,
-        rst: input reset,
+        en: input enable,
     ) {
         var a: logic;
 
-        always_ff(pwr, rst) {
-            if_reset {
+        sequence(pwr, en) {
+            if_enable {
             } else {
                 a = 1;
             }
@@ -1524,7 +1524,7 @@ fn missing_reset_statement() {
 #[test]
 fn missing_tri() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         x: inout logic,
     ) {
     }
@@ -1537,7 +1537,7 @@ fn missing_tri() {
 #[test]
 fn missing_power_domain() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         pwr0: input power,
         pwr1: input power,
     ) {
@@ -1554,7 +1554,7 @@ fn missing_power_domain() {
 #[test]
 fn too_large_enum_variant() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         enum EnumA: logic<2> {
             A = 100,
         }
@@ -1568,7 +1568,7 @@ fn too_large_enum_variant() {
     ));
 
     let code = r#"
-    module ModuleB {
+    entity EntityB {
         enum EnumB: logic<2> {
             A = 3,
             B,
@@ -1586,7 +1586,7 @@ fn too_large_enum_variant() {
 #[test]
 fn too_large_number() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         const a: u32 = 2'd100;
     }
     "#;
@@ -1598,7 +1598,7 @@ fn too_large_number() {
 #[test]
 fn too_much_enum_variant() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         enum EnumA: logic<2> {
             A,
             B,
@@ -1616,7 +1616,7 @@ fn too_much_enum_variant() {
     ));
 
     let code = r#"
-    module ModuleB {
+    entity EntityB {
         enum EnumB: logic {
             A,
             B,
@@ -1637,7 +1637,7 @@ fn too_much_enum_variant() {
 #[test]
 fn unevaluatable_enum_variant() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         enum EnumA: logic<2> {
             A = 2'b0x,
             B = 2'b10,
@@ -1649,7 +1649,7 @@ fn unevaluatable_enum_variant() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleB {
+    entity EntityB {
         enum EnumA: logic<2> {
             A = 2'b0x,
             B,
@@ -1664,7 +1664,7 @@ fn unevaluatable_enum_variant() {
     ));
 
     let code = r#"
-    module ModuleC {
+    entity EntityC {
         #[enum_encoding(onehot)]
         enum EnumA: logic<2> {
             A = 2'bx1,
@@ -1679,7 +1679,7 @@ fn unevaluatable_enum_variant() {
     ));
 
     let code = r#"
-    module ModuleD {
+    entity EntityD {
         #[enum_encoding(gray)]
         enum EnumA: logic<2> {
             A = 2'bx0,
@@ -1697,7 +1697,7 @@ fn unevaluatable_enum_variant() {
 #[test]
 fn invalid_enum_variant() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         #[enum_encoding(onehot)]
         enum EnumA{
             A = 0,
@@ -1712,7 +1712,7 @@ fn invalid_enum_variant() {
     ));
 
     let code = r#"
-    module ModuleB {
+    entity EntityB {
         #[enum_encoding(onehot)]
         enum EnumA{
             A = 3,
@@ -1727,7 +1727,7 @@ fn invalid_enum_variant() {
     ));
 
     let code = r#"
-    module ModuleC {
+    entity EntityC {
         #[enum_encoding(gray)]
         enum EnumA{
             A,
@@ -1746,7 +1746,7 @@ fn invalid_enum_variant() {
 #[test]
 fn undefined_identifier() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         assign a = 1;
     }
     "#;
@@ -1761,7 +1761,7 @@ fn undefined_identifier() {
 #[test]
 fn referring_package_before_definition() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         const A: u32 = PakcageB::B;
     }
     package PakcageB {
@@ -1822,7 +1822,7 @@ fn referring_package_before_definition() {
 #[test]
 fn unknown_attribute() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         #[dummy_name]
         const a: u32 = 1;
     }
@@ -1857,7 +1857,7 @@ fn unknown_embed_way() {
 #[test]
 fn unknown_member() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         struct StructA {
             memberA: logic,
         }
@@ -1870,7 +1870,7 @@ fn unknown_member() {
     assert!(matches!(errors[0], AnalyzerError::UnknownMember { .. }));
 
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         a_if: interface
     ) {
         assign a_if.a = 0;
@@ -1881,7 +1881,7 @@ fn unknown_member() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         a_if: interface::mp
     ) {
         assign a_if.a = 0;
@@ -1895,7 +1895,7 @@ fn unknown_member() {
 #[test]
 fn unknown_msb() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var a: $sv::SvType;
         let b: logic = a[msb];
     }
@@ -1911,7 +1911,7 @@ fn unknown_msb() {
             a: input
         }
     }
-    module ModuleA (
+    entity EntityA (
         if_a: modport InterfaceA::mp
     ) {
         let a: logic = if_a.a[msb];
@@ -1927,7 +1927,7 @@ fn unknown_msb() {
     ){
         var a: logic<W>;
     }
-    module ModuleA {
+    entity EntityA {
         inst if_a: InterfaceA;
         assign if_a.a = 0;
         let a: logic = if_a.a[msb];
@@ -1949,7 +1949,7 @@ fn unknown_msb() {
     package PackageC {
         const C: bit<2> = 0;
     }
-    module ModuleA {
+    entity EntityA {
         var a: PackageA::<PackageB::B>::StructA;
         assign a.a = 0;
         let _b: logic = a.a[msb];
@@ -1964,15 +1964,15 @@ fn unknown_msb() {
 #[test]
 fn uknown_port() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         pwr: input logic,
     ) {
-        inst u: ModuleB (
+        inst u: EntityB (
             pwr
         );
     }
 
-    module ModuleB {}
+    entity EntityB {}
     "#;
 
     let errors = analyze(code);
@@ -1982,13 +1982,13 @@ fn uknown_port() {
 #[test]
 fn uknown_param() {
     let code = r#"
-    module ModuleA {
-        inst u: ModuleB #(
+    entity EntityA {
+        inst u: EntityB #(
             X: 1,
         )();
     }
 
-    module ModuleB {}
+    entity EntityB {}
     "#;
 
     let errors = analyze(code);
@@ -1998,7 +1998,7 @@ fn uknown_param() {
 #[test]
 fn unused_variable() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         let a: logic = 1;
     }
     "#;
@@ -2007,7 +2007,7 @@ fn unused_variable() {
     assert!(matches!(errors[0], AnalyzerError::UnusedVariable { .. }));
 
     let code = r#"
-    module ModuleB {
+    entity EntityB {
         always_comb {
             let a: logic = 1;
         }
@@ -2021,7 +2021,7 @@ fn unused_variable() {
 #[test]
 fn unused_return() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         function FuncA () -> logic {
             return 1;
         }
@@ -2041,7 +2041,7 @@ fn unused_return() {
             return 1;
         }
     }
-    module ModuleB {
+    entity EntityB {
         inst ifb: InterfaceB ();
         initial {
             ifb.FuncB();
@@ -2061,7 +2061,7 @@ fn unused_return() {
             return 1;
         }
     }
-    module ModuleC (
+    entity EntityC (
         ifc: modport InterfaceC::mp,
     ){
         initial {
@@ -2077,7 +2077,7 @@ fn unused_return() {
 #[test]
 fn break_outside_loop() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         always_comb {
             break;
         }
@@ -2088,7 +2088,7 @@ fn break_outside_loop() {
     assert!(matches!(errors[0], AnalyzerError::InvalidStatement { .. }));
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         always_comb {
             if 1 {
                 break;
@@ -2104,7 +2104,7 @@ fn break_outside_loop() {
 #[test]
 fn unassign_variable() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var _a: logic;
     }
     "#;
@@ -2113,7 +2113,7 @@ fn unassign_variable() {
     assert!(matches!(errors[0], AnalyzerError::UnassignVariable { .. }));
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var a: logic;
         var b: logic;
         always_comb {
@@ -2127,7 +2127,7 @@ fn unassign_variable() {
     assert!(matches!(errors[0], AnalyzerError::UnassignVariable { .. }));
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var a: logic;
         always_comb {
             a = a;
@@ -2140,7 +2140,7 @@ fn unassign_variable() {
     assert!(matches!(errors[0], AnalyzerError::UnassignVariable { .. }));
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var a: logic;
         var b: logic;
         always_comb {
@@ -2164,7 +2164,7 @@ fn unassign_variable() {
     assert!(matches!(errors[0], AnalyzerError::UnassignVariable { .. }));
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var a: logic;
         always_comb {
             let b: logic = 1;
@@ -2177,7 +2177,7 @@ fn unassign_variable() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var a: logic;
         always_comb {
             for i: u32 in 0..1 {
@@ -2191,7 +2191,7 @@ fn unassign_variable() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var a: logic<2>;
         always_comb {
             a[0] = 0;
@@ -2207,7 +2207,7 @@ fn unassign_variable() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var a:  logic;
         var b:  logic;
 
@@ -2223,12 +2223,12 @@ fn unassign_variable() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         o_d:    output logic
     ) {
         assign  o_d = '0;
     }
-    module ModuleB {
+    entity EntityB {
         var a: logic;
         var b: logic;
 
@@ -2236,7 +2236,7 @@ fn unassign_variable() {
             a = b;
         }
 
-        inst u_sub: ModuleA (
+        inst u_sub: EntityA (
             o_d: b
         );
     }
@@ -2258,7 +2258,7 @@ fn unassign_variable() {
             FuncA: import,
         }
     }
-    module ModuleA (
+    entity EntityA (
         if_a: modport InterfaceA::mp
     ){
         function FuncB(
@@ -2293,7 +2293,7 @@ fn unassign_variable() {
 #[test]
 fn uncovered_branch() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var a: logic;
         var b: logic;
         let x: logic = 1;
@@ -2323,7 +2323,7 @@ fn uncovered_branch() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleB {
+    entity EntityB {
         var a: logic;
         let x: logic = 1;
 
@@ -2342,7 +2342,7 @@ fn uncovered_branch() {
 #[test]
 fn anonymous_identifier() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         i_pwr: input `_ power,
     ) {
     }
@@ -2352,7 +2352,7 @@ fn anonymous_identifier() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module _ {
+    entity _ {
     }
     "#;
 
@@ -2363,7 +2363,7 @@ fn anonymous_identifier() {
     ));
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         let a: logic = _ + 1;
     }
     "#;
@@ -2375,11 +2375,11 @@ fn anonymous_identifier() {
     ));
 
     let code = r#"
-    module SubA (
+    entity SubA (
         i_a: input logic
     ) {
     }
-    module ModuleA {
+    entity EntityA {
         inst u_sub: SubA (
             i_a: _
         );
@@ -2393,12 +2393,12 @@ fn anonymous_identifier() {
     ));
 
     let code = r#"
-    module SubA (
+    entity SubA (
         o_a: output logic
     ) {
         assign o_a = 0;
     }
-    module ModuleA {
+    entity EntityA {
         inst u_sub: SubA (
             o_a: _
         );
@@ -2409,7 +2409,7 @@ fn anonymous_identifier() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         inst u_sub: $sv::Sub (
             i_a: _,
             o_b: _,
@@ -2421,7 +2421,7 @@ fn anonymous_identifier() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         i_a: input logic = _,
     ) {}
     "#;
@@ -2433,7 +2433,7 @@ fn anonymous_identifier() {
     ));
 
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         o_a: output logic = _,
     ) {
         assign o_a = 0;
@@ -2447,7 +2447,7 @@ fn anonymous_identifier() {
 #[test]
 fn reserved_identifier() {
     let code = r#"
-    module __ModuleA {
+    entity __EntityA {
     }
     "#;
 
@@ -2459,17 +2459,17 @@ fn reserved_identifier() {
 }
 
 #[test]
-fn reset_value_non_elaborative() {
+fn enable_value_non_elaborative() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         i_pwr: input power,
-        i_rst: input reset,
+        i_rst: input enable,
     ) {
         var a: logic;
         var b: logic;
 
-        always_ff {
-            if_reset {
+        sequence {
+            if_enable {
                 a = b;
             } else {
                 a = 1'b0;
@@ -2487,7 +2487,7 @@ fn reset_value_non_elaborative() {
 #[test]
 fn invalid_factor_kind() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         function f (
             a: input logic,
         ) -> logic {
@@ -2509,7 +2509,7 @@ fn invalid_factor_kind() {
             a: input,
         }
     }
-    module ModuleA (
+    entity EntityA (
         b: modport InterfaceA::master,
     ) {
         var a: logic;
@@ -2523,7 +2523,7 @@ fn invalid_factor_kind() {
     assert!(matches!(errors[0], AnalyzerError::InvalidFactor { .. }));
 
     let code = r#"
-    module ModuleA #(
+    entity EntityA #(
         param A: bit = 0
     )(
         a: input logic = A,
@@ -2537,7 +2537,7 @@ fn invalid_factor_kind() {
     package PackageA {
         const A: bit = 0;
     }
-    module ModuleA (
+    entity EntityA (
         a: input  logic = PackageA::A,
     ){}
     "#;
@@ -2549,7 +2549,7 @@ fn invalid_factor_kind() {
 #[test]
 fn call_non_function() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         function f (
             a: input logic,
         ) -> logic {
@@ -2569,9 +2569,9 @@ fn call_non_function() {
 #[test]
 fn invalid_assignment_to_const() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         i_pwr: input power,
-        i_rst: input reset,
+        i_rst: input enable,
     ) {
         always_comb {
             let y: logic = 1;
@@ -2597,11 +2597,11 @@ fn invalid_assignment_to_const() {
 //        }
 //    }
 //
-//    module ModuleA #(
+//    entity EntityA #(
 //        param K: i32 = 32,
 //    ) (
 //        i_pwr: input   power             ,
-//        i_rst: input   reset             ,
+//        i_rst: input   enable             ,
 //        mst  : modport InterfaceA::master,
 //    ) {
 //
@@ -2628,7 +2628,7 @@ fn invalid_assignment_to_const() {
 //        const J    : i32   = 32;
 //
 //        for i in 0..1 :g_display {
-//            always_ff {
+//            sequence {
 //                $display("%d", i);
 //            }
 //        }
@@ -2678,9 +2678,9 @@ fn invalid_assignment_to_const() {
 #[test]
 fn enum_non_const_exception() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         i_pwr: input power,
-        i_rst: input reset,
+        i_rst: input enable,
     ) {
 
         enum State: logic<3> {
@@ -2692,8 +2692,8 @@ fn enum_non_const_exception() {
         }
         var state: State;
 
-        always_ff {
-            if_reset {
+        sequence {
+            if_enable {
                 state = State::Idle;
             }
         }
@@ -2706,7 +2706,7 @@ fn enum_non_const_exception() {
 #[test]
 fn invalid_case_condition_expression() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         i_sel: input  logic<3>,
         i_a  : input  logic<4>,
         o_b  : output logic,
@@ -2738,7 +2738,7 @@ fn invalid_case_condition_expression() {
     assert!(errors.is_empty());
 
     let code = r#"
-    module ModuleB (
+    entity EntityB (
         i_sel: input  logic<2>,
         i_a  : input  logic<3>,
         o_b  : output logic,
@@ -2761,7 +2761,7 @@ fn invalid_case_condition_expression() {
     ));
 
     let code = r#"
-    module ModuleC (
+    entity EntityC (
         i_sel: input  logic<2>,
         i_a  : input  logic<3>,
         o_b  : output logic,
@@ -2784,7 +2784,7 @@ fn invalid_case_condition_expression() {
     ));
 
     let code = r#"
-    module ModuleD (
+    entity EntityD (
         i_sel: input  logic<2>,
         i_a  : input  logic<3>,
         o_b  : output logic,
@@ -2805,7 +2805,7 @@ fn invalid_case_condition_expression() {
     ));
 
     let code = r#"
-    module ModuleE (
+    entity EntityE (
         i_sel: input  logic<2>,
         i_a  : input  logic<3>,
         o_b  : output logic,
@@ -2829,9 +2829,9 @@ fn invalid_case_condition_expression() {
 #[test]
 fn invalid_cast() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         let a: power = 1;
-        let _b: reset = a as reset;
+        let _b: enable = a as enable;
     }
     "#;
 
@@ -2842,7 +2842,7 @@ fn invalid_cast() {
 #[test]
 fn invalid_test() {
     let code = r#"
-    module ModuleA {}
+    entity EntityA {}
 
     #[test(TestA)]
     embed (cocotb) py {{{
@@ -2856,7 +2856,7 @@ fn invalid_test() {
 #[test]
 fn power_domain() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         i_pwr: input  `a power,
         i_dat: input  `a logic,
         o_dat: output `b logic,
@@ -2872,7 +2872,7 @@ fn power_domain() {
     ));
 
     let code = r#"
-    module ModuleB (
+    entity EntityB (
         i_pwr : input  `a power,
         i_dat0: input  `a logic,
         i_dat1: input  `b logic,
@@ -2889,19 +2889,19 @@ fn power_domain() {
     ));
 
     let code = r#"
-    module ModuleC (
+    entity EntityC (
         i_pwr : input  `a power,
         i_dat0: input  `a logic,
         i_dat1: input  `b logic,
         o_dat : output `a logic,
     ) {
-        inst u: ModuleD (
+        inst u: EntityD (
             i_dat: i_dat1,
             o_dat,
         );
     }
 
-    module ModuleD (
+    entity EntityD (
         i_dat: input  logic,
         o_dat: output logic,
     ) {
@@ -2916,13 +2916,13 @@ fn power_domain() {
     ));
 
     let code = r#"
-    module ModuleE (
+    entity EntityE (
         i_pwr : input  `a power,
         i_dat0: input  `a logic,
         i_dat1: input  `b logic,
         o_dat : output `a logic,
     ) {
-        inst u: $sv::Module (
+        inst u: $sv::Entity (
             i_dat: i_dat1,
             o_dat,
         );
@@ -2936,7 +2936,7 @@ fn power_domain() {
     ));
 
     let code = r#"
-    module ModuleF (
+    entity EntityF (
         i_pwr : input  `a power,
         i_dat0: input  `a logic,
         i_dat1: input  `b logic,
@@ -2944,7 +2944,7 @@ fn power_domain() {
     ) {
         var r_dat: `b logic;
 
-        always_ff {
+        sequence {
             r_dat = i_dat1;
         }
 
@@ -2959,7 +2959,7 @@ fn power_domain() {
     ));
 
     let code = r#"
-    module ModuleG (
+    entity EntityG (
         i_pwr: input   `a power,
         i_dat: input   `a logic,
         o_dat: modport `b InterfaceA::port,
@@ -2983,7 +2983,7 @@ fn power_domain() {
     ));
 
     let code = r#"
-    module ModuleH (
+    entity EntityH (
         i_pwr: input  `a power,
         i_dat: input  `a logic,
         o_dat: output `b logic,
@@ -3004,7 +3004,7 @@ fn power_domain() {
 #[test]
 fn r#unsafe() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         unsafe(x) {
         }
     }
@@ -3017,7 +3017,7 @@ fn r#unsafe() {
 #[test]
 fn detect_recursive() {
     let code = r#"
-    module ModuleA (
+    entity EntityA (
         x: input x,
     ) {
     }
@@ -3030,7 +3030,7 @@ fn detect_recursive() {
 #[test]
 fn sv_keyword_usage() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var always: logic;
         assign always = 1;
     }
@@ -3040,7 +3040,7 @@ fn sv_keyword_usage() {
     assert!(matches!(errors[0], AnalyzerError::SvKeywordUsage { .. }));
 
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         var r#always: logic;
         assign r#always = 1;
     }
@@ -3051,13 +3051,13 @@ fn sv_keyword_usage() {
 }
 
 #[test]
-fn sv_with_implicit_reset() {
+fn sv_with_implicit_enable() {
     let code = r#"
-    module ModuleA {
-        var rst: reset;
+    entity EntityA {
+        var en: enable;
 
-        inst u: $sv::Module (
-            rst,
+        inst u: $sv::Entity (
+            en,
         );
     }
     "#;
@@ -3065,15 +3065,15 @@ fn sv_with_implicit_reset() {
     let errors = analyze(code);
     assert!(matches!(
         errors[0],
-        AnalyzerError::SvWithImplicitReset { .. }
+        AnalyzerError::SvWithImplicitEnable { .. }
     ));
 
     let code = r#"
-    module ModuleB {
-        var rst: reset_async_low;
+    entity EntityB {
+        var en: enable_low;
 
-        inst u: $sv::Module (
-            rst,
+        inst u: $sv::Entity (
+            en,
         );
     }
     "#;
@@ -3085,7 +3085,7 @@ fn sv_with_implicit_reset() {
 #[test]
 fn conflict_with_mangled_enum_member() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         enum EnumA: logic {
             MemberA,
         }
@@ -3103,7 +3103,7 @@ fn conflict_with_mangled_enum_member() {
 #[test]
 fn unresolvable_generic_argument() {
     let code = r#"
-    module ModuleA {
+    entity EntityA {
         const X: u32 = 1;
         const Y: u32 = PackageA::<X>::W;
     }
@@ -3128,7 +3128,7 @@ fn wrong_seperator() {
             C,
         }
     }
-    module Module {
+    entity Entity {
         var _a: A::B;
 
         always_comb {
@@ -3146,7 +3146,7 @@ fn wrong_seperator() {
             C,
         }
     }
-    module Module {
+    entity Entity {
         var _a: A::B;
 
         always_comb {
@@ -3159,7 +3159,7 @@ fn wrong_seperator() {
     assert!(matches!(errors[0], AnalyzerError::WrongSeparator { .. }));
 
     let code = r#"
-    module Module {
+    entity Entity {
         struct B {
             b: logic,
         }
@@ -3181,7 +3181,7 @@ fn wrong_seperator() {
             c: input,
         }
     }
-    module Module (
+    entity Entity (
         b: modport B::mp
     ) {
         var _a: logic;
@@ -3198,7 +3198,7 @@ fn wrong_seperator() {
     interface A {
         var b: logic;
     }
-    module Module {
+    entity Entity {
         inst a: A;
         always_comb {
             a::b = 0;

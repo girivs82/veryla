@@ -485,7 +485,7 @@ pub enum AnalyzerError {
     },
 
     #[diagnostic(
-        severity(Error),
+        severity(Warning),
         code(mismatch_power_domain),
         help(""),
         url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#mismatch_power_domain")
@@ -522,7 +522,7 @@ pub enum AnalyzerError {
         help("add \"{port}\" port"),
         url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#missing_port")
     )]
-    #[error("module \"{name}\" has \"{port}\", but it is not connected")]
+    #[error("entity \"{name}\" has \"{port}\", but it is not connected")]
     MissingPort {
         name: String,
         port: String,
@@ -626,8 +626,8 @@ pub enum AnalyzerError {
         help("Use types with explicit polarity like `enable_low`"),
         url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#sv_with_implicit_enable")
     )]
-    #[error("Reset type with implicit synchronisity and polarity can't be connected to SystemVerilog module")]
-    SvWithImplicitReset {
+    #[error("Reset type with implicit synchronisity and polarity can't be connected to SystemVerilog entity")]
+    SvWithImplicitEnable {
         #[source_code]
         input: NamedSource<String>,
         #[label("Error location")]
@@ -924,7 +924,7 @@ pub enum AnalyzerError {
         help("remove \"{port}\" port"),
         url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#unknown_port")
     )]
-    #[error("module \"{name}\" doesn't have port \"{port}\", but it is connected")]
+    #[error("entity \"{name}\" doesn't have port \"{port}\", but it is connected")]
     UnknownPort {
         name: String,
         port: String,
@@ -940,7 +940,7 @@ pub enum AnalyzerError {
         help("remove \"{param}\" param"),
         url("https://doc.veryl-lang.org/book/07_appendix/02_semantic_error.html#unknown_param")
     )]
-    #[error("module \"{name}\" doesn't have param \"{param}\", but it is overrided")]
+    #[error("entity \"{name}\" doesn't have param \"{param}\", but it is overrided")]
     UnknownParam {
         name: String,
         param: String,
@@ -1492,7 +1492,7 @@ impl AnalyzerError {
     }
 
     pub fn sv_with_implicit_enable(source: &str, token: &TokenRange) -> Self {
-        AnalyzerError::SvWithImplicitReset {
+        AnalyzerError::SvWithImplicitEnable {
             input: AnalyzerError::named_source(source, token),
             error_location: token.into(),
         }

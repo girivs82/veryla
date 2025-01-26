@@ -37,11 +37,11 @@ impl Handler for CheckPowerEnable<'_> {
 }
 
 impl VerylaGrammarTrait for CheckPowerEnable<'_> {
-    fn module_declaration(&mut self, arg: &ModuleDeclaration) -> Result<(), ParolError> {
+    fn entity_declaration(&mut self, arg: &EntityDeclaration) -> Result<(), ParolError> {
         match self.point {
             HandlerPoint::Before => {
                 if let Ok(found) = symbol_table::resolve(arg.identifier.as_ref()) {
-                    if let SymbolKind::Module(x) = found.found.kind {
+                    if let SymbolKind::Entity(x) = found.found.kind {
                         self.default_power_exists = x.default_power.is_some();
                         self.default_enable_exists = x.default_enable.is_some();
                     }

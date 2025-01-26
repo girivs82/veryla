@@ -230,7 +230,7 @@ impl SymbolTable {
                                 context = self.trace_user_defined(context, &x.r#type.kind)?;
                             }
                         }
-                        SymbolKind::Module(_)
+                        SymbolKind::Entity(_)
                         | SymbolKind::Interface(_)
                         | SymbolKind::Package(_) => {
                             if context.other_prj & !found.public {
@@ -274,7 +274,7 @@ impl SymbolTable {
                         }
                         // don't trace inner item
                         SymbolKind::Function(_)
-                        | SymbolKind::ProtoModule(_)
+                        | SymbolKind::ProtoEntity(_)
                         | SymbolKind::Struct(_)
                         | SymbolKind::Union(_)
                         | SymbolKind::Modport(_)
@@ -567,11 +567,12 @@ const DEFINED_NAMESPACES: [&str; 2] = ["$sv", "$std"];
 
 // Refer IEEE Std 1800-2023 Table B.1 - Reserved keywords
 // This list must be sorted to enable binary search
-const SYSTEMVERILOG_KEYWORDS: [&str; 248] = [
+const SYSTEMVERILOG_KEYWORDS: [&str; 249] = [
     "accept_on",
     "alias",
     "always",
     "always_comb",
+    "analog",
     "sequence",
     "always_latch",
     "and",
@@ -627,7 +628,7 @@ const SYSTEMVERILOG_KEYWORDS: [&str; 248] = [
     "endgenerate",
     "endgroup",
     "endinterface",
-    "endmodule",
+    "endentity",
     "endpackage",
     "endprimitive",
     "endprogram",
@@ -688,11 +689,11 @@ const SYSTEMVERILOG_KEYWORDS: [&str; 248] = [
     "localparam",
     "logic",
     "longint",
-    "macromodule",
+    "macroentity",
     "matches",
     "medium",
     "modport",
-    "module",
+    "entity",
     "nand",
     "negedge",
     "nettype",
@@ -1106,7 +1107,7 @@ mod tests {
     use veryla_parser::{resource_table, Parser};
 
     const CODE: &str = r##"
-    module ModuleA #(
+    entity EntityA #(
         param paramA: u32 = 1,
         param paramB: PackageA::StructA = 1,
     ) (
@@ -1215,19 +1216,19 @@ mod tests {
     }
 
     #[test]
-    fn module() {
+    fn entity() {
         parse();
 
-        let symbol = resolve(&["ModuleA"], &[]);
+        let symbol = resolve(&["EntityA"], &[]);
         check_found(symbol, "prj");
 
-        let symbol = resolve(&["ModuleA"], &["ModuleA"]);
+        let symbol = resolve(&["EntityA"], &["EntityA"]);
         check_found(symbol, "prj");
 
-        let symbol = resolve(&["ModuleA"], &["InterfaceA"]);
+        let symbol = resolve(&["EntityA"], &["InterfaceA"]);
         check_found(symbol, "prj");
 
-        let symbol = resolve(&["ModuleA"], &["PackageA"]);
+        let symbol = resolve(&["EntityA"], &["PackageA"]);
         check_found(symbol, "prj");
     }
 
@@ -1238,7 +1239,7 @@ mod tests {
         let symbol = resolve(&["InterfaceA"], &[]);
         check_found(symbol, "prj");
 
-        let symbol = resolve(&["InterfaceA"], &["ModuleA"]);
+        let symbol = resolve(&["InterfaceA"], &["EntityA"]);
         check_found(symbol, "prj");
 
         let symbol = resolve(&["InterfaceA"], &["InterfaceA"]);
@@ -1255,7 +1256,7 @@ mod tests {
         let symbol = resolve(&["PackageA"], &[]);
         check_found(symbol, "prj");
 
-        let symbol = resolve(&["InterfaceA"], &["ModuleA"]);
+        let symbol = resolve(&["InterfaceA"], &["EntityA"]);
         check_found(symbol, "prj");
 
         let symbol = resolve(&["InterfaceA"], &["InterfaceA"]);
@@ -1272,8 +1273,8 @@ mod tests {
         let symbol = resolve(&["paramA"], &[]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["paramA"], &["ModuleA"]);
-        check_found(symbol, "prj::ModuleA");
+        let symbol = resolve(&["paramA"], &["EntityA"]);
+        check_found(symbol, "prj::EntityA");
 
         let symbol = resolve(&["paramA"], &["InterfaceA"]);
         check_found(symbol, "prj::InterfaceA");
@@ -1281,13 +1282,13 @@ mod tests {
         let symbol = resolve(&["paramA"], &["PackageA"]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["paramB", "memberB"], &["ModuleA"]);
+        let symbol = resolve(&["paramB", "memberB"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::StructA");
 
         let symbol = resolve(&["paramB", "memberB"], &["InterfaceA"]);
         check_found(symbol, "prj::PackageA::StructA");
 
-        let symbol = resolve(&["paramB", "memberB", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["paramB", "memberB", "memberA"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::StructB");
 
         let symbol = resolve(&["paramB", "memberB", "memberA"], &["InterfaceA"]);
@@ -1301,8 +1302,8 @@ mod tests {
         let symbol = resolve(&["localA"], &[]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["localA"], &["ModuleA"]);
-        check_found(symbol, "prj::ModuleA");
+        let symbol = resolve(&["localA"], &["EntityA"]);
+        check_found(symbol, "prj::EntityA");
 
         let symbol = resolve(&["localA"], &["InterfaceA"]);
         check_found(symbol, "prj::InterfaceA");
@@ -1310,13 +1311,13 @@ mod tests {
         let symbol = resolve(&["localA"], &["PackageA"]);
         check_found(symbol, "prj::PackageA");
 
-        let symbol = resolve(&["localB", "memberB"], &["ModuleA"]);
+        let symbol = resolve(&["localB", "memberB"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::StructA");
 
         let symbol = resolve(&["localB", "memberB"], &["InterfaceA"]);
         check_found(symbol, "prj::PackageA::StructA");
 
-        let symbol = resolve(&["localB", "memberB", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["localB", "memberB", "memberA"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::StructB");
 
         let symbol = resolve(&["localB", "memberB", "memberA"], &["InterfaceA"]);
@@ -1330,8 +1331,8 @@ mod tests {
         let symbol = resolve(&["portA"], &[]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["portA"], &["ModuleA"]);
-        check_found(symbol, "prj::ModuleA");
+        let symbol = resolve(&["portA"], &["EntityA"]);
+        check_found(symbol, "prj::EntityA");
 
         let symbol = resolve(&["portA"], &["InterfaceA"]);
         check_not_found(symbol);
@@ -1347,8 +1348,8 @@ mod tests {
         let symbol = resolve(&["memberA"], &[]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["memberA"], &["ModuleA"]);
-        check_found(symbol, "prj::ModuleA");
+        let symbol = resolve(&["memberA"], &["EntityA"]);
+        check_found(symbol, "prj::EntityA");
 
         let symbol = resolve(&["memberA"], &["InterfaceA"]);
         check_found(symbol, "prj::InterfaceA");
@@ -1364,7 +1365,7 @@ mod tests {
         let symbol = resolve(&["StructA"], &[]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["StructA"], &["ModuleA"]);
+        let symbol = resolve(&["StructA"], &["EntityA"]);
         check_not_found(symbol);
 
         let symbol = resolve(&["StructA"], &["InterfaceA"]);
@@ -1384,10 +1385,10 @@ mod tests {
         let symbol = resolve(&["memberA"], &["PackageA", "StructA"]);
         check_found(symbol, "prj::PackageA::StructA");
 
-        let symbol = resolve(&["memberB", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["memberB", "memberA"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::StructA");
 
-        let symbol = resolve(&["memberB", "memberX"], &["ModuleA"]);
+        let symbol = resolve(&["memberB", "memberX"], &["EntityA"]);
         check_not_found(symbol);
     }
 
@@ -1398,7 +1399,7 @@ mod tests {
         let symbol = resolve(&["EnumA"], &[]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["EnumA"], &["ModuleA"]);
+        let symbol = resolve(&["EnumA"], &["EntityA"]);
         check_not_found(symbol);
 
         let symbol = resolve(&["EnumA"], &["InterfaceA"]);
@@ -1415,7 +1416,7 @@ mod tests {
         let symbol = resolve(&["EnumA", "memberA"], &[]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["EnumA", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["EnumA", "memberA"], &["EntityA"]);
         check_not_found(symbol);
 
         let symbol = resolve(&["EnumA", "memberA"], &["InterfaceA"]);
@@ -1432,7 +1433,7 @@ mod tests {
         let symbol = resolve(&["UnionA"], &[]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["UnionA"], &["ModuleA"]);
+        let symbol = resolve(&["UnionA"], &["EntityA"]);
         check_not_found(symbol);
 
         let symbol = resolve(&["UnionA"], &["InterfaceA"]);
@@ -1449,13 +1450,13 @@ mod tests {
         let symbol = resolve(&["memberE"], &[]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["memberE"], &["ModuleA"]);
-        check_found(symbol, "prj::ModuleA");
+        let symbol = resolve(&["memberE"], &["EntityA"]);
+        check_found(symbol, "prj::EntityA");
 
-        let symbol = resolve(&["memberE", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["memberE", "memberA"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::UnionA");
 
-        let symbol = resolve(&["memberE", "memberB"], &["ModuleA"]);
+        let symbol = resolve(&["memberE", "memberB"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::UnionA");
     }
 
@@ -1466,34 +1467,34 @@ mod tests {
         let symbol = resolve(&["portB"], &[]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["portB"], &["ModuleA"]);
-        check_found(symbol, "prj::ModuleA");
+        let symbol = resolve(&["portB"], &["EntityA"]);
+        check_found(symbol, "prj::EntityA");
 
-        let symbol = resolve(&["portB", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["portB", "memberA"], &["EntityA"]);
         check_found(symbol, "prj::InterfaceA::modportA");
 
-        let symbol = resolve(&["portB", "memberB"], &["ModuleA"]);
+        let symbol = resolve(&["portB", "memberB"], &["EntityA"]);
         check_found(symbol, "prj::InterfaceA::modportA");
 
-        let symbol = resolve(&["portB", "memberB", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["portB", "memberB", "memberA"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::StructA");
 
-        let symbol = resolve(&["portB", "memberB", "memberB"], &["ModuleA"]);
+        let symbol = resolve(&["portB", "memberB", "memberB"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::StructA");
 
-        let symbol = resolve(&["portB", "memberB", "memberB", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["portB", "memberB", "memberB", "memberA"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::StructB");
 
-        let symbol = resolve(&["portB", "memberC"], &["ModuleA"]);
+        let symbol = resolve(&["portB", "memberC"], &["EntityA"]);
         check_found(symbol, "prj::InterfaceA::modportA");
 
-        let symbol = resolve(&["portB", "memberC", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["portB", "memberC", "memberA"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::StructA");
 
-        let symbol = resolve(&["portB", "memberC", "memberB"], &["ModuleA"]);
+        let symbol = resolve(&["portB", "memberC", "memberB"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::StructA");
 
-        let symbol = resolve(&["portB", "memberC", "memberB", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["portB", "memberC", "memberB", "memberA"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::StructB");
     }
 
@@ -1504,13 +1505,13 @@ mod tests {
         let symbol = resolve(&["memberC"], &[]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["memberC"], &["ModuleA"]);
-        check_found(symbol, "prj::ModuleA");
+        let symbol = resolve(&["memberC"], &["EntityA"]);
+        check_found(symbol, "prj::EntityA");
 
-        let symbol = resolve(&["memberC", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["memberC", "memberA"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::StructA");
 
-        let symbol = resolve(&["memberC", "memberX"], &["ModuleA"]);
+        let symbol = resolve(&["memberC", "memberX"], &["EntityA"]);
         check_not_found(symbol);
     }
 
@@ -1521,13 +1522,13 @@ mod tests {
         let symbol = resolve(&["memberD"], &[]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["memberD"], &["ModuleA"]);
-        check_found(symbol, "prj::ModuleA");
+        let symbol = resolve(&["memberD"], &["EntityA"]);
+        check_found(symbol, "prj::EntityA");
 
-        let symbol = resolve(&["memberD", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["memberD", "memberA"], &["EntityA"]);
         check_found(symbol, "$sv::SvTypeA");
 
-        let symbol = resolve(&["memberD", "memberA", "memberA", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["memberD", "memberA", "memberA", "memberA"], &["EntityA"]);
         check_found(symbol, "$sv::SvTypeA");
     }
 
@@ -1538,13 +1539,13 @@ mod tests {
         let symbol = resolve(&["instA"], &[]);
         check_not_found(symbol);
 
-        let symbol = resolve(&["instA"], &["ModuleA"]);
-        check_found(symbol, "prj::ModuleA");
+        let symbol = resolve(&["instA"], &["EntityA"]);
+        check_found(symbol, "prj::EntityA");
 
-        let symbol = resolve(&["instA", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["instA", "memberA"], &["EntityA"]);
         check_found(symbol, "prj::InterfaceA");
 
-        let symbol = resolve(&["instA", "memberB", "memberB", "memberA"], &["ModuleA"]);
+        let symbol = resolve(&["instA", "memberB", "memberB", "memberA"], &["EntityA"]);
         check_found(symbol, "prj::PackageA::StructB");
     }
 }

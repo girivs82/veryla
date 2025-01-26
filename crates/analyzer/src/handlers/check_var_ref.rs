@@ -663,7 +663,7 @@ impl VerylaGrammarTrait for CheckVarRef<'_> {
                         &symbol.found.namespace,
                     )) {
                         match x.found.kind {
-                            SymbolKind::Module(ref x) => {
+                            SymbolKind::Entity(ref x) => {
                                 for port in &x.ports {
                                     ports.insert(port.name(), port.property());
                                 }
@@ -828,11 +828,11 @@ impl VerylaGrammarTrait for CheckVarRef<'_> {
         Ok(())
     }
 
-    fn module_declaration(&mut self, arg: &ModuleDeclaration) -> Result<(), ParolError> {
+    fn entity_declaration(&mut self, arg: &EntityDeclaration) -> Result<(), ParolError> {
         match self.point {
             HandlerPoint::Before => {
-                self.affiliation.push(VarRefAffiliation::Module {
-                    token: arg.module.module_token.token,
+                self.affiliation.push(VarRefAffiliation::Entity {
+                    token: arg.entity.entity_token.token,
                 });
             }
             HandlerPoint::After => {

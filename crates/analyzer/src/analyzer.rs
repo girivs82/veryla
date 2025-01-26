@@ -460,7 +460,7 @@ fn traverse_assignable_symbol(id: SymbolId, path: &VarRefPath) -> Vec<VarRefPath
                 }
             }
             SymbolKind::Variable(x)
-                if x.affiliation == VariableAffiliation::Module
+                if x.affiliation == VariableAffiliation::Entity
                     || x.affiliation == VariableAffiliation::Function
                     || x.affiliation == VariableAffiliation::StatementBlock =>
             {

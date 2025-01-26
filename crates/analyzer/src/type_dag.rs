@@ -34,7 +34,7 @@ pub enum Context {
     Function,
     TypeDef,
     Const,
-    Module,
+    Entity,
     Interface,
     Package,
     Modport,
@@ -94,7 +94,7 @@ impl TypeDag {
             Err(_) => {
                 // Direct recursion of module/interface is allowed
                 let is_direct_recursion = start == end;
-                if matches!(edge, Context::Module | Context::Interface) && is_direct_recursion {
+                if matches!(edge, Context::Entity | Context::Interface) && is_direct_recursion {
                     Ok(())
                 } else {
                     let ssym = self.get_symbol(start);

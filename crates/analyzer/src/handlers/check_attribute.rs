@@ -188,13 +188,13 @@ impl VerylaGrammarTrait for CheckAttribute<'_> {
         Ok(())
     }
 
-    fn module_group(&mut self, arg: &ModuleGroup) -> Result<(), ParolError> {
+    fn entity_group(&mut self, arg: &EntityGroup) -> Result<(), ParolError> {
         if let HandlerPoint::After = self.point {
             let mut last_token = LastToken::default();
-            last_token.module_group(arg);
+            last_token.entity_group(arg);
             let last_token = last_token.token().unwrap();
 
-            for _ in &arg.module_group_list {
+            for _ in &arg.entity_group_list {
                 attribute_table::end(last_token);
             }
         }

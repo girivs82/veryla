@@ -535,6 +535,11 @@ impl From<&VariableType> for TokenRange {
                 let end = beg;
                 TokenRange { beg, end }
             }
+            VariableType::Analog(x) => {
+                let beg = x.analog.analog_token.token;
+                let end = beg;
+                TokenRange { beg, end }
+            }
             VariableType::Bit(x) => {
                 let beg = x.bit.bit_token.token;
                 let end = beg;
@@ -913,19 +918,23 @@ token_with_comments!(Operator12);
 token_with_comments!(UnaryOperator);
 
 token_with_comments!(AlwaysComb);
+token_with_comments!(Analog);
 token_with_comments!(Sequence);
 token_with_comments!(As);
 token_with_comments!(Assign);
 token_with_comments!(Bit);
 token_with_comments!(Break);
 token_with_comments!(Case);
+token_with_comments!(Component);
 token_with_comments!(Power);
 token_with_comments!(PowerPosedge);
 token_with_comments!(PowerNegedge);
 token_with_comments!(Const);
 token_with_comments!(Default);
+token_with_comments!(Element);
 token_with_comments!(Else);
 token_with_comments!(Embed);
+token_with_comments!(Entity);
 token_with_comments!(Enum);
 token_with_comments!(Export);
 token_with_comments!(F32);
@@ -950,8 +959,8 @@ token_with_comments!(Let);
 token_with_comments!(Logic);
 token_with_comments!(Lsb);
 token_with_comments!(Modport);
-token_with_comments!(Module);
 token_with_comments!(Msb);
+token_with_comments!(Of);
 token_with_comments!(Output);
 token_with_comments!(Outside);
 token_with_comments!(Package);
@@ -960,6 +969,7 @@ token_with_comments!(Proto);
 token_with_comments!(Pub);
 token_with_comments!(Ref);
 token_with_comments!(Repeat);
+token_with_comments!(Requirement);
 token_with_comments!(Enable);
 token_with_comments!(EnableHigh);
 token_with_comments!(EnableLow);
@@ -969,6 +979,9 @@ token_with_comments!(OpenDrain);
 token_with_comments!(Step);
 token_with_comments!(String);
 token_with_comments!(Struct);
+token_with_comments!(Subcomponent);
+token_with_comments!(Subsystem);
+token_with_comments!(System);
 token_with_comments!(Switch);
 token_with_comments!(Tri);
 token_with_comments!(Type);
@@ -1029,3 +1042,4 @@ impl TryFrom<&EmbedContentToken> for VerylaToken {
         Ok(VerylaToken { token, comments })
     }
 }
+

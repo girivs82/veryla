@@ -4,13 +4,13 @@ use veryla_parser::resource_table::{self, StrId};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Unsafe {
-    Cdc,
+    Pdc,
 }
 
 impl fmt::Display for Unsafe {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let text = match self {
-            Unsafe::Cdc => "cdc".to_string(),
+            Unsafe::Pdc => "pdc".to_string(),
         };
         text.fmt(f)
     }
@@ -22,13 +22,13 @@ pub enum UnsafeError {
 }
 
 struct Pattern {
-    pub cdc: StrId,
+    pub pdc: StrId,
 }
 
 impl Pattern {
     fn new() -> Self {
         Self {
-            cdc: resource_table::insert_str("cdc"),
+            pdc: resource_table::insert_str("pdc"),
         }
     }
 }
@@ -42,7 +42,7 @@ impl TryFrom<&veryla_parser::veryla_grammar_trait::UnsafeBlock> for Unsafe {
         value: &veryla_parser::veryla_grammar_trait::UnsafeBlock,
     ) -> Result<Self, Self::Error> {
         PAT.with_borrow(|pat| match value.identifier.identifier_token.token.text {
-            x if x == pat.cdc => Ok(Unsafe::Cdc),
+            x if x == pat.pdc => Ok(Unsafe::Pdc),
             _ => Err(UnsafeError::UnknownUnsafe),
         })
     }

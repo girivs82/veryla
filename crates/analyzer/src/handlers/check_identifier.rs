@@ -28,7 +28,7 @@ enum Kind {
     Instance,
     Interface,
     Modport,
-    Module,
+    Entity,
     Package,
     Parameter,
     PortInout,
@@ -69,7 +69,7 @@ impl<'a> CheckIdentifier<'a> {
             Kind::Instance => &opt.prefix_instance,
             Kind::Interface => &opt.prefix_interface,
             Kind::Modport => &opt.prefix_modport,
-            Kind::Module => &opt.prefix_module,
+            Kind::Entity => &opt.prefix_entity,
             Kind::Package => &opt.prefix_package,
             Kind::Parameter => &opt.prefix_parameter,
             Kind::PortInout => &opt.prefix_port_inout,
@@ -94,7 +94,7 @@ impl<'a> CheckIdentifier<'a> {
             Kind::Instance => &opt.suffix_instance,
             Kind::Interface => &opt.suffix_interface,
             Kind::Modport => &opt.suffix_modport,
-            Kind::Module => &opt.suffix_module,
+            Kind::Entity => &opt.suffix_entity,
             Kind::Package => &opt.suffix_package,
             Kind::Parameter => &opt.suffix_parameter,
             Kind::PortInout => &opt.suffix_port_inout,
@@ -119,7 +119,7 @@ impl<'a> CheckIdentifier<'a> {
             Kind::Instance => &opt.case_instance,
             Kind::Interface => &opt.case_interface,
             Kind::Modport => &opt.case_modport,
-            Kind::Module => &opt.case_module,
+            Kind::Entity => &opt.case_entity,
             Kind::Package => &opt.case_package,
             Kind::Parameter => &opt.case_parameter,
             Kind::PortInout => &opt.case_port_inout,
@@ -144,7 +144,7 @@ impl<'a> CheckIdentifier<'a> {
             Kind::Instance => &opt.re_required_instance,
             Kind::Interface => &opt.re_required_interface,
             Kind::Modport => &opt.re_required_modport,
-            Kind::Module => &opt.re_required_module,
+            Kind::Entity => &opt.re_required_entity,
             Kind::Package => &opt.re_required_package,
             Kind::Parameter => &opt.re_required_parameter,
             Kind::PortInout => &opt.re_required_port_inout,
@@ -169,7 +169,7 @@ impl<'a> CheckIdentifier<'a> {
             Kind::Instance => &opt.re_forbidden_instance,
             Kind::Interface => &opt.re_forbidden_interface,
             Kind::Modport => &opt.re_forbidden_modport,
-            Kind::Module => &opt.re_forbidden_module,
+            Kind::Entity => &opt.re_forbidden_entity,
             Kind::Package => &opt.re_forbidden_package,
             Kind::Parameter => &opt.re_forbidden_parameter,
             Kind::PortInout => &opt.re_forbidden_port_inout,
@@ -426,9 +426,9 @@ impl VerylaGrammarTrait for CheckIdentifier<'_> {
         Ok(())
     }
 
-    fn module_declaration(&mut self, arg: &ModuleDeclaration) -> Result<(), ParolError> {
+    fn entity_declaration(&mut self, arg: &EntityDeclaration) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
-            self.check(&arg.identifier.identifier_token.token, Kind::Module);
+            self.check(&arg.identifier.identifier_token.token, Kind::Entity);
         }
         Ok(())
     }

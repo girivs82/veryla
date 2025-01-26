@@ -1918,59 +1918,59 @@ impl VerylaWalker for Formatter {
         self.r_brace(&arg.r_brace);
     }
 
-    /// Semantic action for non-terminal 'ModuleDeclaration'
-    fn module_declaration(&mut self, arg: &ModuleDeclaration) {
-        if let Some(ref x) = arg.module_declaration_opt {
+    /// Semantic action for non-terminal 'EntityDeclaration'
+    fn entity_declaration(&mut self, arg: &EntityDeclaration) {
+        if let Some(ref x) = arg.entity_declaration_opt {
             self.r#pub(&x.r#pub);
             self.space(1);
         }
-        self.module(&arg.module);
+        self.entity(&arg.entity);
         self.space(1);
         self.identifier(&arg.identifier);
-        if let Some(ref x) = arg.module_declaration_opt0 {
+        if let Some(ref x) = arg.entity_declaration_opt0 {
             self.with_generic_parameter(&x.with_generic_parameter);
         }
         self.space(1);
-        if let Some(ref x) = arg.module_declaration_opt1 {
+        if let Some(ref x) = arg.entity_declaration_opt1 {
             self.r#for(&x.r#for);
             self.space(1);
             self.scoped_identifier(&x.scoped_identifier);
             self.space(1);
         }
-        if let Some(ref x) = arg.module_declaration_opt2 {
+        if let Some(ref x) = arg.entity_declaration_opt2 {
             self.with_parameter(&x.with_parameter);
             self.space(1);
         }
-        if let Some(ref x) = arg.module_declaration_opt3 {
+        if let Some(ref x) = arg.entity_declaration_opt3 {
             self.port_declaration(&x.port_declaration);
             self.space(1);
         }
         self.token_will_push(&arg.l_brace.l_brace_token);
-        for (i, x) in arg.module_declaration_list.iter().enumerate() {
+        for (i, x) in arg.entity_declaration_list.iter().enumerate() {
             self.newline_list(i);
-            self.module_group(&x.module_group);
+            self.entity_group(&x.entity_group);
         }
-        self.newline_list_post(arg.module_declaration_list.is_empty());
+        self.newline_list_post(arg.entity_declaration_list.is_empty());
         self.r_brace(&arg.r_brace);
     }
 
-    /// Semantic action for non-terminal 'ModuleGroup'
-    fn module_group(&mut self, arg: &ModuleGroup) {
-        for x in &arg.module_group_list {
+    /// Semantic action for non-terminal 'EntityGroup'
+    fn entity_group(&mut self, arg: &EntityGroup) {
+        for x in &arg.entity_group_list {
             self.attribute(&x.attribute);
             self.newline();
         }
-        match &*arg.module_group_group {
-            ModuleGroupGroup::LBraceModuleGroupGroupListRBrace(x) => {
+        match &*arg.entity_group_group {
+            EntityGroupGroup::LBraceEntityGroupGroupListRBrace(x) => {
                 self.token_will_push(&x.l_brace.l_brace_token);
-                for (i, x) in x.module_group_group_list.iter().enumerate() {
+                for (i, x) in x.entity_group_group_list.iter().enumerate() {
                     self.newline_list(i);
-                    self.module_group(&x.module_group);
+                    self.entity_group(&x.entity_group);
                 }
-                self.newline_list_post(x.module_group_group_list.is_empty());
+                self.newline_list_post(x.entity_group_group_list.is_empty());
                 self.r_brace(&x.r_brace);
             }
-            ModuleGroupGroup::ModuleItem(x) => self.module_item(&x.module_item),
+            EntityGroupGroup::EntityItem(x) => self.entity_item(&x.entity_item),
         }
     }
 
@@ -2158,22 +2158,22 @@ impl VerylaWalker for Formatter {
         }
     }
 
-    /// Semantic action for non-terminal 'ProtoModuleDeclaration'
-    fn proto_module_declaration(&mut self, arg: &ProtoModuleDeclaration) {
-        if let Some(ref x) = arg.proto_module_declaration_opt {
+    /// Semantic action for non-terminal 'ProtoEntityDeclaration'
+    fn proto_entity_declaration(&mut self, arg: &ProtoEntityDeclaration) {
+        if let Some(ref x) = arg.proto_entity_declaration_opt {
             self.r#pub(&x.r#pub);
             self.space(1);
         }
         self.proto(&arg.proto);
         self.space(1);
-        self.module(&arg.module);
+        self.entity(&arg.entity);
         self.space(1);
         self.identifier(&arg.identifier);
-        if let Some(ref x) = arg.proto_module_declaration_opt0 {
+        if let Some(ref x) = arg.proto_entity_declaration_opt0 {
             self.space(1);
             self.with_parameter(&x.with_parameter);
         }
-        if let Some(ref x) = arg.proto_module_declaration_opt1 {
+        if let Some(ref x) = arg.proto_entity_declaration_opt1 {
             self.space(1);
             self.port_declaration(&x.port_declaration);
         }

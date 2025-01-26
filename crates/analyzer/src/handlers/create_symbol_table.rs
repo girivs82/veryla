@@ -13,9 +13,9 @@ use crate::symbol::Type as SymType;
 use crate::symbol::{
     ConnectTarget, DocComment, EnumMemberProperty, EnumMemberValue, EnumProperty, FunctionProperty,
     GenericBoundKind, GenericParameterProperty, InstanceProperty, InterfaceProperty,
-    ModportFunctionMemberProperty, ModportProperty, ModportVariableMemberProperty, ModuleProperty,
+    ModportFunctionMemberProperty, ModportProperty, ModportVariableMemberProperty, EntityProperty,
     PackageProperty, Parameter, ParameterKind, ParameterProperty, Port, PortProperty,
-    ProtoModuleProperty, StructMemberProperty, StructProperty, Symbol, SymbolId, SymbolKind,
+    ProtoEntityProperty, StructMemberProperty, StructProperty, Symbol, SymbolId, SymbolKind,
     TestProperty, TestType, TypeDefProperty, TypeKind, UnionMemberProperty, UnionProperty,
     VariableAffiliation, VariableProperty,
 };
@@ -67,7 +67,7 @@ pub struct CreateSymbolTable<'a> {
     build_opt: Build,
     point: HandlerPoint,
     namespace: Namespace,
-    module_namspace_depth: usize,
+    entity_namspace_depth: usize,
     default_block: Option<StrId>,
     for_identifier: Option<Token>,
     anonymous_namespace: usize,
@@ -226,8 +226,8 @@ impl<'a> CreateSymbolTable<'a> {
     }
 
     fn is_default_power_candidate(&self, kind: SymbolKind) -> bool {
-        if *self.affiliation.last().unwrap() != VariableAffiliation::Module
-            || self.namespace.depth() != self.module_namspace_depth
+        if *self.affiliation.last().unwrap() != VariableAffiliation::Entity
+            || self.namespace.depth() != self.entity_namspace_depth
         {
             return false;
         }
@@ -259,8 +259,8 @@ impl<'a> CreateSymbolTable<'a> {
     }
 
     fn is_default_enable_candidate(&self, kind: SymbolKind) -> bool {
-        if *self.affiliation.last().unwrap() != VariableAffiliation::Module
-            || self.namespace.depth() != self.module_namspace_depth
+        if *self.affiliation.last().unwrap() != VariableAffiliation::Entity
+            || self.namespace.depth() != self.entity_namspace_depth
         {
             return false;
         }
@@ -505,7 +505,7 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
             let (prefix, suffix) = self.get_signal_prefix_suffix(r#type.kind.clone());
             let power_domain = if let Some(ref x) = arg.let_statement_opt {
                 self.insert_power_domain(&x.power_domain)
-            } else if affiliation == VariableAffiliation::Module {
+            } else if affiliation == VariableAffiliation::Entity {
                 self.check_missing_power_domain(&arg.identifier.identifier_token.token, &r#type);
                 SymPowerDomain::Implicit
             } else {
@@ -570,7 +570,7 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
             let (prefix, suffix) = self.get_signal_prefix_suffix(r#type.kind.clone());
             let power_domain = if let Some(ref x) = arg.let_declaration_opt {
                 self.insert_power_domain(&x.power_domain)
-            } else if affiliation == VariableAffiliation::Module {
+            } else if affiliation == VariableAffiliation::Entity {
                 self.check_missing_power_domain(&arg.identifier.identifier_token.token, &r#type);
                 SymPowerDomain::Implicit
             } else {
@@ -609,7 +609,7 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
             let (prefix, suffix) = self.get_signal_prefix_suffix(r#type.kind.clone());
             let power_domain = if let Some(ref x) = arg.var_declaration_opt {
                 self.insert_power_domain(&x.power_domain)
-            } else if affiliation == VariableAffiliation::Module {
+            } else if affiliation == VariableAffiliation::Entity {
                 self.check_missing_power_domain(&arg.identifier.identifier_token.token, &r#type);
                 SymPowerDomain::Implicit
             } else {
@@ -1027,7 +1027,7 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
                     let (prefix, suffix) = self.get_signal_prefix_suffix(r#type.kind.clone());
                     let power_domain = if let Some(ref x) = x.port_type_concrete_opt {
                         self.insert_power_domain(&x.power_domain)
-                    } else if affiliation == VariableAffiliation::Module {
+                    } else if affiliation == VariableAffiliation::Entity {
                         self.check_missing_power_domain(
                             &arg.identifier.identifier_token.token,
                             &r#type,
@@ -1055,7 +1055,7 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
                     let x = &x.port_type_abstract;
                     let power_domain = if let Some(ref x) = x.port_type_abstract_opt {
                         self.insert_power_domain(&x.power_domain)
-                    } else if affiliation == VariableAffiliation::Module {
+                    } else if affiliation == VariableAffiliation::Entity {
                         SymPowerDomain::Implicit
                     } else {
                         SymPowerDomain::None
@@ -1187,7 +1187,7 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
         Ok(())
     }
 
-    fn module_declaration(&mut self, arg: &ModuleDeclaration) -> Result<(), ParolError> {
+    fn entity_declaration(&mut self, arg: &EntityDeclaration) -> Result<(), ParolError> {
         let name = arg.identifier.identifier_token.token.text;
         match self.point {
             HandlerPoint::Before => {
@@ -1195,8 +1195,8 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
                 self.generic_context.push();
                 self.parameters.push(Vec::new());
                 self.ports.push(Vec::new());
-                self.affiliation.push(VariableAffiliation::Module);
-                self.module_namspace_depth = self.namespace.depth();
+                self.affiliation.push(VariableAffiliation::Entity);
+                self.entity_namspace_depth = self.namespace.depth();
                 self.function_ids.clear();
                 self.exist_power_without_domain = false;
 
@@ -1205,7 +1205,7 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
             HandlerPoint::After => {
                 self.namespace.pop();
                 self.affiliation.pop();
-                self.module_namspace_depth = 0;
+                self.entity_namspace_depth = 0;
 
                 let (generic_parameters, generic_references) = self.generic_context.pop();
                 let parameters: Vec<_> = self.parameters.pop().unwrap();
@@ -1225,13 +1225,15 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
                 self.default_power_candidates.clear();
                 self.defualt_enable_candidates.clear();
 
-                let range = TokenRange::new(&arg.module.module_token, &arg.r_brace.r_brace_token);
+                let entity_type = arg.entity_type.as_ref();
+                let range = TokenRange::new(&arg.entity.entity_token, &arg.r_brace.r_brace_token);
                 let proto = arg
-                    .module_declaration_opt1
+                    .entity_declaration_opt1
                     .as_ref()
                     .map(|x| x.scoped_identifier.as_ref().into());
 
-                let property = ModuleProperty {
+                let property = EntityProperty {
+                    entity_type: entity_type.clone(),
                     range,
                     proto,
                     generic_parameters,
@@ -1241,10 +1243,10 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
                     default_power,
                     default_enable,
                 };
-                let public = arg.module_declaration_opt.is_some();
+                let public = arg.entity_declaration_opt.is_some();
                 self.insert_symbol(
                     &arg.identifier.identifier_token.token,
-                    SymbolKind::Module(property),
+                    SymbolKind::Entity(property),
                     public,
                 );
             }
@@ -1324,7 +1326,7 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
                 self.namespace.push(name);
                 self.generic_context.push();
                 self.parameters.push(Vec::new());
-                self.affiliation.push(VariableAffiliation::Intarface);
+                self.affiliation.push(VariableAffiliation::Interface);
                 self.function_ids.clear();
                 self.modport_member_ids.clear();
 
@@ -1405,14 +1407,14 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
         Ok(())
     }
 
-    fn proto_module_declaration(&mut self, arg: &ProtoModuleDeclaration) -> Result<(), ParolError> {
+    fn proto_entity_declaration(&mut self, arg: &ProtoEntityDeclaration) -> Result<(), ParolError> {
         let name = arg.identifier.identifier_token.token.text;
         match self.point {
             HandlerPoint::Before => {
                 self.namespace.push(name);
                 self.parameters.push(Vec::new());
                 self.ports.push(Vec::new());
-                self.affiliation.push(VariableAffiliation::Module);
+                self.affiliation.push(VariableAffiliation::Entity);
                 self.in_proto = true;
             }
             HandlerPoint::After => {
@@ -1424,17 +1426,20 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
                 let ports: Vec<_> = self.ports.pop().unwrap();
 
                 let range =
-                    TokenRange::new(&arg.module.module_token, &arg.semicolon.semicolon_token);
+                    TokenRange::new(&arg.entity.entity_token, &arg.semicolon.semicolon_token);
 
-                let property = ProtoModuleProperty {
+                let entity_type = arg.entity_type.as_ref();
+
+                let property = ProtoEntityProperty {
+                    entity_type: entity_type.clone(),
                     range,
                     parameters,
                     ports,
                 };
-                let public = arg.proto_module_declaration_opt.is_some();
+                let public = arg.proto_entity_declaration_opt.is_some();
                 self.insert_symbol(
                     &arg.identifier.identifier_token.token,
-                    SymbolKind::ProtoModule(property),
+                    SymbolKind::ProtoEntity(property),
                     public,
                 );
             }
@@ -1470,7 +1475,7 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
 
                 if top.is_none() && way == "cocotb" {
                     self.errors
-                        .push(AnalyzerError::invalid_test("`cocotb` test requires top module name at the second argument of `#[test]` attribute", self.text, &token.into()));
+                        .push(AnalyzerError::invalid_test("`cocotb` test requires top entity name at the second argument of `#[test]` attribute", self.text, &token.into()));
                 }
 
                 let property = TestProperty { r#type, path, top };
@@ -1508,7 +1513,7 @@ impl VerylaGrammarTrait for CreateSymbolTable<'_> {
 
                 if top.is_none() && way == "cocotb" {
                     self.errors
-                        .push(AnalyzerError::invalid_test("`cocotb` test requires top module name at the second argument of `#[test]` attribute", self.text, &token.into()));
+                        .push(AnalyzerError::invalid_test("`cocotb` test requires top entity name at the second argument of `#[test]` attribute", self.text, &token.into()));
                 }
 
                 let property = TestProperty { r#type, path, top };

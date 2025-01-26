@@ -9,7 +9,7 @@ pub struct CheckPort<'a> {
     text: &'a str,
     point: HandlerPoint,
     in_function: bool,
-    in_module: bool,
+    in_entity: bool,
     in_modport: bool,
 }
 
@@ -87,7 +87,7 @@ impl VerylaGrammarTrait for CheckPort<'_> {
                     }
                 }
                 Direction::Modport(x) => {
-                    if !self.in_module || self.in_function {
+                    if !self.in_entity || self.in_function {
                         self.errors.push(AnalyzerError::invalid_direction(
                             "modport",
                             self.text,
@@ -118,10 +118,10 @@ impl VerylaGrammarTrait for CheckPort<'_> {
         Ok(())
     }
 
-    fn module_declaration(&mut self, _arg: &ModuleDeclaration) -> Result<(), ParolError> {
+    fn entity_declaration(&mut self, _arg: &EntityDeclaration) -> Result<(), ParolError> {
         match self.point {
-            HandlerPoint::Before => self.in_module = true,
-            HandlerPoint::After => self.in_module = false,
+            HandlerPoint::Before => self.in_entity = true,
+            HandlerPoint::After => self.in_entity = false,
         }
         Ok(())
     }

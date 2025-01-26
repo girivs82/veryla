@@ -28,14 +28,14 @@ impl Handler for CheckProto<'_> {
 }
 
 impl VerylaGrammarTrait for CheckProto<'_> {
-    fn module_declaration(&mut self, arg: &ModuleDeclaration) -> Result<(), ParolError> {
+    fn entity_declaration(&mut self, arg: &EntityDeclaration) -> Result<(), ParolError> {
         if let HandlerPoint::Before = self.point {
-            if let Some(ref x) = arg.module_declaration_opt1 {
+            if let Some(ref x) = arg.entity_declaration_opt1 {
                 if let Ok(symbol) = symbol_table::resolve(x.scoped_identifier.as_ref()) {
-                    if let SymbolKind::ProtoModule(proto) = symbol.found.kind {
-                        if let Ok(module) = symbol_table::resolve(arg.identifier.as_ref()) {
-                            if let SymbolKind::Module(module) = module.found.kind {
-                                let errors = proto.check_compat(&module);
+                    if let SymbolKind::ProtoEntity(proto) = symbol.found.kind {
+                        if let Ok(entity) = symbol_table::resolve(arg.identifier.as_ref()) {
+                            if let SymbolKind::Entity(entity) = entity.found.kind {
+                                let errors = proto.check_compat(&entity);
                                 for error in errors {
                                     let cause = match error {
                                         ProtoIncompatible::MissingParam(x) => {
@@ -70,7 +70,7 @@ impl VerylaGrammarTrait for CheckProto<'_> {
                     } else {
                         self.errors.push(AnalyzerError::mismatch_type(
                             &symbol.found.token.to_string(),
-                            "module prototype",
+                            "entity prototype",
                             &symbol.found.kind.to_kind_name(),
                             self.text,
                             &x.scoped_identifier.identifier().token.into(),

@@ -16,7 +16,7 @@ pub struct CheckType<'a> {
     pub errors: Vec<AnalyzerError>,
     text: &'a str,
     point: HandlerPoint,
-    in_module: bool,
+    in_entity: bool,
     in_user_defined_type: Vec<()>,
     in_casting_type: Vec<()>,
     in_generic_argument: Vec<()>,
@@ -257,10 +257,10 @@ impl VerylaGrammarTrait for CheckType<'_> {
         Ok(())
     }
 
-    fn module_declaration(&mut self, _arg: &ModuleDeclaration) -> Result<(), ParolError> {
+    fn entity_declaration(&mut self, _arg: &EntityDeclaration) -> Result<(), ParolError> {
         match self.point {
-            HandlerPoint::Before => self.in_module = true,
-            HandlerPoint::After => self.in_module = false,
+            HandlerPoint::Before => self.in_entity = true,
+            HandlerPoint::After => self.in_entity = false,
         };
         Ok(())
     }
@@ -297,7 +297,7 @@ impl VerylaGrammarTrait for CheckType<'_> {
                 let mut check_port_connection = false;
 
                 let type_expected = match symbol.found.kind {
-                    SymbolKind::Module(ref x) if self.in_module => {
+                    SymbolKind::Entity(ref x) if self.in_entity => {
                         params.append(&mut x.parameters.clone());
                         ports.append(&mut x.ports.clone());
                         check_port_connection = true;
@@ -307,7 +307,7 @@ impl VerylaGrammarTrait for CheckType<'_> {
                     SymbolKind::GenericInstance(ref x) => {
                         let base = symbol_table::get(x.base).unwrap();
                         match base.kind {
-                            SymbolKind::Module(ref x) if self.in_module => {
+                            SymbolKind::Entity(ref x) if self.in_entity => {
                                 params.append(&mut x.parameters.clone());
                                 ports.append(&mut x.ports.clone());
                                 check_port_connection = true;
@@ -315,8 +315,8 @@ impl VerylaGrammarTrait for CheckType<'_> {
                             }
                             SymbolKind::Interface(_) | SymbolKind::SystemVerilog => None,
                             _ => {
-                                if self.in_module {
-                                    Some("module or interface")
+                                if self.in_entity {
+                                    Some("entity or interface")
                                 } else {
                                     Some("interface")
                                 }
@@ -327,13 +327,13 @@ impl VerylaGrammarTrait for CheckType<'_> {
                         if let GenericBoundKind::Proto(ref x) = x.bound {
                             if let Ok(symbol) = symbol_table::resolve((x, &symbol.found.namespace))
                             {
-                                if let SymbolKind::ProtoModule(x) = symbol.found.kind {
+                                if let SymbolKind::ProtoEntity(x) = symbol.found.kind {
                                     params.append(&mut x.parameters.clone());
                                     ports.append(&mut x.ports.clone());
                                     check_port_connection = true;
                                     None
                                 } else {
-                                    Some("module or interface")
+                                    Some("entity or interface")
                                 }
                             } else {
                                 None
@@ -343,8 +343,8 @@ impl VerylaGrammarTrait for CheckType<'_> {
                         }
                     }
                     _ => {
-                        if self.in_module {
-                            Some("module or interface")
+                        if self.in_entity {
+                            Some("entity or interface")
                         } else {
                             Some("interface")
                         }

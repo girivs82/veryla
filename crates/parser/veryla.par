@@ -66,18 +66,22 @@ RBracketTerm          : <INITIAL, Generic       >']'                            
 RParenTerm            : <INITIAL, Generic       >')'                                                                                   : Token;
 SemicolonTerm         : <INITIAL, Generic       >';'                                                                                   : Token;
 StarTerm              : <INITIAL, Generic       >'*'                                                                                   : Token;
+AnalogTerm            : <INITIAL, Generic       >/(?-u:\b)analog(?-u:\b)/                                                              : Token;
 AlwaysCombTerm        : <INITIAL, Generic       >/(?-u:\b)always_comb(?-u:\b)/                                                         : Token;
 AssignTerm            : <INITIAL, Generic       >/(?-u:\b)assign(?-u:\b)/                                                              : Token;
 AsTerm                : <INITIAL, Generic       >/(?-u:\b)as(?-u:\b)/                                                                  : Token;
 BitTerm               : <INITIAL, Generic       >/(?-u:\b)bit(?-u:\b)/                                                                 : Token;
 CaseTerm              : <INITIAL, Generic       >/(?-u:\b)case(?-u:\b)/                                                                : Token;
+ComponentTerm         : <INITIAL, Generic       >/(?-u:\b)component(?-u:\b)/                                                           : Token;
 ConstTerm             : <INITIAL, Generic       >/(?-u:\b)const(?-u:\b)/                                                               : Token;
 DefaultTerm           : <INITIAL, Generic       >/(?-u:\b)default(?-u:\b)/                                                             : Token;
+ElementTerm           : <INITIAL, Generic       >/(?-u:\b)element(?-u:\b)/                                                             : Token;
 ElseTerm              : <INITIAL, Generic       >/(?-u:\b)else(?-u:\b)/                                                                : Token;
 EmbedTerm             : <INITIAL, Generic       >/(?-u:\b)embed(?-u:\b)/                                                               : Token;
 EnableTerm            : <INITIAL, Generic       >/(?-u:\b)enable(?-u:\b)/                                                              : Token;
 EnableHighTerm        : <INITIAL, Generic       >/(?-u:\b)enable_high(?-u:\b)/                                                         : Token;
 EnableLowTerm         : <INITIAL, Generic       >/(?-u:\b)enable_low(?-u:\b)/                                                          : Token;
+EntityTerm            : <INITIAL, Generic       >/(?-u:\b)entity(?-u:\b)/                                                              : Token;
 EnumTerm              : <INITIAL, Generic       >/(?-u:\b)enum(?-u:\b)/                                                                : Token;
 ExportTerm            : <INITIAL, Generic       >/(?-u:\b)export(?-u:\b)/                                                              : Token;
 F32Term               : <INITIAL, Generic       >/(?-u:\b)f32(?-u:\b)/                                                                 : Token;
@@ -102,8 +106,8 @@ LetTerm               : <INITIAL, Generic       >/(?-u:\b)let(?-u:\b)/          
 LogicTerm             : <INITIAL, Generic       >/(?-u:\b)logic(?-u:\b)/                                                               : Token;
 LsbTerm               : <INITIAL, Generic       >/(?-u:\b)lsb(?-u:\b)/                                                                 : Token;
 ModportTerm           : <INITIAL, Generic       >/(?-u:\b)modport(?-u:\b)/                                                             : Token;
-ModuleTerm            : <INITIAL, Generic       >/(?-u:\b)module(?-u:\b)/                                                              : Token;
 MsbTerm               : <INITIAL, Generic       >/(?-u:\b)msb(?-u:\b)/                                                                 : Token;
+OfTerm                : <INITIAL, Generic       >/(?-u:\b)of(?-u:\b)/                                                                  : Token;
 OpenCollectorTerm     : <INITIAL, Generic       >/(?-u:\b)opencollector(?-u:\b)/                                                       : Token;
 OpenDrainTerm         : <INITIAL, Generic       >/(?-u:\b)opendrain(?-u:\b)/                                                           : Token;
 OutputTerm            : <INITIAL, Generic       >/(?-u:\b)output(?-u:\b)/                                                              : Token;
@@ -117,13 +121,17 @@ ProtoTerm             : <INITIAL, Generic       >/(?-u:\b)proto(?-u:\b)/        
 PubTerm               : <INITIAL, Generic       >/(?-u:\b)pub(?-u:\b)/                                                                 : Token;
 RefTerm               : <INITIAL, Generic       >/(?-u:\b)ref(?-u:\b)/                                                                 : Token;
 RepeatTerm            : <INITIAL, Generic       >/(?-u:\b)repeat(?-u:\b)/                                                              : Token;
+RequirementTerm       : <INITIAL, Generic       >/(?-u:\b)requirement(?-u:\b)/                                                         : Token;
 ReturnTerm            : <INITIAL, Generic       >/(?-u:\b)return(?-u:\b)/                                                              : Token;
 BreakTerm             : <INITIAL, Generic       >/(?-u:\b)break(?-u:\b)/                                                               : Token;
 SequenceTerm          : <INITIAL, Generic       >/(?-u:\b)sequence(?-u:\b)/                                                            : Token;
 StepTerm              : <INITIAL, Generic       >/(?-u:\b)step(?-u:\b)/                                                                : Token;
 StringTerm            : <INITIAL, Generic       >/(?-u:\b)string(?-u:\b)/                                                              : Token;
 StructTerm            : <INITIAL, Generic       >/(?-u:\b)struct(?-u:\b)/                                                              : Token;
+SubcomponentTerm      : <INITIAL, Generic       >/(?-u:\b)subcomponent(?-u:\b)/                                                        : Token;
+SubsystemTerm         : <INITIAL, Generic       >/(?-u:\b)subsystem(?-u:\b)/                                                           : Token;
 SwitchTerm            : <INITIAL, Generic       >/(?-u:\b)switch(?-u:\b)/                                                              : Token;
+SystemTerm            : <INITIAL, Generic       >/(?-u:\b)system(?-u:\b)/                                                              : Token;
 TriTerm               : <INITIAL, Generic       >/(?-u:\b)tri(?-u:\b)/                                                                 : Token;
 TypeTerm              : <INITIAL, Generic       >/(?-u:\b)type(?-u:\b)/                                                                : Token;
 U32Term               : <INITIAL, Generic       >/(?-u:\b)u32(?-u:\b)/                                                                 : Token;
@@ -192,14 +200,15 @@ SemicolonToken       : SemicolonTerm       : Token Comments;
 StarToken            : StarTerm            : Token Comments;
 
 AlwaysCombToken    : AlwaysCombTerm    : Token Comments;
+AnalogToken        : AnalogTerm        : Token Comments;
 SequenceToken      : SequenceTerm      : Token Comments;
 AsToken            : AsTerm            : Token Comments;
 AssignToken        : AssignTerm        : Token Comments;
 BitToken           : BitTerm           : Token Comments;
 CaseToken          : CaseTerm          : Token Comments;
-PowerToken         : PowerTerm         : Token Comments;
-PowerPosedgeToken  : PowerPosedgeTerm  : Token Comments;
-PowerNegedgeToken  : PowerNegedgeTerm  : Token Comments;
+ComponentToken     : ComponentTerm     : Token Comments;
+ElementToken       : ElementTerm       : Token Comments;
+EntityToken        : EntityTerm        : Token Comments;
 ConstToken         : ConstTerm         : Token Comments;
 DefaultToken       : DefaultTerm       : Token Comments;
 ElseToken          : ElseTerm          : Token Comments;
@@ -231,24 +240,31 @@ LetToken           : LetTerm           : Token Comments;
 LogicToken         : LogicTerm         : Token Comments;
 LsbToken           : LsbTerm           : Token Comments;
 ModportToken       : ModportTerm       : Token Comments;
-ModuleToken        : ModuleTerm        : Token Comments;
 MsbToken           : MsbTerm           : Token Comments;
+OfToken            : OfTerm            : Token Comments;
 OpenCollectorToken : OpenCollectorTerm : Token Comments;
 OpenDrainToken     : OpenDrainTerm     : Token Comments;
 OutputToken        : OutputTerm        : Token Comments;
 OutsideToken       : OutsideTerm       : Token Comments;
 PackageToken       : PackageTerm       : Token Comments;
 ParamToken         : ParamTerm         : Token Comments;
+PowerToken         : PowerTerm         : Token Comments;
+PowerPosedgeToken  : PowerPosedgeTerm  : Token Comments;
+PowerNegedgeToken  : PowerNegedgeTerm  : Token Comments;
 ProtoToken         : ProtoTerm         : Token Comments;
 PubToken           : PubTerm           : Token Comments;
 RefToken           : RefTerm           : Token Comments;
 RepeatToken        : RepeatTerm        : Token Comments;
+RequirementToken   : RequirementTerm   : Token Comments;
 ReturnToken        : ReturnTerm        : Token Comments;
 BreakToken         : BreakTerm         : Token Comments;
 StepToken          : StepTerm          : Token Comments;
 StringToken        : StringTerm        : Token Comments;
 StructToken        : StructTerm        : Token Comments;
 SwitchToken        : SwitchTerm        : Token Comments;
+SubcomponentToken  : SubcomponentTerm  : Token Comments;
+SubsystemToken     : SubsystemTerm     : Token Comments;
+SystemToken        : SystemTerm        : Token Comments;
 TriToken           : TriTerm           : Token Comments;
 TypeToken          : TypeTerm          : Token Comments;
 U32Token           : U32Term           : Token Comments;
@@ -325,17 +341,21 @@ OpenDrain     : OpenDrainToken         : VerylaToken;
 
 // Keyword
 AlwaysComb    : AlwaysCombToken    : VerylaToken;
+Analog        : AnalogToken        : VerylaToken;
 Sequence      : SequenceToken      : VerylaToken;
 As            : AsToken            : VerylaToken;
 Assign        : AssignToken        : VerylaToken;
 Bit           : BitToken           : VerylaToken;
 Break         : BreakToken         : VerylaToken;
 Case          : CaseToken          : VerylaToken;
+Component     : ComponentToken     : VerylaToken;
 Power         : PowerToken         : VerylaToken;
 PowerPosedge  : PowerPosedgeToken  : VerylaToken;
 PowerNegedge  : PowerNegedgeToken  : VerylaToken;
 Const         : ConstToken         : VerylaToken;
 Defaul        : DefaultToken       : VerylaToken; // avoid to conflict with Rust's Default trait
+Element       : ElementToken       : VerylaToken;
+Entity        : EntityToken        : VerylaToken;
 Else          : ElseToken          : VerylaToken;
 Embed         : EmbedToken         : VerylaToken;
 Enum          : EnumToken          : VerylaToken;
@@ -362,8 +382,8 @@ Let           : LetToken           : VerylaToken;
 Logic         : LogicToken         : VerylaToken;
 Lsb           : LsbToken           : VerylaToken;
 Modport       : ModportToken       : VerylaToken;
-Module        : ModuleToken        : VerylaToken;
 Msb           : MsbToken           : VerylaToken;
+Of            : OfToken            : VerylaToken;
 Output        : OutputToken        : VerylaToken;
 Outside       : OutsideToken       : VerylaToken;
 Package       : PackageToken       : VerylaToken;
@@ -372,6 +392,7 @@ Proto         : ProtoToken         : VerylaToken;
 Pub           : PubToken           : VerylaToken;
 Ref           : RefToken           : VerylaToken;
 Repeat        : RepeatToken        : VerylaToken;
+Requirement   : RequirementToken   : VerylaToken;
 Enable        : EnableToken        : VerylaToken;
 EnableHigh    : EnableHighToken    : VerylaToken;
 EnableLow     : EnableLowToken     : VerylaToken;
@@ -379,7 +400,10 @@ Return        : ReturnToken        : VerylaToken;
 Step          : StepToken          : VerylaToken;
 Strin         : StringToken        : VerylaToken; // avoid to conflict with Rust's String struct
 Struct        : StructToken        : VerylaToken;
+Subcomponent  : SubcomponentToken  : VerylaToken;
+Subsystem     : SubsystemToken     : VerylaToken;
 Switch        : SwitchToken        : VerylaToken;
+System        : SystemToken        : VerylaToken;
 Tri           : TriToken           : VerylaToken;
 Type          : TypeToken          : VerylaToken;
 U32           : U32Token           : VerylaToken;
@@ -522,6 +546,7 @@ VariableType: Power
             | EnableHigh
             | EnableLow
             | Logic
+            | Analog
             | Bit;
 
 UserDefinedType: ScopedIdentifier;
@@ -777,14 +802,19 @@ ExportDeclaration: Export ( Star | ScopedIdentifier [ ColonColon Star ] ) Semico
 UnsafeBlock: Unsafe LParen Identifier RParen LBrace { GenerateGroup } RBrace;
 
 // ----------------------------------------------------------------------------
-// Module/Interface
+// Entity Type
+// ----------------------------------------------------------------------------
+EntityType: Component | Element | Requirement | Subcomponent | Subsystem | System;
+
+// ----------------------------------------------------------------------------
+// Entity/Interface
 // ----------------------------------------------------------------------------
 
-ModuleDeclaration: [ Pub ] Module Identifier [ WithGenericParameter ] [ For ScopedIdentifier ] [ WithParameter ] [ PortDeclaration ] LBrace { ModuleGroup } RBrace;
+EntityDeclaration: [ Pub ] Entity Identifier Of EntityType [ WithGenericParameter ] [ For ScopedIdentifier ] [ WithParameter ] [ PortDeclaration ] LBrace { EntityGroup } RBrace;
 
-ModuleGroup: { Attribute } ( LBrace { ModuleGroup } RBrace | ModuleItem );
+EntityGroup: { Attribute } ( LBrace { EntityGroup } RBrace | EntityItem );
 
-ModuleItem: GenerateItem;
+EntityItem: GenerateItem;
 
 InterfaceDeclaration: [ Pub ] Interface Identifier [ WithGenericParameter ] [ WithParameter ] LBrace { InterfaceGroup } RBrace;
 
@@ -846,7 +876,7 @@ PackageItem: VarDeclaration
 // Proto
 // ----------------------------------------------------------------------------
 
-ProtoModuleDeclaration: [ Pub ] Proto Module Identifier [ WithParameter ] [ PortDeclaration ] Semicolon;
+ProtoEntityDeclaration: [ Pub ] Proto Entity Of EntityType Identifier [ WithParameter ] [ PortDeclaration ] Semicolon;
 
 // ----------------------------------------------------------------------------
 // Embed
@@ -873,10 +903,10 @@ IncludeDeclaration: Include LParen Identifier Comma StringLiteral RParen Semicol
 
 DescriptionGroup: { Attribute } ( LBrace { DescriptionGroup } RBrace | DescriptionItem );
 
-DescriptionItem: ModuleDeclaration
+DescriptionItem: EntityDeclaration
                | InterfaceDeclaration
                | PackageDeclaration
-               | ProtoModuleDeclaration
+               | ProtoEntityDeclaration
                | ImportDeclaration
                | EmbedDeclaration
                | IncludeDeclaration

@@ -104,8 +104,8 @@ impl VerylaGrammarTrait for CheckExpression<'_> {
                     }
                     // instance can be used as factor in inst_declaration
                     SymbolKind::Instance(_) if self.in_inst_declaration => (),
-                    SymbolKind::Module(_)
-                    | SymbolKind::ProtoModule(_)
+                    SymbolKind::Entity(_)
+                    | SymbolKind::ProtoEntity(_)
                     | SymbolKind::Interface(_)
                     | SymbolKind::Instance(_)
                     | SymbolKind::Block
